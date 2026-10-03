@@ -1,3 +1,3 @@
 # Public Ledger
 Public Ledger is a source that helps voters understand who represents them and whether their actions match their promises. It brings campaign funding, voting records, public statements, and documented ethics history into one easy-to-read candidate scorecard. Users can explore who funds a politician, how they vote, and where their record aligns—or conflicts—with their stated positions. A voter-alignment feature would help users identify candidates whose records best match their own priorities. Our goal is to make political accountability accessible, giving voters clear, source-backed information to make informed choices.
-<img width="1254" height="1254" alt="image" src="https://github.com/user-attachments/assets/fa265870-665c-41b5-8ec7-2bce1c1c7391" />
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/fa265870-665c-41b5-8ec7-2bce1c1c7391" />
