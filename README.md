@@ -1,2 +1,2 @@
-# Congress-Record-Check
-Candidate Record Check
+# Public Ledger
+Public Ledger is a source that helps voters understand who represents them and whether their actions match their promises. It brings campaign funding, voting records, public statements, and documented ethics history into one easy-to-read candidate scorecard. Users can explore who funds a politician, how they vote, and where their record aligns—or conflicts—with their stated positions. A voter-alignment feature would help users identify candidates whose records best match their own priorities. Our goal is to make political accountability accessible, giving voters clear, source-backed information to make informed choices.
