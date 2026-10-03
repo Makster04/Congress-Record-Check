@@ -7,10 +7,11 @@ Public Ledger helps voters understand **who funds their elected officials, how t
 
 The platform brings complex public records into one easy-to-read **candidate scorecard**, helping users explore:
 
-- **Campaign Funding & Policy Interests:** Who financially supports a candidate, which bills those funders publicly support or oppose, and how those interests align with the candidate’s legislative actions.
+- **Campaign Funding:** Who financially supports a candidate and how funding patterns relate to their legislative record.
 - **Legislative Record:** Bills introduced, sponsored, and voted on, with plain-language summaries of their purpose and potential effects.
 - **Promises vs. Actions:** How campaign promises and public statements compare with documented actions.
 - **Ethics & Accountability:** Documented ethics history, clearly distinguishing ongoing investigations from confirmed violations.
+- **Funder–Legislation Connections:** Compare funders’ public positions on bills with the actions of politicians they support, highlighting shared interests and potential influence without assuming causation.
 - **Voter Alignment:** How candidates’ records and stated positions align with users’ policy priorities.
 
-Our goal is to **make political accountability accessible**, helping voters examine whose interests officials’ actions reflect through clear, source-backed information. Connections between funding and legislative actions would highlight potential influence, without assuming that a contribution caused a vote.
+Our goal is to **make political accountability accessible** through clear, source-backed information that helps voters make informed choices.
