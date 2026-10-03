@@ -4,18 +4,14 @@
 
 ### Follow the money. Check the record. Find your alignment.
 
-Public Ledger is a political transparency platform designed to help voters understand who represents them and whether their actions match their promises.
+Public Ledger helps voters understand **who funds their elected officials, how they vote, and whether their actions match their promises**.
 
-By bringing campaign funding, legislative records, public statements, and documented ethics history into one easy-to-read candidate scorecard, Public Ledger helps users explore who funds a politician, how they vote, and whether their actions align with their stated positions. A voter-alignment feature would help users identify candidates whose records best reflect their own priorities.
+The platform brings complex public records into one easy-to-read **candidate scorecard**, helping users explore:
 
-## What You Can Explore
+- **Campaign Funding:** Who financially supports a candidate and how funding patterns relate to their legislative record.
+- **Legislative Record:** Bills introduced, sponsored, and voted on, with plain-language summaries of their purpose and potential effects.
+- **Promises vs. Actions:** How campaign promises and public statements compare with documented actions.
+- **Ethics & Accountability:** Documented ethics history, clearly distinguishing ongoing investigations from confirmed violations.
+- **Voter Alignment:** How candidates’ records and stated positions align with users’ policy priorities.
 
-- **Campaign Funding:** Who financially supports a candidate.
-- **Legislative Record:** Bills sponsored, votes cast, and policy priorities.
-- **Promises vs. Actions:** How public statements compare with documented actions.
-- **Ethics & Accountability:** Documented findings and ongoing investigations, clearly distinguished.
-- **Voter Alignment:** How candidates’ records match the issues you care about.
-
-## Our Goal
-
-Make political accountability accessible through clear, source-backed information that helps voters make informed choices.
+Our goal is to **make political accountability accessible** through clear, source-backed information that helps voters make informed choices.
