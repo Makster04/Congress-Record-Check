@@ -1,4 +1,7 @@
 # Public Ledger
+
+<img width="200" height="200" alt="image" src="https://github.com/user-attachments/assets/fa265870-665c-41b5-8ec7-2bce1c1c7391" />
+
 ### Follow the money. Check the record. Find your alignment.
 
 Public Ledger is a political transparency platform designed to help voters understand who represents them and whether their actions match their promises.
@@ -16,4 +19,3 @@ By bringing campaign funding, legislative records, public statements, and docume
 ## Our Goal
 
 Make political accountability accessible through clear, source-backed information that helps voters make informed choices.
-<img width="500" height="500" alt="image" src="https://github.com/user-attachments/assets/fa265870-665c-41b5-8ec7-2bce1c1c7391" />
