@@ -1,4 +1,4 @@
-
+import {KV_MIN,leanOfVote,whyNotMarked,keyVoteRows,keyVoteScore} from './lean.js';
 (function(){
 const $=s=>document.querySelector(s);
 const app=$('#app'), tip=$('#tip');
@@ -463,12 +463,73 @@ function ovAlign(s){
     <ul class="ov-iss">${rows.map(y=>`<li class="${y.k}"><span class="ov-mk ${y.k}" aria-hidden="true">${SYM[y.k]}</span><span>${esc(y.x.i.label)}</span><span class="r">${txt(y)}</span></li>`).join('')}</ul>`;
   return ovCard('Your issues',T,`Your ${r.nChosen} chosen issue${r.nChosen===1?'':'s'}. Blank means no evidence, which is not counted as a mismatch.`,body,`Not a rating of the candidate. <a href="#${s.id}-align">Evidence for every issue →</a>`);
 }
+// ---------- key-vote ideology: bills marked liberal or conservative, scored from how each person voted ----------
+const kvCache=new Map();
+const kvScore=s=>{if(!kvCache.has(s.id))kvCache.set(s.id,keyVoteScore(keyVoteRows(CH[icH(s)].votes,s.id,ISSBY)));return kvCache.get(s.id)};
+function kvTotals(C){
+  let lib=0,con=0;
+  CH[C].votes.forEach(v=>{const l=leanOfVote(v,ISSBY);if(l==='liberal')lib++;else if(l==='conservative')con++;});
+  return {lib,con,n:lib+con};
+}
+const kvSide=side=>`<span class="chip ${side==='liberal'?'D':'R'}">${side==='liberal'?'Liberal':'Conservative'} side</span>`;
+// A Yea/Nay row's mark, for the vote lists: what a Yea means, or that the bill is not marked and why.
+function leanTag(v){
+  const l=leanOfVote(v,ISSBY);
+  return l?`<span class="chip ${l==='liberal'?'D':'R'}" title="This bill is marked ${l}: a Yea takes the ${l} side and a Nay takes the other.">A Yea is the ${l} side</span>`:`<span class="chip ghost" title="${esc(whyNotMarked(v,ISSBY))}">Not marked liberal or conservative</span>`;
+}
+function kvBlock(s,id,full){
+  const kv=kvScore(s), C=icH(s), tot=kvTotals(C), noun=CH[C].noun, T='Key votes marked liberal or conservative';
+  const head=`<div class="kicker">${T}</div>`;
+  if(!kv.n)return `${head}<p class="small" style="margin:6px 0 0;color:var(--ink-2)">${esc(s.short)} has no Yea or Nay on the ${tot.n} bills marked in the ${CH[C].name} set, so there is no key-vote position.</p>`;
+  const rows=kv.rows.slice().sort((a,b)=>b.v.date.localeCompare(a.v.date));
+  const table=`<details class="tv" ${full?'open':''}><summary>${full?'The marked bills':'Show the marked bills'} (${kv.n})</summary><div class="tablewrap"><table><thead><tr><th>Date</th><th>Bill</th><th>How it is marked</th><th>Vote</th><th>Side taken</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="mono" style="white-space:nowrap">${fmtDate(r.v.date)}</td><td><a href="${voteUrl(r.v)}" target="_blank" rel="noopener">${esc(r.v.short)}</a></td><td class="small">A Yea is the ${r.lean} side</td><td>${esc(r.pos)}</td><td>${kvSide(r.side)}</td></tr>`).join('')}</tbody></table></div></details>`;
+  if(!kv.ok)return `${head}<p class="small" style="margin:6px 0 0;color:var(--ink-2)">${esc(s.short)} voted on only ${kv.n} of the ${tot.n} marked ${CH[C].name} bills. At least ${KV_MIN} are needed for a position, so none is shown.</p>${table}`;
+  const pool=ALL.filter(p=>icH(p)===C&&kvScore(p).ok);
+  const unmarked=full?CH[C].votes.filter(v=>!leanOfVote(v,ISSBY)):[];
+  const why=unmarked.length?`<details class="tv"><summary>The other ${unmarked.length} ${CH[C].name} bills, not marked, and why</summary><ul class="list small" style="margin-top:8px">${unmarked.map(v=>`<li><b>${esc(v.short)}</b> <span class="muted">${esc(whyNotMarked(v,ISSBY))}</span></li>`).join('')}</ul></details>`:'';
+  return `${head}<div class="big" style="margin-top:4px">Conservative side on ${kv.con} of ${kv.n} marked bills</div>
+    <p class="small muted" style="margin:4px 0 6px">Liberal side on ${kv.lib} of ${kv.n}. A missed vote is not counted.</p>
+    <div class="ideo" id="${id}"></div>
+    <p class="small muted" style="margin:6px 0 0">Each dot is one profiled ${noun} with at least ${KV_MIN} marked votes (${pool.length}). Of the ${tot.n} bills marked in the ${CH[C].name} set, a Yea is the liberal side on ${tot.lib} and the conservative side on ${tot.con}, so positions can be compared only within the ${CH[C].name}. This is a count of selected votes, not the career score above.</p>
+    ${table}${why}`;
+}
+function drawKV(el,s){
+  if(!el)return;
+  const me=kvScore(s);if(!me.ok)return;
+  const C=icH(s), pool=ALL.filter(p=>icH(p)===C&&kvScore(p).ok).sort((a,b)=>kvScore(a).share-kvScore(b).share);
+  const W=Math.max(280,el.clientWidth), small=W<520, d=small?9:11, mL=16, mR=16;
+  const X=v=>mL+v*(W-mL-mR), nb=Math.floor((W-mL-mR)/d), bins={};
+  let maxS=0;
+  const placed=pool.map(p=>{const b=Math.min(nb-1,Math.floor((X(kvScore(p).share)-mL)/d));const k=bins[b]||0;bins[b]=k+1;if(k+1>maxS)maxS=k+1;return [p,mL+(b+.5)*d,k]});
+  const top=38, base=top+maxS*d, H=base+50;
+  let g='',mine='';
+  placed.forEach(([p,cx,k])=>{
+    const k2=kvScore(p), cy=base-(k+.5)*d, cls=p.party==='R'?'r':p.party==='D'?'d':'i';
+    const tip=`${p.name} (${p.party}) · conservative side on ${k2.con} of ${k2.n}`;
+    if(p.id===s.id){
+      const anchor=cx<W*.18?'start':cx>W*.82?'end':'middle';
+      mine=`<line class="guide" style="stroke-dasharray:none" x1="${cx}" x2="${cx}" y1="${top-8}" y2="${cy-d/2-2}"></line><circle class="me ${cls}" cx="${cx}" cy="${cy}" r="${d/2+1.5}" data-tip="${esc(tip)}"></circle><text class="me-lab" x="${cx}" y="${top-14}" text-anchor="${anchor}">${esc(s.short)} · ${k2.con} of ${k2.n}</text>`;
+    } else g+=`<circle class="${cls}" cx="${cx}" cy="${cy}" r="${d/2-.6}" data-tip="${esc(tip)}"></circle>`;
+  });
+  let ax=`<line class="axis" x1="${mL}" x2="${W-mR}" y1="${base+2}" y2="${base+2}"></line>`;
+  [[0,'0%','start'],[.5,'50%','middle'],[1,'100%','end']].forEach(([v,l,a])=>{ax+=`<line class="axis" x1="${X(v)}" x2="${X(v)}" y1="${base+2}" y2="${base+7}"></line><text class="tick" x="${X(v)}" y="${base+19}" text-anchor="${a}">${l}</text>`;});
+  ax+=`<text class="cap" x="${mL}" y="${base+40}">← Liberal side every time</text><text class="cap" x="${W-mR}" y="${base+40}" text-anchor="end">Conservative side every time →</text>`;
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(s.name)} took the conservative side on ${me.con} of ${me.n} bills marked liberal or conservative, among ${pool.length} ${CH[C].nouns}">${ax}${g}${mine}</svg>`;
+  bindTips(el);
+}
+function mountKV(id,s){const f=()=>drawKV(document.getElementById(id),s);f();resizers.push(f);}
+
 // 4. one line from most liberal to most conservative, the candidate among faint dots for the whole chamber
 function ovIdeo(s){
-  const it=ideoText(s), T='Where they sit politically';
-  if(!s.ideo)return ovCard('Politics',T,'Needs a congressional voting record',`<div class="big">No voting score</div><p class="small" style="margin:6px 0 0;color:var(--ink-2)">${esc(it.short)}. A position is shown only where there is a congressional voting record, and is never guessed.</p>`,`<a href="#${s.id}-record">Record and votes →</a>`,'ov-wide');
+  const it=ideoText(s), T='Where they sit politically', kv=kvScore(s);
+  if(!s.ideo&&!kv.ok){
+    const few=kv.n?` ${esc(s.short)} voted on only ${kv.n} bill${kv.n===1?'':'s'} marked liberal or conservative, too few for a position.`:'';
+    return ovCard('Politics',T,'Needs a congressional voting record',`<div class="big">No voting score</div><p class="small" style="margin:6px 0 0;color:var(--ink-2)">${esc(it.short)}. A position is shown only where there is a congressional voting record, and is never guessed.${few}</p>`,`<a href="#${s.id}-record">Record and votes →</a>`,'ov-wide');
+  }
   const C=icH(s);
-  return ovCard('Politics',T,`${esc(it.head)}. Each faint dot is one current ${CH[C].noun} (${DATA.pools[C].length} in all).`,`<div class="ideo ov-strip" id="ovstrip"></div>`,`DW-NOMINATE score from Voteview, ${s.ideo.dim1>0?'+':''}${s.ideo.dim1.toFixed(3)} on a −1 (liberal) to +1 (conservative) scale. <a href="#${s.id}-record">Full chart with names →</a>`,'ov-wide');
+  const career=s.ideo?`<div class="kicker">Whole career, Voteview</div><div class="big" style="margin-top:4px">${esc(it.head)}</div><div class="ideo ov-strip" id="ovstrip"></div><p class="small muted" style="margin:6px 0 0">Each faint dot is one current ${CH[C].noun} (${DATA.pools[C].length} in all). DW-NOMINATE score ${s.ideo.dim1>0?'+':''}${s.ideo.dim1.toFixed(3)} on a −1 (liberal) to +1 (conservative) scale.</p>`:'';
+  const keyv=kv.ok?`<div class="${s.ideo?'ov-sep':''}">${kvBlock(s,'ovkv',false)}</div>`:'';
+  return ovCard('Politics',T,kv.ok&&s.ideo?'Two views: the whole career, and the bills marked liberal or conservative':kv.ok?'From the bills marked liberal or conservative':'Whole career',career+keyv,`<a href="#${s.id}-record">Full chart with names and every vote →</a> · <a href="#method">How bills are marked</a>`,'ov-wide');
 }
 function drawStrip(el,s){
   if(!el||!s.ideo)return;
@@ -538,6 +599,7 @@ function paneOverview(s,pane){
       <p style="margin-top:10px"><a href="#${s.id}-record">Legislative record, money and votes →</a></p></div>
   </div>`;
   mountStrip('ovstrip',s);
+  mountKV('ovkv',s);
   bindTips(pane);
 }
 
@@ -849,7 +911,7 @@ function paneRecord(s,pane,focus){
   <p class="intro">${inc?`${esc(s.short)}'s positions on consequential ${CH[s.chamber].name} roll calls, sponsored bills`:esc(REC_LABEL[s.recordType]||'')+'. '+esc({member_of_congress:'Positions on key House roll calls and notable sponsored bills',senator:'Positions on key Senate roll calls and notable sponsored bills',former_member_of_congress:'Votes and bills from '+s.short+"'s time in Congress",state_legislator:'Recorded votes and bills from '+s.short+"'s time in a state legislature",executive:'No legislative votes in executive office; major official actions are listed instead',none:'No legislative voting record; documented public actions and commitments are listed instead'}[s.recordType]||'')}${hasStateLeg(s)&&s.recordType!=='state_legislator'?', a separate state legislative record':''}, money and votes side by side, and ethics. Each item links to its source.</p>
   <div class="note" style="margin-bottom:12px"><b>Evidence available:</b> ${esc(ev.label)}.</div>
   <nav class="jump small">${jump.map(([k,l])=>`<a href="#${k}">${esc(l)}</a>`).join('')}</nav>
-  <div id="rec-ideo">${ideoBlock(s,'ideo2')}</div>
+  <div id="rec-ideo">${ideoBlock(s,'ideo2')}<div class="chart">${kvBlock(s,'kv2',true)}</div></div>
   ${keyVotesBlock(s,SV,'Key U.S. Senate votes','rec-sv')}
   ${keyVotesBlock(s,HV,'Key U.S. House votes','rec-hv')}
   ${inc?`<section class="recsec" id="rec-bills"><div class="kicker">Congressional record</div><h3 style="margin-top:4px">Sponsored legislation</h3><p class="small" style="margin:6px 0 10px">${s.sponsoredCount?`<b class="num">${s.sponsoredCount.toLocaleString()}</b> bills, resolutions and amendments sponsored. ${esc(s.sponsoredNote)}`:esc(s.sponsoredNote)} <a href="${cgUrl(s)}" target="_blank" rel="noopener">Full list on Congress.gov ↗</a></p>
@@ -861,8 +923,9 @@ function paneRecord(s,pane,focus){
   ${moneyVotesBlock(s)}
   ${ethicsHTML(s)}`;
   mountIdeo('ideo2',s);
+  mountKV('kv2',s);
   pane.querySelectorAll('#rec-sv,#rec-hv').forEach(sec=>{const V=sec.id==='rec-sv'?SV:HV;const f=sec.querySelector('[data-vf]'),L=sec.querySelector('[data-vl]');
-    const draw=a=>{L.innerHTML=V.filter(v=>!a||v.area===a).slice().sort((x,y)=>y.date.localeCompare(x.date)).map(v=>{const p=v.pos[s.id]||'—';return `<div class="vote"><div class="d">${v.date}</div><div><div class="t"><a href="${voteUrl(v)}" target="_blank" rel="noopener">${esc(v.short)}</a></div><div class="s">${esc(v.issue)} · ${esc(v.result)}</div><div class="s muted">${esc(v.area)}</div>${billDetails(v)}</div><div class="pos"><span class="chip ${posClass(p)}">${esc(p)}</span></div></div>`}).join('');};
+    const draw=a=>{L.innerHTML=V.filter(v=>!a||v.area===a).slice().sort((x,y)=>y.date.localeCompare(x.date)).map(v=>{const p=v.pos[s.id]||'—';return `<div class="vote"><div class="d">${v.date}</div><div><div class="t"><a href="${voteUrl(v)}" target="_blank" rel="noopener">${esc(v.short)}</a></div><div class="s">${esc(v.issue)} · ${esc(v.result)}</div><div class="s muted">${esc(v.area)}</div><div class="s" style="margin:4px 0">${leanTag(v)}</div>${billDetails(v)}</div><div class="pos"><span class="chip ${posClass(p)}">${esc(p)}</span></div></div>`}).join('');};
     draw('');f.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;f.querySelector('.active').classList.remove('active');b.classList.add('active');draw(b.dataset.a);});});
   pane.querySelectorAll('.jump a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const t=document.getElementById(a.getAttribute('href').slice(1));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}));
   bindTips(pane);
@@ -1043,10 +1106,14 @@ function renderMethod(){
       <li><b>Where the campaign's money comes from:</b> one bar splitting the FEC two-year total receipts into small donors (gifts of $200 or less, the FEC's "unitemized" individual contributions), larger individual donors (over $200), PACs and other committees, party committees, the candidate's own contributions and loans, and a last group for joint-fundraising transfers and other receipts. The groups add up to total receipts, so nothing is left out or counted twice. A campaign with no FEC report yet shows a note instead.</li>
       <li><b>Outside money for and against:</b> two bars on one scale, using the same "for" and "against" totals as the Funding tab (see Outside spending below), with the three largest spenders named under each. It is never added to campaign money.</li>
       <li><b>How they compare with your choices:</b> one row per issue you chose in My alignment. A check mark means every recorded item on the issue matches your side, a cross means none does, a half mark means the record is split, and an empty dashed circle means no evidence, which is never counted as a mismatch. No single percentage is shown. Until you choose issues, the card only invites you to.</li>
-      <li><b>Where they sit politically:</b> the candidate's DW-NOMINATE score as a dot among faint dots for every current member of their chamber. People with no congressional voting record show "No voting score" and are never placed on the line.</li>
+      <li><b>Where they sit politically:</b> the candidate's DW-NOMINATE score as a dot among faint dots for every current member of their chamber. People with no congressional voting record show "No voting score" and are never placed on the line. Below it, a second chart shows how the candidate voted on the bills marked liberal or conservative (next section).</li>
       <li><b>Do their words match their actions?:</b> the count of checked statements the record supports, those it contradicts, those partly supported or changed over time, and those unclear or affected by later events. It always states how many statements were checked, because a few checks are not a full picture of what someone has said.</li>
       <li><b>Ethics:</b> a text list rather than a chart, because very different things should not look alike. Each item carries one tag, assigned from the entry's own sources. <b>Allegation:</b> a complaint or report with no official finding. <b>Investigation:</b> a formal inquiry, lawsuit or proceeding, whether pending, closed or ended without a finding against the person. <b>Confirmed finding:</b> a court, agency or ethics body found a violation or imposed a penalty, or the person admitted it. The outcome is shown beside each item, and the full entry with sources is in the Legislative record tab.</li>
     </ul>
+    <h2>Key votes marked liberal or conservative</h2>
+    <p>Each key vote is checked against the issues it is coded to. Where an issue is a clear liberal-versus-conservative policy question in current U.S. politics, one side is marked liberal and the other conservative, as listed below. A bill is marked only if every issue it is coded to points the same way. Bills on unmarked issues, bipartisan deals, nominations and stopgap funding bills are left unmarked, and each unmarked bill shows its reason on the Legislative record tab. The marking is a judgment, kept in one place (<span class="mono">liberalSide</span> on each issue in <span class="mono">research.json</span>) so it can be reviewed and changed.</p>
+    <ul class="list">${ISS.map(i=>i.liberalSide?`<li><b>${esc(i.label)}:</b> liberal side = "${esc(i[i.liberalSide])}"; conservative side = "${esc(i[i.liberalSide==='A'?'B':'A'])}".</li>`:`<li><b>${esc(i.label)}:</b> not marked. ${esc(i.leanNote)}</li>`).join('')}</ul>
+    <p>A person's key-vote position counts only the marked bills they voted on: a Yea takes the side the bill is marked with and a Nay takes the other. A missed vote, and any bill from before the person took office, is not counted. A position is shown only with at least ${KV_MIN} such votes, and the chart places the person by the share of those votes taken on the conservative side. This counts a small, selected set of consequential votes. It is not a statistical ideology score, it can be compared only within a chamber because the House and Senate sets differ, and it should not be confused with the DW-NOMINATE career score above it, which uses every roll call.</p>
     <h2>Who is covered</h2>
     <p><b>Senate incumbents:</b> six senators on the November 3, 2026 ballot, three Republicans and three Democrats, chosen as a bipartisan sample of competitive and safe seats. Two senators originally selected were replaced during research because they will not be on the ballot: Sen. Lindsey Graham (R-SC) died in July 2026 and Sen. Markwayne Mullin (R-OK) left the Senate for an administration post.</p>
     <p><b>House:</b> the Cook Political Report rates 22 House races Toss-up (Sept. 25, 2026). Eight have full profiles of both nominees (four seats held by each party). The other 14 are shown on the Races page with their nominees (verified from election results or news reports), campaign funds and outside spending only; their records, statements and ethics have not been researched yet.</p>
