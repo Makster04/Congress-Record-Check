@@ -33,6 +33,8 @@ Some snapshots can have different check and coverage dates. In particular, check
 
 A candidate's page opens on its Overview tab: where the campaign's money comes from (FEC two-year receipts split into small donors, larger individual donors, PACs, party committees, the candidate's own money and a joint-fundraising/other remainder), outside money for and against with the largest spenders named, a per-issue comparison with the viewer's My alignment choices (no evidence is left blank, never scored as a mismatch), a strip showing where the candidate sits among their chamber's DW-NOMINATE scores, and a tally of checked statements that always shows how many were checked. Ethics appears as a short text list tagged allegation, investigation or confirmed finding. The tag is the `status` field of each entry in `public/research.json`; `npm test` fails if a displayed entry lacks one. The Methodology page defines the tags and how each visual is computed.
 
+The politics visual also scores how the candidate voted on key bills marked liberal or conservative. The marking is `liberalSide` / `leanNote` on each issue in `public/research.json`; the logic is in `public/lean.js` and is covered by `npm test`.
+
 ## Reviewed research
 
 `public/research.json` contains the original researched snapshot, including biographies, race ratings, Voteview scores, ethics, statements, industry classifications and alignment coding. Edit this file to publish reviewed changes; refresh jobs never rewrite it. Its contents were preserved from the supplied document, not independently fact-checked by this conversion.
