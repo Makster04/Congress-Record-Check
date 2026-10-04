@@ -471,19 +471,19 @@ function kvTotals(C){
   CH[C].votes.forEach(v=>{const l=leanOfVote(v,ISSBY);if(l==='liberal')lib++;else if(l==='conservative')con++;});
   return {lib,con,n:lib+con};
 }
-const kvSide=side=>`<span class="chip ${side==='liberal'?'D':'R'}">${side==='liberal'?'Liberal':'Conservative'} side</span>`;
+const kvSide=side=>`<span class="chip ${side==='liberal'?'D':'R'}">Voted ${side==='liberal'?'Liberal':'Conservative'} Side</span>`;
 // A Yea/Nay row's mark, for the vote lists: what a Yea means, or that the bill is not marked and why.
 function leanTag(v){
   const l=leanOfVote(v,ISSBY);
   return l?`<span class="chip ${l==='liberal'?'D':'R'}" title="This bill is marked ${l}: a Yea takes the ${l} side and a Nay takes the other.">A Yea is the ${l} side</span>`:`<span class="chip ghost" title="${esc(whyNotMarked(v,ISSBY))}">Not marked liberal or conservative</span>`;
 }
-// A person's vote on a bill: bold and in the bill's color (blue liberal, red conservative) when they voted Yea on a marked bill; plain black otherwise.
+// A person's vote on a bill, always plain black text; the side taken is shown separately in the "Side taken" chip.
 function voteText(v,pos){
-  const l=v?leanOfVote(v,ISSBY):null, withBill=!!l&&pos==='Yea';
-  const tip=!l?`${pos}: bill not marked liberal or conservative`:withBill?`Yea: voted for a bill marked ${l}`:`${pos}: did not vote for this ${l}-marked bill`;
-  return `<span class="vt ${withBill?l+' yes':'plain'}" title="${esc(tip)}">${esc(pos)}</span>`;
+  const l=v?leanOfVote(v,ISSBY):null, side=l?sideTaken(l,pos):null;
+  const tip=side?`${pos}: voted the ${side} side on a bill marked ${l}`:l?`${pos}: no side taken`:`${pos}: bill not marked liberal or conservative`;
+  return `<span class="vt" title="${esc(tip)}">${esc(pos)}</span>`;
 }
-const vtLegend=()=>`<p class="small muted vtkey" style="margin:4px 0 8px"><b>Reading a vote:</b> a Yea on a bill marked liberal is <span class="vt liberal yes">bold blue</span>, and a Yea on a bill marked conservative is <span class="vt conservative yes">bold red</span>. Any other vote (a Nay, a missed vote, or a bill not marked) is <span class="vt plain">plain black</span>.</p>`;
+const vtLegend=()=>`<p class="small muted vtkey" style="margin:4px 0 8px"><b>Reading a vote:</b> on a bill marked liberal or conservative, a Yea takes the marked side and a Nay takes the other. The "Side taken" column says which side each vote was on. Bills not marked liberal or conservative have no side.</p>`;
 function kvBlock(s,id,full){
   const kv=kvScore(s), C=icH(s), tot=kvTotals(C), noun=CH[C].noun, T='Key votes marked liberal or conservative';
   const head=`<div class="kicker">${T}</div>`;
@@ -1120,7 +1120,7 @@ function renderMethod(){
     <h2>Key votes marked liberal or conservative</h2>
     <p>Each key vote is checked against the issues it is coded to. Where an issue is a clear liberal-versus-conservative policy question in current U.S. politics, one side is marked liberal and the other conservative, as listed below. A bill is marked only if every issue it is coded to points the same way. Bills on unmarked issues, bipartisan deals, nominations and stopgap funding bills are left unmarked, and each unmarked bill shows its reason on the Legislative record tab. The marking is a judgment, kept in one place (<span class="mono">liberalSide</span> on each issue in <span class="mono">research.json</span>) so it can be reviewed and changed.</p>
     <ul class="list">${ISS.map(i=>i.liberalSide?`<li><b>${esc(i.label)}:</b> liberal side = "${esc(i[i.liberalSide])}"; conservative side = "${esc(i[i.liberalSide==='A'?'B':'A'])}".</li>`:`<li><b>${esc(i.label)}:</b> not marked. ${esc(i.leanNote)}</li>`).join('')}</ul>
-    <p>A person's key-vote position counts only the marked bills they voted on: a Yea takes the side the bill is marked with and a Nay takes the other. A missed vote, and any bill from before the person took office, is not counted. A position is shown only with at least ${KV_MIN} such votes, and the chart places the person by the share of those votes taken on the conservative side. This counts a small, selected set of consequential votes. It is not a statistical ideology score, it can be compared only within a chamber because the House and Senate sets differ, and it should not be confused with the DW-NOMINATE career score above it, which uses every roll call. In the vote lists, a Yea on a bill marked liberal is bold blue and a Yea on a bill marked conservative is bold red; any other vote is plain black.</p>
+    <p>A person's key-vote position counts only the marked bills they voted on: a Yea takes the side the bill is marked with and a Nay takes the other. A missed vote, and any bill from before the person took office, is not counted. A position is shown only with at least ${KV_MIN} such votes, and the chart places the person by the share of those votes taken on the conservative side. This counts a small, selected set of consequential votes. It is not a statistical ideology score, it can be compared only within a chamber because the House and Senate sets differ, and it should not be confused with the DW-NOMINATE career score above it, which uses every roll call. Vote text is always plain black; the "Side taken" column says whether each vote was on the liberal or the conservative side.</p>
     <h2>Who is covered</h2>
     <p><b>Senate incumbents:</b> six senators on the November 3, 2026 ballot, three Republicans and three Democrats, chosen as a bipartisan sample of competitive and safe seats. Two senators originally selected were replaced during research because they will not be on the ballot: Sen. Lindsey Graham (R-SC) died in July 2026 and Sen. Markwayne Mullin (R-OK) left the Senate for an administration post.</p>
     <p><b>House:</b> the Cook Political Report rates 22 House races Toss-up (Sept. 25, 2026). Eight have full profiles of both nominees (four seats held by each party). The other 14 are shown on the Races page with their nominees (verified from election results or news reports), campaign funds and outside spending only; their records, statements and ethics have not been researched yet.</p>
