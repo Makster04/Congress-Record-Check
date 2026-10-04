@@ -1,4 +1,4 @@
-import {KV_MIN,leanOfVote,whyNotMarked,keyVoteRows,keyVoteScore} from './lean.js';
+import {KV_MIN,leanOfVote,whyNotMarked,sideTaken,keyVoteRows,keyVoteScore} from './lean.js';
 (function(){
 const $=s=>document.querySelector(s);
 const app=$('#app'), tip=$('#tip');
@@ -477,12 +477,19 @@ function leanTag(v){
   const l=leanOfVote(v,ISSBY);
   return l?`<span class="chip ${l==='liberal'?'D':'R'}" title="This bill is marked ${l}: a Yea takes the ${l} side and a Nay takes the other.">A Yea is the ${l} side</span>`:`<span class="chip ghost" title="${esc(whyNotMarked(v,ISSBY))}">Not marked liberal or conservative</span>`;
 }
+// A person's vote on a bill: bold when they voted Yea, in the color of the side they took (blue liberal, red conservative, gray if the bill is not marked).
+function voteText(v,pos){
+  const l=v?leanOfVote(v,ISSBY):null, side=l?sideTaken(l,pos):null;
+  const tip=side?`${pos}: took the ${side} side on a bill marked ${l}`:l?`${pos}: no side taken`:`${pos}: bill not marked liberal or conservative`;
+  return `<span class="vt ${side||'neutral'} ${posClass(pos)==='yea'?'yes':'no'}" title="${esc(tip)}">${esc(pos)}</span>`;
+}
+const vtLegend=()=>`<p class="small muted vtkey" style="margin:4px 0 8px"><b>Reading a vote:</b> <span class="vt neutral yes">bold</span> means a Yea; other votes are not bold. The color is the side taken: <span class="vt liberal yes">blue</span> for the liberal side, <span class="vt conservative yes">red</span> for the conservative side (a Nay takes the opposite side of a Yea). <span class="vt neutral no">Gray</span> means the bill is not marked liberal or conservative.</p>`;
 function kvBlock(s,id,full){
   const kv=kvScore(s), C=icH(s), tot=kvTotals(C), noun=CH[C].noun, T='Key votes marked liberal or conservative';
   const head=`<div class="kicker">${T}</div>`;
   if(!kv.n)return `${head}<p class="small" style="margin:6px 0 0;color:var(--ink-2)">${esc(s.short)} has no Yea or Nay on the ${tot.n} bills marked in the ${CH[C].name} set, so there is no key-vote position.</p>`;
   const rows=kv.rows.slice().sort((a,b)=>b.v.date.localeCompare(a.v.date));
-  const table=`<details class="tv" ${full?'open':''}><summary>${full?'The marked bills':'Show the marked bills'} (${kv.n})</summary><div class="tablewrap"><table><thead><tr><th>Date</th><th>Bill</th><th>How it is marked</th><th>Vote</th><th>Side taken</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="mono" style="white-space:nowrap">${fmtDate(r.v.date)}</td><td><a href="${voteUrl(r.v)}" target="_blank" rel="noopener">${esc(r.v.short)}</a></td><td class="small">A Yea is the ${r.lean} side</td><td>${esc(r.pos)}</td><td>${kvSide(r.side)}</td></tr>`).join('')}</tbody></table></div></details>`;
+  const table=`<details class="tv" ${full?'open':''}><summary>${full?'The marked bills':'Show the marked bills'} (${kv.n})</summary>${vtLegend()}<div class="tablewrap"><table><thead><tr><th>Date</th><th>Bill</th><th>Vote</th><th>Side taken</th><th>How it is marked</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="mono" style="white-space:nowrap">${fmtDate(r.v.date)}</td><td><a href="${voteUrl(r.v)}" target="_blank" rel="noopener">${esc(r.v.short)}</a></td><td>${voteText(r.v,r.pos)}</td><td>${kvSide(r.side)}</td><td class="small">A Yea is the ${r.lean} side</td></tr>`).join('')}</tbody></table></div></details>`;
   if(!kv.ok)return `${head}<p class="small" style="margin:6px 0 0;color:var(--ink-2)">${esc(s.short)} voted on only ${kv.n} of the ${tot.n} marked ${CH[C].name} bills. At least ${KV_MIN} are needed for a position, so none is shown.</p>${table}`;
   const pool=ALL.filter(p=>icH(p)===C&&kvScore(p).ok);
   const unmarked=full?CH[C].votes.filter(v=>!leanOfVote(v,ISSBY)):[];
@@ -855,7 +862,7 @@ function keyVotesBlock(s,V,label,id){
   if(!V.length)return '';
   const areas=[...new Set(V.map(v=>v.area))].sort();
   const html=`<section class="recsec" id="${id}"><div class="kicker">Congressional record</div><h3 style="margin-top:4px">${esc(label)}</h3>
-    <p class="small muted" style="margin:4px 0 8px">${V.length} consequential roll calls chosen by this app, newest first. Open "Bill details" for the measure's summary, the recorded result and why it is filed under its issue.</p>
+    <p class="small muted" style="margin:4px 0 8px">${V.length} consequential roll calls chosen by this app, newest first. Open "Bill details" for the measure's summary, the recorded result and why it is filed under its issue.</p>${vtLegend()}
     <div class="filters" data-vf><button class="active" data-a="">All areas</button>${areas.map(a=>`<button data-a="${esc(a)}">${esc(a)}</button>`).join('')}</div><div data-vl></div></section>`;
   return html;
 }
@@ -925,7 +932,7 @@ function paneRecord(s,pane,focus){
   mountIdeo('ideo2',s);
   mountKV('kv2',s);
   pane.querySelectorAll('#rec-sv,#rec-hv').forEach(sec=>{const V=sec.id==='rec-sv'?SV:HV;const f=sec.querySelector('[data-vf]'),L=sec.querySelector('[data-vl]');
-    const draw=a=>{L.innerHTML=V.filter(v=>!a||v.area===a).slice().sort((x,y)=>y.date.localeCompare(x.date)).map(v=>{const p=v.pos[s.id]||'—';return `<div class="vote"><div class="d">${v.date}</div><div><div class="t"><a href="${voteUrl(v)}" target="_blank" rel="noopener">${esc(v.short)}</a></div><div class="s">${esc(v.issue)} · ${esc(v.result)}</div><div class="s muted">${esc(v.area)}</div><div class="s" style="margin:4px 0">${leanTag(v)}</div>${billDetails(v)}</div><div class="pos"><span class="chip ${posClass(p)}">${esc(p)}</span></div></div>`}).join('');};
+    const draw=a=>{L.innerHTML=V.filter(v=>!a||v.area===a).slice().sort((x,y)=>y.date.localeCompare(x.date)).map(v=>{const p=v.pos[s.id]||'—';return `<div class="vote"><div class="d">${v.date}</div><div><div class="t"><a href="${voteUrl(v)}" target="_blank" rel="noopener">${esc(v.short)}</a></div><div class="s">${esc(v.issue)} · ${esc(v.result)}</div><div class="s muted">${esc(v.area)}</div><div class="s" style="margin:4px 0">${leanTag(v)}</div>${billDetails(v)}</div><div class="pos">${voteText(v,p)}</div></div>`}).join('');};
     draw('');f.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;f.querySelector('.active').classList.remove('active');b.classList.add('active');draw(b.dataset.a);});});
   pane.querySelectorAll('.jump a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const t=document.getElementById(a.getAttribute('href').slice(1));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}));
   bindTips(pane);
@@ -1049,7 +1056,7 @@ function renderCompare(){
   <p class="lede">How the senators and representatives profiled here voted on consequential roll calls (former Sen. Sherrod Brown's votes are included for the years he served), then ideology, campaign funds and outside spending side by side for all ${ALL.length} people profiled.</p>
   <div class="toolbar"><div class="seg" id="cs"><button data-c="S" class="${cmpCh==='S'?'active':''}">Senate votes</button><button data-c="H" class="${cmpCh==='H'?'active':''}">House votes</button></div></div></section>
   <div class="filters" id="cf"><button class="active" data-a="">All areas</button>${areas.map(a=>`<button data-a="${esc(a)}">${esc(a)}</button>`).join('')}</div>
-  <div class="matrix"><table id="mx"><thead><tr><th>Vote</th>${M.map(s=>`<th class="sen"><a href="#${s.id}">${esc(s.short)}</a><br><span class="chip ${s.party}" style="margin-top:4px">${s.party}-${esc(seatLabel(s))}</span>${s.recordType==='former_member_of_congress'?'<div class="small muted" style="font-weight:400;text-transform:none;letter-spacing:0">former senator</div>':''}</th>`).join('')}</tr></thead><tbody></tbody></table></div>
+  ${vtLegend()}<div class="matrix"><table id="mx"><thead><tr><th>Vote</th>${M.map(s=>`<th class="sen"><a href="#${s.id}">${esc(s.short)}</a><br><span class="chip ${s.party}" style="margin-top:4px">${s.party}-${esc(seatLabel(s))}</span>${s.recordType==='former_member_of_congress'?'<div class="small muted" style="font-weight:400;text-transform:none;letter-spacing:0">former senator</div>':''}</th>`).join('')}</tr></thead><tbody></tbody></table></div>
   <section class="section">
     <h2>Side by side</h2>
     <p class="intro">Campaign funds and outside spending are separate columns with their own periods, drawn on one shared scale; they are never added. Ideology percentiles are within each member's own chamber; candidates without a congressional record show their record type. The kind of evidence differs by person (U.S. votes, state legislative votes or no voting record), so ideology cells are not comparable across those types. Click a column to sort.</p>
@@ -1057,7 +1064,7 @@ function renderCompare(){
     <div class="tablewrap"><table id="side"><thead><tr><th><button data-k="name">Name</button></th><th><button data-k="pctl">Voting record</button></th><th class="r"><button data-k="unity">Party unity</button></th><th><button data-k="rc">Campaign funds raised</button></th><th><button data-k="of">Outside spending for</button></th><th><button data-k="oa">Outside spending against</button></th><th><button data-k="al">Compared with your choices</button></th></tr></thead><tbody></tbody></table></div>
     <p class="small muted" style="margin:8px 0 0">Campaign funds: FEC two-year summaries, reports through the date shown for each person (mostly June 30, 2026). Outside spending: general-election independent expenditures through ${fmtDate(DATA.ie_asof)}. In Montana's three-way race the outside-spending columns show only spending aimed directly at that candidate.</p>
   </section>`;
-  const draw=a=>{$('#mx tbody').innerHTML=V.filter(v=>!a||v.area===a).slice().sort((x,y)=>y.date.localeCompare(x.date)).map(v=>`<tr><td class="v"><a href="${voteUrl(v)}" target="_blank" rel="noopener"><b>${esc(v.short)}</b></a><div class="s">${v.date} · ${esc(v.result)} · ${esc(v.area)}</div></td>${M.map(s=>{const p=v.pos[s.id]||'—';return `<td class="c"><span class="chip ${posClass(p)}">${esc(p)}</span></td>`}).join('')}</tr>`).join('');};
+  const draw=a=>{$('#mx tbody').innerHTML=V.filter(v=>!a||v.area===a).slice().sort((x,y)=>y.date.localeCompare(x.date)).map(v=>`<tr><td class="v"><a href="${voteUrl(v)}" target="_blank" rel="noopener"><b>${esc(v.short)}</b></a><div class="s">${v.date} · ${esc(v.result)} · ${esc(v.area)}</div></td>${M.map(s=>{const p=v.pos[s.id]||'—';return `<td class="c">${voteText(v,p)}</td>`}).join('')}</tr>`).join('');};
   draw('');
   $('#cf').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;$('#cf .active').classList.remove('active');b.classList.add('active');draw(b.dataset.a);});
   $('#cs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;location.hash='compare-'+(b.dataset.c==='H'?'house':'senate');});
@@ -1113,7 +1120,7 @@ function renderMethod(){
     <h2>Key votes marked liberal or conservative</h2>
     <p>Each key vote is checked against the issues it is coded to. Where an issue is a clear liberal-versus-conservative policy question in current U.S. politics, one side is marked liberal and the other conservative, as listed below. A bill is marked only if every issue it is coded to points the same way. Bills on unmarked issues, bipartisan deals, nominations and stopgap funding bills are left unmarked, and each unmarked bill shows its reason on the Legislative record tab. The marking is a judgment, kept in one place (<span class="mono">liberalSide</span> on each issue in <span class="mono">research.json</span>) so it can be reviewed and changed.</p>
     <ul class="list">${ISS.map(i=>i.liberalSide?`<li><b>${esc(i.label)}:</b> liberal side = "${esc(i[i.liberalSide])}"; conservative side = "${esc(i[i.liberalSide==='A'?'B':'A'])}".</li>`:`<li><b>${esc(i.label)}:</b> not marked. ${esc(i.leanNote)}</li>`).join('')}</ul>
-    <p>A person's key-vote position counts only the marked bills they voted on: a Yea takes the side the bill is marked with and a Nay takes the other. A missed vote, and any bill from before the person took office, is not counted. A position is shown only with at least ${KV_MIN} such votes, and the chart places the person by the share of those votes taken on the conservative side. This counts a small, selected set of consequential votes. It is not a statistical ideology score, it can be compared only within a chamber because the House and Senate sets differ, and it should not be confused with the DW-NOMINATE career score above it, which uses every roll call.</p>
+    <p>A person's key-vote position counts only the marked bills they voted on: a Yea takes the side the bill is marked with and a Nay takes the other. A missed vote, and any bill from before the person took office, is not counted. A position is shown only with at least ${KV_MIN} such votes, and the chart places the person by the share of those votes taken on the conservative side. This counts a small, selected set of consequential votes. It is not a statistical ideology score, it can be compared only within a chamber because the House and Senate sets differ, and it should not be confused with the DW-NOMINATE career score above it, which uses every roll call. In the vote lists, a Yea is shown in bold and any other vote is not; the color is the side taken (blue liberal, red conservative), and gray means the bill is not marked.</p>
     <h2>Who is covered</h2>
     <p><b>Senate incumbents:</b> six senators on the November 3, 2026 ballot, three Republicans and three Democrats, chosen as a bipartisan sample of competitive and safe seats. Two senators originally selected were replaced during research because they will not be on the ballot: Sen. Lindsey Graham (R-SC) died in July 2026 and Sen. Markwayne Mullin (R-OK) left the Senate for an administration post.</p>
     <p><b>House:</b> the Cook Political Report rates 22 House races Toss-up (Sept. 25, 2026). Eight have full profiles of both nominees (four seats held by each party). The other 14 are shown on the Races page with their nominees (verified from election results or news reports), campaign funds and outside spending only; their records, statements and ethics have not been researched yet.</p>
