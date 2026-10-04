@@ -31,7 +31,7 @@ export const RecordLive={
     try{const s=await status();const successes=s.jobs.filter(j=>j.last_success).length;const blocked=s.jobs.filter(j=>j.status==='blocked').length;
       element.innerHTML=`<span>Research snapshot: ${esc(s.reviewedAt)}. Official records refresh separately.</span><a href="#updates">${successes} sources updated${blocked?' · '+blocked+' awaiting setup':''}</a>`;
       const pane=document.querySelector('#pane'),hash=location.hash;
-      if(pane&&!hash.endsWith('-latest')&&/-[a-z]+$/.test(hash)&&!pane.querySelector('.snapshot-note'))pane.insertAdjacentHTML('afterbegin',`<div class="snapshot-note">Reviewed research snapshot · ${esc(s.reviewedAt)}. Figures below retain their original reporting dates. <a href="${esc(hash.replace(/-[a-z]+$/,'-latest'))}">See latest official records</a>.</div>`);
+      if(pane&&!hash.endsWith('-latest')&&/^#[a-zA-Z0-9]+(-[a-z]+)?$/.test(hash)&&!pane.querySelector('.snapshot-note'))pane.insertAdjacentHTML('afterbegin',`<div class="snapshot-note">Reviewed research snapshot · ${esc(s.reviewedAt)}. Figures below retain their original reporting dates. <a href="${esc('#'+hash.slice(1).split('-')[0]+'-latest')}">See latest official records</a>.</div>`);
     }catch{element.innerHTML='Saved research is available. The update service is offline.';}
   },
   async dashboard(host){

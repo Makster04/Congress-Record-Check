@@ -226,7 +226,8 @@
               "u": "https://www.bostonglobe.com/2026/09/22/nation/propublica-report-susan-collins-takeaways/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         },
         {
           "title": "STOCK Act periodic transaction reports",
@@ -4729,7 +4730,8 @@
               "u": "https://washingtonexaminer.com/news/senate/alaska-gop-senator-disclosed-stock-trades"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "finding"
         }
       ],
       "id": "sullivan",
@@ -11997,7 +11999,8 @@
               "u": "https://finance.yahoo.com/news/75-members-congress-violated-law-160918370.html"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "allegation"
         }
       ],
       "id": "marshall",
@@ -17568,7 +17571,8 @@
               "u": "https://www.fec.gov/files/legal/adrs/1142/1142_07.pdf"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "finding"
         },
         {
           "title": "STOCK Act periodic transaction reports",
@@ -22978,7 +22982,8 @@
               "u": "https://www.9news.com/article/news/local/local-politics/ethics-commission-fines-former-gov-john-hickenlooper-ethics-violations/73-d2e4e02a-aeed-4f08-b7fe-97a9b21c56e8"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "finding"
         },
         {
           "title": "STOCK Act periodic transaction reports",
@@ -27004,7 +27009,8 @@
               "u": "https://www.cnn.com/2023/12/20/politics/trump-scott-perry-cell-phone-records/index.html"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         },
         {
           "title": "Jan. 6 committee subpoena and Ethics Committee referral",
@@ -27022,7 +27028,8 @@
               "u": "https://rollcall.com/2021/12/21/rep-scott-perry-calls-jan-6-panel-illegitimate-refuses-to-cooperate/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         }
       ],
       "ethicsSearched": "Searched news and official sources for STOCK Act late-filing reports, House Ethics Committee and OCE matters (including the Jan. 6 committee referral), and court proceedings over the FBI seizure of his phone; no STOCK Act late-disclosure reports were found.",
@@ -37358,7 +37365,8 @@
               "u": "https://who13.com/news/ethics-complaint-accuses-rep-miller-meeks-of-hiding-income-assets/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         },
         {
           "title": "Ethics request over voter-registration address",
@@ -37384,7 +37392,8 @@
               "u": "https://littlevillagemag.com/mariannette-miller-meeks-doesnt-live-in-her-district/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         },
         {
           "title": "2020 election contest by Rita Hart",
@@ -37402,7 +37411,8 @@
               "u": "https://rollcall.com/2021/03/31/rita-hart-withdraws-challenge-to-iowa-house-race-result/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         }
       ],
       "ethicsSearched": "Searched news and official sources for STOCK Act late-filing reports, House Ethics Committee and OCE/Office of Congressional Conduct matters, financial-disclosure complaints, residency challenges and election contests involving Rep. Miller-Meeks; no STOCK Act late-trade reports were found.",
@@ -41829,7 +41839,8 @@
               "u": "https://washingtonexaminer.com/news/campaigns/nrcc-trolls-rep-kaptur-violated-law-she-voted-for"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "finding"
         }
       ],
       "ethicsSearched": "Searched news and official sources for STOCK Act late-disclosure reports, House Ethics Committee and Office of Congressional Conduct (formerly OCE) matters, FEC complaints, and court cases involving Rep. Kaptur.",
@@ -47430,7 +47441,8 @@
               "u": "https://www.yahoo.com/news/democratic-rep-vicente-gonzalez-texas-210248781.html"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "allegation"
         }
       ],
       "ethicsSearched": "Searched for STOCK Act late-disclosure reports (Business Insider and other news coverage, stock-trade trackers), House Ethics Committee and Office of Congressional Ethics matters, and criminal or civil cases involving Rep. Gonzalez; only the 2022 late stock-sale disclosure was documented by a credible outlet.",
@@ -51005,7 +51017,8 @@
               "u": "https://finance.yahoo.com/news/75-members-congress-violated-law-160918370.html"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "allegation"
         }
       ],
       "ethicsSearched": "Searched for STOCK Act late-disclosure reports (Business Insider and other news coverage, stock-trade trackers), House Ethics Committee and Office of Congressional Ethics matters, and criminal or civil cases involving Rep. Castor; only the Business Insider late-disclosure listing was documented by a credible outlet (partisan reports from the NRCC and Florida's Voice repeating the issue were not used as sources).",
@@ -60866,7 +60879,8 @@
               "u": "https://washingtonsun.com/money/james-talarico-campaign-money-excessive-contributions?redirected=notus_org"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -62604,7 +62618,8 @@
               "u": "https://www.fox26houston.com/news/texas-ken-paxton-felony-securities-fraud-dismissed"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         },
         {
           "title": "2023 impeachment by the Texas House",
@@ -62622,7 +62637,8 @@
               "u": "https://www.texastribune.org/2023/09/16/ken-paxton-impeachment-vote-deliberations/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         },
         {
           "title": "Whistleblower lawsuit by former top aides",
@@ -62640,7 +62656,8 @@
               "u": "https://www.kut.org/politics/2025-04-05/texas-attorney-general-ken-paxtons-former-aides-win-6-6-million-in-whistleblower-case"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "finding"
         },
         {
           "title": "Federal investigation of aides' bribery and abuse-of-office allegations",
@@ -62654,7 +62671,8 @@
               "u": "https://www.pbs.org/newshour/politics/doj-declined-to-prosecute-texas-attorney-general-in-final-weeks-of-bidens-term-ap-reports"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         },
         {
           "title": "State Bar of Texas disciplinary lawsuit over 2020 election suit",
@@ -62672,7 +62690,8 @@
               "u": "https://www.dallasnews.com/news/politics/2025/02/14/texas-supreme-court-dismisses-state-bar-ethics-complaint-against-ag-ken-paxton/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -64062,7 +64081,8 @@
               "u": "https://bridgemi.com/michigan-government/abdul-el-sayed-clears-eligibility-hurdle-bid-michigan-governor/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         },
         {
           "title": "Timing of 2026 personal financial disclosure",
@@ -64080,7 +64100,8 @@
               "u": "https://www.foxnews.com/politics/el-sayed-hot-seat-another-foreign-rental-property-300k-additional-income"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -67090,7 +67111,8 @@
               "u": "https://www.wral.com/report-cooper-didn-t-benefit-from-pipeline-actions-but-investigators-suggest-improper-influence/18780748/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         },
         {
           "title": "Libel suit over 2000 attorney general campaign ad (Boyce & Isley v. Cooper)",
@@ -67104,7 +67126,8 @@
               "u": "https://www.wral.com/archive/13576483/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -71691,7 +71714,8 @@
               "u": "https://thehill.com/homenews/campaign/508177-iowa-gop-house-candidate-pulls-multiple-sections-from-website-that-were/"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "finding"
         }
       ],
       "fecMissing": false,
@@ -77302,7 +77326,8 @@
               "u": "https://www.heraldnet.com/?p=330730"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -80919,7 +80944,8 @@
               "u": "https://chicago.suntimes.com/2019/9/18/20872873/illinois-gaming-board-chairman-political-contributions-don-tracy"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -81372,7 +81398,8 @@
               "u": "https://www.lpm.org/news/2014-02-18/kentucky-legislative-employee-fired-for-appearing-in-alison-lundergan-grimes-campaign-ad"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -81884,7 +81911,8 @@
               "u": "https://www.wkyufm.org/politics/2012-10-29/nastiest-congressional-race-ever-in-kentucky-coming-down-to-the-wire"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "finding"
         }
       ],
       "fecMissing": false,
@@ -84419,7 +84447,8 @@
               "u": "https://www.washingtontimes.com/news/2014/oct/30/jury-finds-alabama-republican-rep-barry-moore-not-/"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -88998,7 +89027,8 @@
               "u": "https://www.montanakaimin.com/news/um-settles-sex-discrimination-lawsuit-for-350-000-commits-to-title-ix-review/article_26450a36-b5c2-11ee-ac99-6fc5adaa7aab.html"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         },
         {
           "title": "Complaints over petition signature gathering",
@@ -89016,7 +89046,8 @@
               "u": "https://montanafreepress.org/2026/09/10/cascade-county-investigating-independent-signatures/"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -90038,7 +90069,8 @@
               "u": "https://wyofile.com/state-bar-declined-to-investigate-complaint-against-hageman/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -92375,7 +92407,8 @@
               "u": "https://oklahomawatch.org/2026/03/10/rep-kevin-hern-appears-to-have-tardy-stock-disclosures-his-office-disputes-hes-late/"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "allegation"
         },
         {
           "title": "Late-disclosed stock trades reported by Insider",
@@ -92393,7 +92426,8 @@
               "u": "https://news.yahoo.com/64-members-congress-violated-law-125839548.html?fr=sycsrp_catchall"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -95663,7 +95697,8 @@
               "u": "https://www.forbes.com/sites/zacheverson/2026/01/15/letlow-stock-act-julia-congress-ban-trading/"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "finding"
         },
         {
           "title": "FEC complaint filed by Cassidy campaign",
@@ -95677,7 +95712,8 @@
               "u": "https://pro.stateaffairs.com/la/news/cassidy-fec-complaint-letlow"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -98683,7 +98719,8 @@
               "u": "https://www.news5cleveland.com/news/politics/ohio-politics/firstenergy-corruption-case-ends-in-mistrial"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         },
         {
           "title": "Undisclosed JobsOhio gifts while lieutenant governor",
@@ -98697,7 +98734,8 @@
               "u": "https://ohiocapitaljournal.com/2026/09/25/ohio-republican-u-s-sen-jon-husted-took-gifts-from-jobsohio-financial-disclosures-show/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         },
         {
           "title": "Voting-residency dispute as state senator",
@@ -98715,7 +98753,8 @@
               "u": "https://www.daytondailynews.com/news/local/elections-board-remains-split-husted-residency/yzjEy1Kq7bI3VeeBPNMIsI/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -103441,7 +103480,8 @@
               "u": "https://www.nbcnews.com/politics/congress/sen-sherrod-brown-received-extra-property-tax-credit-rcna82048"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "finding"
         }
       ],
       "fecMissing": false,
@@ -105638,7 +105678,8 @@
               "u": "https://www.vice.com/en/article/nebraskas-governor-loves-the-death-penalty-so-much-it-got-him-sued/"
             }
           ],
-          "sev": "warn"
+          "sev": "warn",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -108422,7 +108463,8 @@
               "u": "https://nebraskapublicmedia.org/es/news/news-articles/us-senate-candidate-dan-osborn-faces-another-election-spending-complaint/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -109257,7 +109299,8 @@
               "u": "https://www.bangordailynews.com/2023/08/30/politics/gop-lawmaker-ethics-complaint-maine-democrat-troy-jackson-residency-allegations-n6hjn1me0n/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": true,
@@ -110107,7 +110150,8 @@
               "u": "https://alaskapublic.org/news/politics/washington-d-c/2026-03-30/gop-group-complains-peltola-spent-campaign-money-while-mum-about-running-for-office"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -111918,7 +111962,8 @@
               "u": "https://kansasreflector.com/2026/04/24/gop-ethics-complaint-says-kansas-city-area-pastor-improperly-used-church-resources/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -112408,7 +112453,8 @@
               "u": "https://flagpole.com/news/news-features/2026/09/14/mike-collins-many-controversies-explained/"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "investigation"
         }
       ],
       "fecMissing": false,
@@ -113772,7 +113818,8 @@
               "u": "https://washingtonsun.com/money/dozens-congressional-candidates-fail-file-financial-disclosures-complaint"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -117718,7 +117765,8 @@
               "u": "https://www.factdc.org/post/fact-urges-independent-ethics-commission-to-investigate-manny-rutinel-for-potential-ethics-violation"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
@@ -120464,7 +120512,8 @@
               "u": "https://www.news5cleveland.com/news/politics/ohio-politics/who-is-likely-incoming-ohio-house-speaker-derek-merrin"
             }
           ],
-          "sev": "neutral"
+          "sev": "neutral",
+          "status": "allegation"
         }
       ],
       "fecMissing": false,
