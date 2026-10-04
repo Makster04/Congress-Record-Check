@@ -317,7 +317,7 @@ function route(){
   else if(m[1]==='compare'){if(m[2])cmpCh=m[2]==='house'?'H':'S';renderCompare();}
   else if(m[1]==='method'){renderMethod();}
   else if(m[1]==='align'){renderAlign();}
-  else if(byId[m[1]]){const FOC={ethics:'rec-ethics',funders:'rec-funders',money:'rec-money'};const tb=m[2]==='superpacs'?'funding':FOC[m[2]]?'record':(m[2]||'latest');renderProfile(byId[m[1]],tb,FOC[m[2]]||null);}
+  else if(byId[m[1]]){const FOC={ethics:'rec-ethics',funders:'rec-funders',money:'rec-money'};const tb=m[2]==='superpacs'?'funding':FOC[m[2]]?'record':(m[2]||'overview');renderProfile(byId[m[1]],tb,FOC[m[2]]||null);}
   else if(m[2]==='latest'){window.RecordLive.standalone(app,m[1]);}
   else renderHome();
   window.scrollTo({top:0});
@@ -372,7 +372,7 @@ function renderHome(){
 }
 
 // ---------- profile ----------
-const TABS=[['latest','Latest records'],['overview','Overview'],['funding','Funding'],['record','Legislative record'],['statements','Statements vs. actions'],['align','Voter alignment']];
+const TABS=[['overview','Overview'],['latest','Latest records'],['funding','Funding'],['record','Legislative record'],['statements','Statements vs. actions'],['align','Voter alignment']];
 const tabsFor=s=>TABS;
 function renderProfile(s,tab,focus){
   app.innerHTML=`
@@ -405,40 +405,130 @@ function renderProfile(s,tab,focus){
 function tiles(items){return `<div class="tiles">${items.map(t=>`<div class="tile"><div class="l">${t[0]}</div><div class="v">${t[1]}</div><div class="d">${t[2]||''}</div></div>`).join('')}</div>`}
 const statedVotes=s=>CH[icH(s)].votes.filter(v=>s.id in v.pos&&!/not in office/i.test(v.pos[s.id])).length;
 
+// ---------- overview: five quick visuals and a short ethics list ----------
+const ovPct=(v,t)=>{const p=v/t*100;return p<0.5?'<1%':Math.round(p)+'%'};
+function ovCard(kicker,title,sub,body,foot,cls){
+  return `<section class="chart ov-card ${cls||''}"><div class="kicker">${kicker}</div><h3>${title}</h3><p class="sub">${sub}</p>${body}${foot?`<p class="ov-foot small muted">${foot}</p>`:''}</section>`;
+}
+// 1. where the campaign's money comes from: one bar, parts of FEC total receipts (none counted twice)
+function ovMoney(s){
+  const c=s.camp, T='Where the campaign’s money comes from';
+  if(c.missing)return ovCard('Campaign money',T,'Share of campaign funds raised, by source',`<div class="note"><b>No FEC financial report yet.</b> ${esc(c.note)}</div>`,`<a href="${fecCandUrl(s.fecCand)}" target="_blank" rel="noopener">FEC candidate page ↗</a>`,'ov-wide');
+  const split=c.itemized!=null&&c.unitemized!=null;
+  const defs=[
+    ...(split?[['Small donors','gifts of $200 or less','--s1',c.unitemized],['Larger individual donors','gifts over $200','--s2',c.itemized]]:[['Individual donors','size split not available','--s1',c.indiv]]),
+    ['PACs','political action committees','--s3',c.pac],
+    ['Party committees','','--s4',c.party],
+    ['Candidate’s own money and loans','','--s5',c.self],
+    ['Joint fundraising and other','transfers and other receipts','--muted',(c.transfers||0)+Math.max(0,c.other||0)],
+  ];
+  const segs=defs.map(([l,d,col,v])=>({l,d,col,v:Math.max(0,v||0)})).filter(x=>x.v>0);
+  const tot=segs.reduce((a,x)=>a+x.v,0)||1;
+  const top=segs.slice().sort((a,b)=>b.v-a.v)[0];
+  const rows=[...(split?[['Individuals, $200 or less',c.unitemized],['Individuals, over $200',c.itemized]]:[['Individuals',c.indiv]]),['PACs and other committees',c.pac],['Joint fundraising transfers',c.transfers],['Party committees',c.party],['Candidate’s own loans and contributions',c.self],['Other receipts',c.other==null?null:Math.max(0,c.other)]].filter(r=>r[1]!=null);
+  const body=`<div class="big" style="font-size:1.15rem">Largest source: ${esc(top.l.toLowerCase())}, ${ovPct(top.v,tot)}</div>
+    <div class="ov-stack" role="group" aria-label="Campaign funds raised, by source">${segs.map(x=>`<i style="flex:${x.v};background:var(${x.col})" data-tip="${esc(x.l)}: ${fmtFull(x.v)} (${ovPct(x.v,tot)})"></i>`).join('')}</div>
+    <ul class="ov-legend">${segs.map(x=>`<li><i style="background:var(${x.col})"></i><span>${esc(x.l)}${x.d?`<small class="muted">${esc(x.d)}</small>`:''}</span><b>${ovPct(x.v,tot)}</b><span class="v">${fmt$(x.v)}</span></li>`).join('')}</ul>
+    <details class="tv"><summary>Show as a table</summary><div class="tablewrap"><table><thead><tr><th>Source</th><th class="r">Amount</th><th class="r">Share</th></tr></thead><tbody>${rows.map(([l,v])=>`<tr><td>${esc(l)}</td><td class="r">${fmtFull(v)}</td><td class="r">${v>0?ovPct(v,c.receipts):'0%'}</td></tr>`).join('')}</tbody></table></div></details>`;
+  return ovCard('Campaign money',T,`Share of the ${fmtFull(c.receipts)} the campaign raised, ${period(c.start,c.end)}`,body,`FEC two-year committee summary · <a href="${esc(c.src)}" target="_blank" rel="noopener">source ↗</a> · <a href="#${s.id}-funding">Funding details →</a>`,'ov-wide');
+}
+// 2. outside money for and against: two bars on one scale, top groups named under each
+function ovOutside(s){
+  const o=s.out, f=o.for.total, a=o.against.total, T='Outside money for and against';
+  const sub=`Spending by outside groups, ${period(o.start,o.end)}`;
+  const foot=`Not money the campaign raised, and never added to it. ${o.multi?'':`“For” counts spending that supports ${esc(s.short)} or opposes the opponent. `}<a href="#${s.id}-funding">Every group and filing →</a>`;
+  if(!(f>0)&&!(a>0))return ovCard('Outside money',T,sub,`<div class="note">No outside spending for or against ${esc(s.short)} was reported through ${fmtDate(o.end)}.</div>`,foot);
+  const max=Math.max(f,a,1);
+  const col=(label,amt,list,cls)=>`<div class="ov-col"><div class="ov-amt">${fmt$(amt)}</div>
+    <div class="ov-plot">${amt>0?`<i class="${cls}" style="height:${Math.max(2,amt/max*100).toFixed(1)}%" data-tip="${esc(label)}: ${fmtFull(amt)}"></i>`:''}</div>
+    <div class="ov-collab">${esc(label)}</div>
+    ${list.length?`<ul class="ov-top">${list.map(x=>`<li><span>${esc(x.name)}<small class="muted">${CLS1[x.cls]||''}</small></span><b>${fmt$(x.amt)}</b></li>`).join('')}</ul>`:'<p class="small muted" style="margin:6px 0 0">No groups reported</p>'}</div>`;
+  const body=`<div class="ov-pair">${col(forLabel(s),f,topSpenders(s,'for',3),'for')}${col(agLabel(s),a,topSpenders(s,'against',3),'ag')}</div>${o.incomplete.length?`<p class="small" style="margin:10px 0 0">${flag('Incomplete data',o.incomplete.join(' '))}</p>`:''}`;
+  return ovCard('Outside money',T,sub,body,foot);
+}
+// 3. issue by issue against the viewer's own choices; no evidence is left blank, never scored as a mismatch
+function ovAlign(s){
+  const r=scoreFor(s), T='How they compare with your choices';
+  if(!r.nChosen)return ovCard('Your issues',T,'Issue by issue, never a single score',`<p class="small" style="margin:0 0 10px">Pick your positions on up to ${ISS.length} issues in My alignment and this shows where ${esc(s.short)}’s documented record matches you, differs, or has no evidence. Evidence available: ${esc(evidenceMix(s))}.</p><a class="cta" href="#align">Choose my issues</a>`,'');
+  const kind=x=>x.status==='none'?'none':x.agree===1?'match':x.agree===0?'differ':'mixed';
+  const SYM={match:'✓',differ:'✕',mixed:'◐',none:''};
+  const rows=r.rows.map(x=>({x,k:kind(x)}));
+  const n=k=>rows.filter(y=>y.k===k).length;
+  const txt=({x,k})=>{
+    if(k==='none')return 'No evidence';
+    const lead=k==='match'?'Matches you':k==='differ'?'Doesn’t match':`Mixed: ${x.match} of ${x.n} match`;
+    return lead+(x.status==='stated'?' <span class="muted">(stated position only)</span>':'');
+  };
+  const body=`<div class="row" style="margin-bottom:6px"><span class="chip good">✓ ${n('match')} match</span><span class="chip crit">✕ ${n('differ')} differ</span>${n('mixed')?`<span class="chip warn">◐ ${n('mixed')} mixed</span>`:''}<span class="chip ghost">${n('none')} no evidence</span></div>
+    <ul class="ov-iss">${rows.map(y=>`<li class="${y.k}"><span class="ov-mk ${y.k}" aria-hidden="true">${SYM[y.k]}</span><span>${esc(y.x.i.label)}</span><span class="r">${txt(y)}</span></li>`).join('')}</ul>`;
+  return ovCard('Your issues',T,`Your ${r.nChosen} chosen issue${r.nChosen===1?'':'s'}. Blank means no evidence, which is not counted as a mismatch.`,body,`Not a rating of the candidate. <a href="#${s.id}-align">Evidence for every issue →</a>`);
+}
+// 4. one line from most liberal to most conservative, the candidate among faint dots for the whole chamber
+function ovIdeo(s){
+  const it=ideoText(s), T='Where they sit politically';
+  if(!s.ideo)return ovCard('Politics',T,'Needs a congressional voting record',`<div class="big">No voting score</div><p class="small" style="margin:6px 0 0;color:var(--ink-2)">${esc(it.short)}. A position is shown only where there is a congressional voting record, and is never guessed.</p>`,`<a href="#${s.id}-record">Record and votes →</a>`,'ov-wide');
+  const C=icH(s);
+  return ovCard('Politics',T,`${esc(it.head)}. Each faint dot is one current ${CH[C].noun} (${DATA.pools[C].length} in all).`,`<div class="ideo ov-strip" id="ovstrip"></div>`,`DW-NOMINATE score from Voteview, ${s.ideo.dim1>0?'+':''}${s.ideo.dim1.toFixed(3)} on a −1 (liberal) to +1 (conservative) scale. <a href="#${s.id}-record">Full chart with names →</a>`,'ov-wide');
+}
+function drawStrip(el,s){
+  if(!el||!s.ideo)return;
+  const C=icH(s), pts=DATA.pools[C];
+  const W=Math.max(260,el.clientWidth), mL=12, mR=12, x0=-1, x1=1.05, lineY=48, H=96;
+  const X=v=>mL+(Math.max(x0,Math.min(x1,v))-x0)/(x1-x0)*(W-mL-mR);
+  const meIdx=pts.findIndex(p=>(s.bioguide&&p[3]===s.bioguide)||p[2]===s.name);
+  let g='';
+  pts.forEach((p,i)=>{if(i===meIdx)return;g+=`<circle class="f ${p[1]==='R'?'r':p[1]==='D'?'d':'i'}" cx="${X(p[0]).toFixed(1)}" cy="${(lineY+((i*37)%9-4)*1.5).toFixed(1)}" r="3.2"></circle>`;});
+  const mx=X(s.ideo.dim1), score=(s.ideo.dim1>0?'+':'')+s.ideo.dim1.toFixed(2);
+  const anchor=mx<W*.18?'start':mx>W*.82?'end':'middle';
+  const me=`<line class="guide" style="stroke-dasharray:none" x1="${mx}" x2="${mx}" y1="${lineY-30}" y2="${lineY-8}"></line><circle class="me ${s.party==='R'?'r':'d'}" cx="${mx}" cy="${lineY}" r="6.5" data-tip="${esc(s.name)} · ${score}"></circle><text class="me-lab" x="${mx}" y="${lineY-36}" text-anchor="${anchor}">${esc(s.short)} ${score}</text>`;
+  const ax=`<line class="axis" x1="${mL}" x2="${W-mR}" y1="${lineY}" y2="${lineY}"></line><text class="cap" x="${mL}" y="${H-6}">← More liberal</text><text class="cap" x="${W-mR}" y="${H-6}" text-anchor="end">More conservative →</text>`;
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(s.name)}'s DW-NOMINATE score ${s.ideo.dim1.toFixed(3)} among ${pts.length} ${CH[C].nouns}; ${esc(ideoText(s).head)}">${ax}${g}${me}</svg>`;
+  bindTips(el);
+}
+function mountStrip(id,s){const f=()=>drawStrip(document.getElementById(id),s);f();resizers.push(f);}
+// 5. do their words match their actions: a tally of checked statements that always shows how many were checked
+const WORD_GROUPS=[
+  ['Record supports it','good','✓',['consistent'],true],
+  ['Partly supported, or changed over time','warn','◐',['partial','changed'],true],
+  ['Record contradicts it','crit','✕',['contradiction'],true],
+  ['Unclear, or later events matter','neutral','◇',['unclear','outcome'],false],
+];
+function ovWords(s){
+  const T='Do their words match their actions?', N=s.statements.length;
+  if(!N)return ovCard('Words and actions',T,'Checked statements',`<div class="big">No statements checked</div>`,'');
+  const groups=WORD_GROUPS.map(([label,cls,icon,keys,always])=>({label,cls,icon,always,items:s.statements.filter(x=>keys.includes(x.assessment))}));
+  const body=`<div class="big">${N} statement${N===1?'':'s'} checked</div>
+    <div class="ov-tiles" role="group" aria-label="${N} checked statements, grouped by result">${groups.map(g=>g.items.map(x=>`<i class="${g.cls}" data-tip="${esc(x.topic)}: ${esc(g.label.toLowerCase())}">${g.icon}</i>`).join('')).join('')}</div>
+    <ul class="ov-tally">${groups.filter(g=>g.always||g.items.length).map(g=>`<li><span class="chip ${g.cls}">${g.icon}</span><span>${g.label}</span><b class="num">${g.items.length}</b></li>`).join('')}</ul>
+    <details class="tv"><summary>Show the statements</summary><ul class="list small" style="margin-top:8px">${groups.map(g=>g.items.map(x=>`<li>${esc(x.topic)} <span class="muted">· ${esc(g.label.toLowerCase())}</span></li>`).join('')).join('')}</ul></details>`;
+  return ovCard('Words and actions',T,`Only the statements that were checked, not everything ${esc(s.short)} has said.`,body,`<a href="#${s.id}-statements">Read the checks →</a>`);
+}
+// ethics: a short text list, never a chart, because an allegation, an investigation and a confirmed finding are very different things
+const ETH_TAG={finding:['Confirmed finding','crit'],investigation:['Investigation','warn'],allegation:['Allegation','neutral']};
+function ovEthics(s){
+  const items=s.ethics.filter(e=>e.outcome!=='None found');
+  const order=Object.keys(ETH_TAG), rank=e=>{const i=order.indexOf(e.status);return i<0?order.length:i};
+  const list=items.map((e,i)=>[e,i]).sort((a,b)=>rank(a[0])-rank(b[0])||a[1]-b[1]).map(x=>x[0]);
+  const body=list.length?`<ul class="ov-eths">${list.map(e=>{const [lab,cls]=ETH_TAG[e.status]||[e.type,'ghost'];return `<li class="ov-eth"><span class="chip ${cls}">${esc(lab)}</span><b>${esc(e.title)}</b> <span class="mono muted">${esc(e.date)}</span><div class="small muted ov-clamp" style="margin-top:4px">${esc(e.outcome)}</div></li>`}).join('')}</ul>
+    <p class="small muted" style="margin:10px 0 0"><b>Allegation:</b> a complaint or report with no official finding. <b>Investigation:</b> a formal inquiry, lawsuit or proceeding, whether pending, closed or ended without a finding against ${esc(s.short)}. <b>Confirmed finding:</b> a court, agency or ethics body found a violation or imposed a penalty, or ${esc(s.short)} admitted it.</p>`
+    :`<p class="small" style="margin:8px 0 0">No documented violations, penalties or findings located in the sources checked.</p>`;
+  return ovCard('Ethics','Ethics & compliance',`${list.length?`${list.length} item${list.length===1?'':'s'}, most certain first`:'Sources checked'}`,body,`<a href="#${s.id}-ethics">Details and sources →</a>`,'ov-top-align');
+}
+
 function paneOverview(s,pane){
-  const c=s.camp, o=s.out, it=ideoText(s);
-  const cnt={};s.statements.forEach(x=>cnt[x.assessment]=(cnt[x.assessment]||0)+1);
-  const eth=s.ethics.filter(e=>e.outcome!=='None found');
   const race=raceOf(s), riv=rivalsOf(s);
-  const tf=topSpenders(s,'for',3), ta=topSpenders(s,'against',3);
   pane.innerHTML=`
   <h2>At a glance</h2>
-  <p class="intro">The few facts that matter most, each with its period. Details and sources are in the tabs above.</p>
-  ${tiles([
-    s.ideo?['Voting record',`${s.party==='R'?Math.round(s.ideo.lo):Math.round(100-s.ideo.lo)}%`,s.party==='R'?`more conservative than this share of the ${CH[icH(s)].name}`:`more liberal than this share of the ${CH[icH(s)].name}`]:['Record',`<span style="font-size:1.15rem">${esc(REC_SHORT[s.recordType]||'—')}</span>`,esc(it.short)],
-    [term('receipts','Campaign funds raised'),c.missing?'—':fmt$(c.receipts),c.missing?'no FEC report filed yet':period(c.start,c.end)],
-    [term('ie','Outside spending ')+(o.multi?'supporting':'for'),fmt$(o.for.total),'independent expenditures, '+shortPer(o.end)+(o.incomplete.length?' · incomplete':'')],
-    [term('ie','Outside spending ')+(o.multi?'opposing':'against'),fmt$(o.against.total),'independent expenditures, '+shortPer(o.end)],
-  ])}
-  <p class="small muted" style="margin:-8px 0 14px">Outside spending is money other groups spent on the race. It is not part of what the campaign raised, and the two are never added together here. <a href="#${s.id}-funding">Funding details →</a></p>
-  ${scaleChart(s,true)}
+  <p class="intro">Five quick visuals and a short ethics list, each with its period. Details and sources are in the tabs above.</p>
+  <div class="ov-grid">
+    ${ovMoney(s)}
+    ${ovOutside(s)}
+    ${ovAlign(s)}
+    ${ovIdeo(s)}
+    ${ovWords(s)}
+    ${ovEthics(s)}
+  </div>
   <div class="cols" style="margin-top:14px">
-    <div class="card"><h3>Largest outside spenders</h3>
-      <p class="small muted" style="margin-top:4px">${period(o.start,o.end)}</p>
-      <p class="small" style="margin:8px 0 2px"><b>${esc(forLabel(s))}</b></p>${tf.length?`<ul class="list small">${tf.map(x=>`<li>${esc(x.name)} <span class="muted">(${CLS1[x.cls]})</span>: <b class="num">${fmt$(x.amt)}</b></li>`).join('')}</ul>`:'<p class="small muted">None reported</p>'}
-      <p class="small" style="margin:8px 0 2px"><b>${esc(agLabel(s))}</b></p>${ta.length?`<ul class="list small">${ta.map(x=>`<li>${esc(x.name)} <span class="muted">(${CLS1[x.cls]})</span>: <b class="num">${fmt$(x.amt)}</b></li>`).join('')}</ul>`:'<p class="small muted">None reported</p>'}
-      ${o.incomplete.length?`<p class="small" style="margin-top:6px">${flag('Incomplete data',o.incomplete.join(' '))}</p>`:''}
-      <p style="margin-top:10px"><a href="#${s.id}-funding">Every group, item and filing →</a></p></div>
-    <div class="card"><h3>Statements vs. actions</h3><p class="small muted" style="margin-top:4px">${s.statements.length} checks</p>
-      <div class="row" style="margin-top:8px">${Object.entries(cnt).map(([k,n])=>`<span class="chip ${ASSESS[k][0]}">${AICON[k]} ${n} ${ASSESS[k][1].toLowerCase()}</span>`).join('')}</div>
-      <ul class="list small" style="margin-top:10px">${s.statements.map(x=>`<li>${esc(x.topic)}</li>`).join('')}</ul>
-      <p style="margin-top:10px"><a href="#${s.id}-statements">Read the checks →</a></p></div>
-    <div class="card"><h3>Ethics & compliance</h3>
-      ${eth.length?`<ul class="list small" style="margin-top:8px">${eth.map(e=>`<li><span class="chip ghost">${esc(e.type)}</span> ${esc(e.title)}</li>`).join('')}</ul>`:`<p class="small" style="margin-top:8px">No documented violations, penalties or findings located in the sources checked.</p>`}
-      <p style="margin-top:10px"><a href="#${s.id}-ethics">Details and sources →</a></p></div>
-    <div class="card"><h3>Compared with your choices</h3>
-      ${(()=>{const r=scoreFor(s);return r.nChosen?`<p style="margin-top:8px">${scoreBadge(r)}</p><p class="small muted" style="margin-top:6px">${r.nCov} of your ${r.nChosen} chosen issues have evidence for ${esc(s.short)}. Not a rating of the candidate.</p>`:`<p class="small" style="margin-top:8px">Choose your positions on up to ${ISS.length} issues to see how ${esc(s.short)}'s documented record compares. Evidence available: ${esc(evidenceMix(s))}.</p>`})()}
-      <p style="margin-top:10px"><a href="#${s.id}-align">Issue-by-issue breakdown →</a></p></div>
     <div class="card"><h3>2026 race</h3>
       ${riv.length?`<ul class="list small" style="margin-top:8px">${riv.map(x=>`<li><a href="#${x.id}">${esc(x.name)}</a> (${x.party}${x.id===s.incumbent?', incumbent':''}): campaign funds ${campLine(x)}; outside spending for ${fmt$(x.out.for.total)}</li>`).join('')}</ul>`:'<p class="small muted">No profiled opponent.</p>'}
       ${race&&race.note?`<p class="small muted" style="margin-top:6px">${esc(race.note)}</p>`:''}
@@ -446,9 +536,8 @@ function paneOverview(s,pane){
     <div class="card"><h3>${s.cand?'Record':'Votes & bills'}</h3>
       ${s.cand?`<p class="small" style="margin-top:8px">${esc(REC_LABEL[s.recordType]||'')}. ${s.record.length} documented ${s.recordType==='state_legislator'?'votes and bills':s.recordType==='executive'?'official actions':'items'}${s.ideoKind==='house'?`, plus positions on ${statedVotes(s)} key House roll calls`:''}.</p><ul class="list small">${s.record.slice(0,3).map(r=>`<li>${esc(r.title)}</li>`).join('')}</ul>`:`<p class="small" style="margin-top:8px">Positions on ${statedVotes(s)} key ${CH[s.chamber].name} roll calls. ${s.sponsoredCount?`<b class="num">${s.sponsoredCount.toLocaleString()}</b> measures sponsored over a congressional career.`:''} ${s.bills.length} notable sponsored bills listed.</p>`}
       <p style="margin-top:10px"><a href="#${s.id}-record">Legislative record, money and votes →</a></p></div>
-  </div>
-  ${ideoBlock(s,'ideo1')}`;
-  mountIdeo('ideo1',s);
+  </div>`;
+  mountStrip('ovstrip',s);
   bindTips(pane);
 }
 
@@ -947,6 +1036,16 @@ function renderMethod(){
       <li>Outside spending is now counted for or against a candidate only when it names that candidate or the candidate's current opponent. $6.86 million spent opposing Graham Platner, who withdrew from the Maine race, had been counted as help for Sen. Collins; it is now listed separately.</li>
       <li>Spending dated before 2025 (2024-election ads filed late) is excluded; it had added about $330,000, mostly to three House races. Seven items filed twice with the same transaction ID ($243,601, mostly in Alaska) are now counted once.</li>
       <li>Every independent expenditure (${nRows.toLocaleString()} items) and every itemized PAC contribution can now be inspected on each Funding tab, with dates or report periods and links to the FEC filings.</li>
+    </ul>
+    <h2>The Overview page</h2>
+    <p>Each profile opens on its Overview: five small visuals and a short ethics list, each readable in a few seconds. Everything shown is also on a deeper tab, linked from the card.</p>
+    <ul class="list">
+      <li><b>Where the campaign's money comes from:</b> one bar splitting the FEC two-year total receipts into small donors (gifts of $200 or less, the FEC's "unitemized" individual contributions), larger individual donors (over $200), PACs and other committees, party committees, the candidate's own contributions and loans, and a last group for joint-fundraising transfers and other receipts. The groups add up to total receipts, so nothing is left out or counted twice. A campaign with no FEC report yet shows a note instead.</li>
+      <li><b>Outside money for and against:</b> two bars on one scale, using the same "for" and "against" totals as the Funding tab (see Outside spending below), with the three largest spenders named under each. It is never added to campaign money.</li>
+      <li><b>How they compare with your choices:</b> one row per issue you chose in My alignment. A check mark means every recorded item on the issue matches your side, a cross means none does, a half mark means the record is split, and an empty dashed circle means no evidence, which is never counted as a mismatch. No single percentage is shown. Until you choose issues, the card only invites you to.</li>
+      <li><b>Where they sit politically:</b> the candidate's DW-NOMINATE score as a dot among faint dots for every current member of their chamber. People with no congressional voting record show "No voting score" and are never placed on the line.</li>
+      <li><b>Do their words match their actions?:</b> the count of checked statements the record supports, those it contradicts, those partly supported or changed over time, and those unclear or affected by later events. It always states how many statements were checked, because a few checks are not a full picture of what someone has said.</li>
+      <li><b>Ethics:</b> a text list rather than a chart, because very different things should not look alike. Each item carries one tag, assigned from the entry's own sources. <b>Allegation:</b> a complaint or report with no official finding. <b>Investigation:</b> a formal inquiry, lawsuit or proceeding, whether pending, closed or ended without a finding against the person. <b>Confirmed finding:</b> a court, agency or ethics body found a violation or imposed a penalty, or the person admitted it. The outcome is shown beside each item, and the full entry with sources is in the Legislative record tab.</li>
     </ul>
     <h2>Who is covered</h2>
     <p><b>Senate incumbents:</b> six senators on the November 3, 2026 ballot, three Republicans and three Democrats, chosen as a bipartisan sample of competitive and safe seats. Two senators originally selected were replaced during research because they will not be on the ballot: Sen. Lindsey Graham (R-SC) died in July 2026 and Sen. Markwayne Mullin (R-OK) left the Senate for an administration post.</p>
