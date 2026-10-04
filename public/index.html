@@ -311,6 +311,65 @@ details.bd{margin-top:6px}details.bd summary{cursor:pointer;color:var(--accent);
 .mvgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media (max-width:760px){.mvgrid{grid-template-columns:1fr}}
 @media (max-width:560px){.bars,.hb,.hb.ch{display:block}.bars .r,.hb .r{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:end;margin-bottom:10px}.bars .track,.hb .trk{grid-column:1/-1;grid-row:2}.hb .lab b,.hb .lab small{white-space:normal}}
+/* ---- overview: five quick visuals + ethics list ---- */
+.ov-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
+.ov-grid .chart{margin:0}
+.ov-grid .ov-wide{grid-column:1/-1}
+.ov-grid .ov-top-align{align-self:start}
+@media (max-width:860px){.ov-grid{grid-template-columns:minmax(0,1fr)}}
+.ov-card .sub{margin-bottom:10px}
+.ov-foot{margin:12px 0 0}
+.ov-stack{display:flex;gap:2px;height:22px;margin:10px 0 12px}
+.ov-stack i{display:block;height:100%;min-width:2px}
+.ov-stack i:first-child{border-radius:4px 0 0 4px}
+.ov-stack i:last-child{border-radius:0 4px 4px 0}
+.ov-stack i:only-child{border-radius:4px}
+.ov-legend{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2px 28px;font-size:.9rem}
+.ov-legend li{display:grid;grid-template-columns:12px minmax(0,1fr) 3.4ch 5.5ch;gap:4px 10px;align-items:start;padding:4px 0}
+.ov-legend li>i{width:12px;height:12px;border-radius:3px;margin-top:.3em}
+.ov-legend small,.ov-top small{display:block;font-size:.76rem;line-height:1.25}
+.ov-legend b{text-align:right;font-variant-numeric:tabular-nums}
+.ov-legend .v{text-align:right;font-family:var(--font-mono);font-size:.78rem;color:var(--muted)}
+.ov-pair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+.ov-col{min-width:0}
+.ov-amt{font-family:var(--font-display);font-size:1.5rem;font-weight:800;letter-spacing:-.01em;line-height:1.1}
+.ov-plot{height:96px;display:flex;align-items:flex-end;margin-top:8px;border-bottom:1px solid var(--line-2)}
+.ov-plot i{display:block;width:min(56px,70%);border-radius:4px 4px 0 0}
+.ov-plot i.for{background:var(--s3)}
+.ov-plot i.ag{background:var(--s2)}
+.ov-collab{font-size:.86rem;font-weight:700;margin-top:6px}
+.ov-top{list-style:none;margin:6px 0 0;padding:0;font-size:.84rem}
+.ov-top li{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid var(--line)}
+.ov-top li span{min-width:0;overflow-wrap:anywhere}
+.ov-top li b{font-family:var(--font-mono);font-weight:500;font-size:.8rem;white-space:nowrap;align-self:start}
+.ov-iss{list-style:none;margin:0;padding:0}
+.ov-iss li{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:7px 0;border-top:1px solid var(--line);font-size:.9rem}
+.ov-iss .r{font-size:.8rem;color:var(--ink-2);text-align:right;max-width:15em}
+.ov-iss li.none .r{color:var(--muted)}
+.ov-mk{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.78rem}
+.ov-mk.match{background:var(--good-soft);color:var(--good)}
+.ov-mk.differ{background:var(--crit-soft);color:var(--crit)}
+.ov-mk.mixed{background:var(--warn-soft);color:var(--warn)}
+.ov-mk.none{border:1.5px dashed var(--line-2)}
+.ov-strip{margin-top:4px}
+.ov-strip circle.f.d{opacity:.3}
+.ov-strip circle.f.r{opacity:.3}
+.ov-strip circle.f.i{opacity:.4}
+.ov-tiles{display:flex;flex-wrap:wrap;gap:2px;margin:10px 0 12px}
+.ov-tiles i{display:grid;place-items:center;width:46px;height:30px;border-radius:4px;font-style:normal;font-weight:800}
+.ov-tiles i.good{background:var(--good-soft);color:var(--good)}
+.ov-tiles i.warn{background:var(--warn-soft);color:var(--warn)}
+.ov-tiles i.crit{background:var(--crit-soft);color:var(--crit)}
+.ov-tiles i.neutral{background:var(--neutral-soft);color:var(--neutral)}
+.ov-tally{list-style:none;margin:0;padding:0}
+.ov-tally li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:8px;align-items:center;padding:5px 0;border-top:1px solid var(--line);font-size:.9rem}
+.ov-tally .chip{justify-content:center}
+.ov-eths{list-style:none;margin:0;padding:0}
+.ov-eth{padding:9px 0;border-top:1px solid var(--line)}
+.ov-eth .chip{margin-right:6px;white-space:nowrap}
+.ov-eth .mono{white-space:nowrap}
+.ov-clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:560px){.ov-iss li{grid-template-columns:22px minmax(0,1fr)}.ov-iss .r{grid-column:2;text-align:left;max-width:none}.ov-legend li{grid-template-columns:12px minmax(0,1fr) 3.4ch 5ch}}
 </style>
 
 <div class="topbar"><div class="wrap">
