@@ -29,6 +29,12 @@ Each source is scheduled again 24 hours after completion, except individual roll
 
 Some snapshots can have different check and coverage dates. In particular, checking the FEC today does not create a newer campaign filing. Imported financial comparisons stay labeled as research snapshots; refreshed figures appear in **Latest records** so different reporting windows are not silently mixed.
 
+## Bundled snapshot
+
+`data/seed.json` holds published snapshots from a completed refresh, so a new install shows campaign, PAC, outside-spending, legislation and vote data immediately instead of waiting hours, and works without API keys. It is loaded only when `.local/records.sqlite` is new; an existing database is never overwritten. Seeded records keep their original check dates, so with API keys an old seed refreshes in the background on the normal schedule. A seed made for a different cycle, Congress or session is ignored.
+
+To update it, let the local server finish its refresh (every job on **Updates** has completed at least once), then run `npm run seed:export` and commit `data/seed.json`. The export stops if any job has not completed yet (`npm run seed:export -- --partial` exports what has), and refuses to write a file containing an API key.
+
 ## Profile tabs
 
 Each profile has six tabs: **Overview**; one tab per home-page grade (**Your match**, **Promises Delivered**, **Ethics**, **People Over Profit**), each opening with its letter, percentage and arithmetic, then the evidence; and **Campaign Finance**. Your match holds the alignment comparison and the voting record behind it (ideology, key votes, bills, state record, latest official bills and votes). Promises Delivered holds the statement checks. Ethics lists every entry with its tag and point cost. People Over Profit holds scored votes and the funders-vs.-votes comparisons. Campaign Finance holds where the money comes from, outside money (including the monthly chart and ratio), every PAC contribution and outside-spending item, and the latest official filings. Older links such as `#collins-record` or `#collins-funding` open the tab that now holds that content.
