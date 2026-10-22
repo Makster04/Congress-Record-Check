@@ -7,7 +7,9 @@
 #   {"<person id>": {"file": "data/portraits/<id>.jpg", "credit": "Photo: <who>, used with permission", "url": optional}}
 # For a photo whose cut-out keeps a halo of a light background, add "tighten": true (refit the edge to the photo's own
 # colors) and/or "choke": <px> (trim that many output pixels off the edge). For something wider than the frame on one
-# side, such as a hat brim, "nudge": <px> moves the portrait sideways (positive is right) without changing its size.
+# side, such as a hat brim, "nudge": <px> moves the portrait sideways (positive is right) without changing its size;
+# if it is wider than the whole frame, "zoom": <factor below 1> shrinks that portrait to fit.
+# A supplied photo that already has a transparent background (a PNG cut-out) keeps its own outline.
 # People with neither keep the initials circle.
 #
 # Each photo's background is removed with MediaPipe selfie segmentation, and the face is found with MediaPipe face
@@ -86,9 +88,14 @@ def extend(rgba, pad_b, pad_s, k):
 
 def measure(path, detector):
     """Eyes, and how much of the frame the photo covers once scaled (more head room and shoulders is better)."""
-    bgr = cv2.imread(path)
-    if bgr is None:
+    raw = cv2.imread(path, cv2.IMREAD_UNCHANGED)
+    if raw is None:
         return None
+    if raw.ndim == 2:
+        raw = cv2.cvtColor(raw, cv2.COLOR_GRAY2BGR)
+    bgr, own = raw[..., :3].copy(), None
+    if raw.shape[2] == 4 and (raw[..., 3] < 128).mean() > 0.05:  # already cut out: use its own transparency
+        own = raw[..., 3].astype(np.float32) / 255
     rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
     e = eyes(rgb, detector)
     if not e:
@@ -99,12 +106,14 @@ def measure(path, detector):
         f = 150 / gap
         bgr = cv2.resize(bgr, None, fx=f, fy=f, interpolation=cv2.INTER_AREA)
         rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        if own is not None:
+            own = cv2.resize(own, None, fx=f, fy=f, interpolation=cv2.INTER_AREA)
         (rx, ry), (lx, ly), gap = (rx * f, ry * f), (lx * f, ly * f), 150.0
         e = (rx, ry), (lx, ly)
     s = EYE_GAP / max(1.0, gap)
     cy = (ry + ly) / 2
     cover = min(cy * s, EYE_Y - 20) + min((rgb.shape[0] - cy) * s, H - EYE_Y)
-    return {'bgr': bgr, 'rgb': rgb, 'eyes': e, 'gap': gap, 'cover': cover}
+    return {'bgr': bgr, 'rgb': rgb, 'own': own, 'eyes': e, 'gap': gap, 'cover': cover}
 
 
 def tighten(bgr, mask, r):
@@ -133,12 +142,15 @@ def defringe(rgb, alpha, sigma):
 
 def cutout(m, segmenter, opts):
     bgr, rgb = m['bgr'], m['rgb']
-    mask = segmenter.process(rgb).segmentation_mask.astype(np.float32)
-    if opts.get('tighten'):
-        mask = tighten(bgr, mask, max(2, int(m['gap'] / 20)))
-    # Snap the soft mask to the photo's own edges (hair, collar), then firm it up.
-    mask = cv2.ximgproc.guidedFilter(guide=bgr, src=mask, radius=max(4, int(m['gap'] / 16)), eps=1e-4)
-    alpha = np.clip((mask - 0.35) / 0.3, 0, 1)
+    if m['own'] is not None:
+        alpha = m['own']
+    else:
+        mask = segmenter.process(rgb).segmentation_mask.astype(np.float32)
+        if opts.get('tighten'):
+            mask = tighten(bgr, mask, max(2, int(m['gap'] / 20)))
+        # Snap the soft mask to the photo's own edges (hair, collar), then firm it up.
+        mask = cv2.ximgproc.guidedFilter(guide=bgr, src=mask, radius=max(4, int(m['gap'] / 16)), eps=1e-4)
+        alpha = np.clip((mask - 0.35) / 0.3, 0, 1)
     # Keep only the person: drop loose specks of background the segmentation picked up.
     r = max(2, int(m['gap'] / 20))
     disk = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1))
@@ -147,7 +159,7 @@ def cutout(m, segmenter, opts):
     if n > 1:
         body = (lab == 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))).astype(np.uint8)
         alpha *= cv2.dilate(body, disk, iterations=2)
-    s = EYE_GAP / max(1.0, m['gap'])
+    s = EYE_GAP / max(1.0, m['gap']) * opts.get('zoom', 1)
     if opts.get('choke'):
         c = max(1, round(opts['choke'] / s))
         alpha = cv2.erode(alpha, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * c + 1, 2 * c + 1)))
