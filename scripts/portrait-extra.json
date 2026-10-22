@@ -54,5 +54,9 @@
     "credit": "Photo supplied by the site's editor for use on this site",
     "tighten": true,
     "choke": 2
+  },
+  "husted": {
+    "file": "data/portraits/husted.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
   }
 }
