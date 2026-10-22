@@ -75,9 +75,7 @@
   },
   "hamilton": {
     "file": "data/portraits/hamilton.jpg",
-    "credit": "Photo supplied by the site's editor for use on this site",
-    "tighten": true,
-    "choke": 2
+    "credit": "Photo supplied by the site's editor for use on this site"
   },
   "stelson": {
     "file": "data/portraits/stelson.jpg",
@@ -120,11 +118,10 @@
     "credit": "Photo supplied by the site's editor for use on this site"
   },
   "byrd": {
-    "file": "data/portraits/byrd.jpg",
+    "file": "data/portraits/byrd.png",
     "credit": "Photo supplied by the site's editor for use on this site",
-    "tighten": true,
-    "choke": 2,
-    "nudge": 40
+    "zoom": 0.85,
+    "nudge": 18
   },
   "thomas": {
     "file": "data/portraits/thomas.jpg",
@@ -134,9 +131,7 @@
   },
   "davis": {
     "file": "data/portraits/davis.jpg",
-    "credit": "Photo supplied by the site's editor for use on this site",
-    "tighten": true,
-    "choke": 2
+    "credit": "Photo supplied by the site's editor for use on this site"
   },
   "merrin": {
     "file": "data/portraits/merrin.jpg",
