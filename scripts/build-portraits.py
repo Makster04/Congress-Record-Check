@@ -6,7 +6,8 @@
 # for use here, are kept in data/portraits/ and listed in scripts/portrait-extra.json, which takes precedence:
 #   {"<person id>": {"file": "data/portraits/<id>.jpg", "credit": "Photo: <who>, used with permission", "url": optional}}
 # For a photo whose cut-out keeps a halo of a light background, add "tighten": true (refit the edge to the photo's own
-# colors) and/or "choke": <px> (trim that many output pixels off the edge).
+# colors) and/or "choke": <px> (trim that many output pixels off the edge). For something wider than the frame on one
+# side, such as a hat brim, "nudge": <px> moves the portrait sideways (positive is right) without changing its size.
 # People with neither keep the initials circle.
 #
 # Each photo's background is removed with MediaPipe selfie segmentation, and the face is found with MediaPipe face
@@ -52,9 +53,12 @@ def fetch(bioguide, size):
     return path, url
 
 
-def eyes(rgb, detector):
-    res = detector.process(rgb)
-    if not res.detections:
+def eyes(rgb, detectors):
+    for detector in detectors:  # the full-range model first, then the close-up one, which finds tightly framed faces
+        res = detector.process(rgb)
+        if res.detections:
+            break
+    else:
         return None
     # The largest face is the person; a smaller one can be a painting or poster behind them.
     d = max(res.detections, key=lambda d: d.location_data.relative_bounding_box.width)
@@ -155,7 +159,7 @@ def cutout(m, segmenter, opts):
     pad = int(H / s)
     k = int(m['gap'] * 0.35) | 1
     rgba = extend(np.dstack([rgb, (alpha * 255).astype(np.uint8)]), pad, pad, k)
-    t = np.float32([[s, 0, W / 2 - (cx + pad) * s], [0, s, EYE_Y - cy * s]])
+    t = np.float32([[s, 0, W / 2 + opts.get('nudge', 0) - (cx + pad) * s], [0, s, EYE_Y - cy * s]])
     out = cv2.warpAffine(rgba, t, (W, H), flags=cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC,
                          borderMode=cv2.BORDER_CONSTANT, borderValue=(0, 0, 0, 0))
     return Image.fromarray(out, 'RGBA')
@@ -170,7 +174,7 @@ def main():
     old = json.load(open(old_path, encoding='utf8'))['people'] if os.path.exists(old_path) else {}
     people, missing, listed = {}, [], set()
     seg = mp.solutions.selfie_segmentation.SelfieSegmentation(model_selection=0)
-    det = mp.solutions.face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
+    det = [mp.solutions.face_detection.FaceDetection(model_selection=m, min_detection_confidence=0.5) for m in (1, 0)]
     only = set(sys.argv[sys.argv.index('--only') + 1].split(',')) if '--only' in sys.argv else None
     for s in D['members'] + D.get('cands', []):
         if only is not None and s['id'] not in only:
