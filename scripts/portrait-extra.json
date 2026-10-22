@@ -58,5 +58,31 @@
   "husted": {
     "file": "data/portraits/husted.jpg",
     "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "bohannan": {
+    "file": "data/portraits/bohannan.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "rutinel": {
+    "file": "data/portraits/rutinel.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "conley": {
+    "file": "data/portraits/conley.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "tighten": true,
+    "choke": 2
+  },
+  "hamilton": {
+    "file": "data/portraits/hamilton.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "tighten": true,
+    "choke": 2
+  },
+  "stelson": {
+    "file": "data/portraits/stelson.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "tighten": true,
+    "choke": 2
   }
 }
