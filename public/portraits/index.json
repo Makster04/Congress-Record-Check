@@ -183,10 +183,30 @@
       "credit": "Official congressional portrait (public domain), via the unitedstates/images project",
       "src": "https://raw.githubusercontent.com/unitedstates/images/gh-pages/congress/450x550/P000619.jpg"
     },
+    "hamilton": {
+      "file": "portraits/hamilton.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
     "mcollins": {
       "file": "portraits/mcollins.webp",
       "credit": "Official congressional portrait (public domain), via the unitedstates/images project",
       "src": "https://raw.githubusercontent.com/unitedstates/images/gh-pages/congress/original/C001129.jpg"
+    },
+    "stelson": {
+      "file": "portraits/stelson.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "conley": {
+      "file": "portraits/conley.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "rutinel": {
+      "file": "portraits/rutinel.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "bohannan": {
+      "file": "portraits/bohannan.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
     }
   }
 }
