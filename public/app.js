@@ -870,13 +870,17 @@ function alCard(i){
     <div class="al-opts" role="radiogroup" aria-labelledby="alq-${i.id}">${AL_OPTS.map((o,j)=>`<button type="button" role="radio" aria-checked="${k===j}" data-k="${j}" class="${k===j?'on':''}"><span class="al-r" aria-hidden="true"></span>${o[2]}</button>`).join('')}</div></article>`;
 }
 function alList(){return alView.g?AL_ORDER.filter(i=>i.group===alView.g):AL_ORDER.slice(alView.page*AL_PAGE,alView.page*AL_PAGE+AL_PAGE);}
+// "Your matches so far": the closest records to your answers, or flipped to the furthest ("mismatches").
+let alLiveMode='match';
 function alLive(){
+  const mis=alLiveMode==='mismatch', title=mis?'Your mismatches so far':'Your matches so far';
+  const sw=`<div class="seg al-seg" role="group" aria-label="Show matches or mismatches"><button type="button" data-m="match" class="${mis?'':'active'}" aria-pressed="${!mis}">Top matches</button><button type="button" data-m="mismatch" class="${mis?'active':''}" aria-pressed="${mis}">Top mismatches</button></div>`;
   const counted=chosenIssues().length;
-  if(!counted)return `<h4>Your matches so far</h4><p class="small muted" style="margin:0">Answer a few questions${alAnswered()?' (Neutral answers are not counted)':''} to see how every candidate compares.</p>`;
-  const rows=ALL.map(s=>({s,r:scoreFor(s)})), graded=rows.filter(x=>x.r.score!=null).sort((a,b)=>b.r.score-a.r.score||a.s.name.localeCompare(b.s.name));
-  const top=graded.slice(0,6).map(({s,r})=>{const L=letter(r.score);return `<a class="al-lr" href="#${s.id}-align"><span class="chip ${s.party}">${s.party}</span><span class="al-ln">${esc(s.name)}<small>${esc(seatLabel(s))} ${s.chamber==='S'?'Senate':'House'}</small></span><b class="gr-${L}">${L}</b><span class="al-lp">${r.score}%</span></a>`}).join('');
-  return `<h4>Your matches so far</h4>${top||'<p class="small muted" style="margin:0">No one has enough evidence on your issues yet.</p>'}
-    <p class="al-foot">Top ${Math.min(6,graded.length)} of ${graded.length} graded · ${rows.length-graded.length} not graded yet. Based on your ${counted} answer${counted===1?'':'s'} that ${counted===1?"isn't":"aren't"} Neutral; a grade needs evidence on 3 of your issues. <button type="button" class="al-link" id="al-all">See every candidate ↓</button></p>`;
+  if(!counted)return `<h4>${title}</h4>${sw}<p class="small muted" style="margin:0">Answer a few questions${alAnswered()?' (Neutral answers are not counted)':''} to see how every candidate compares.</p>`;
+  const rows=ALL.map(s=>({s,r:scoreFor(s)})), graded=rows.filter(x=>x.r.score!=null).sort((a,b)=>(mis?a.r.score-b.r.score:b.r.score-a.r.score)||a.s.name.localeCompare(b.s.name));
+  const list=graded.slice(0,6).map(({s,r})=>{const L=letter(r.score);return `<a class="al-lr" href="#${s.id}-align"><span class="chip ${s.party}">${s.party}</span><span class="al-ln">${esc(s.name)}<small>${esc(seatLabel(s))} ${s.chamber==='S'?'Senate':'House'}</small></span><b class="gr-${L}">${L}</b><span class="al-lp">${r.score}%</span></a>`}).join('');
+  return `<h4>${title}</h4>${sw}${list||'<p class="small muted" style="margin:0">No one has enough evidence on your issues yet.</p>'}
+    <p class="al-foot">${mis?'Lowest':'Top'} ${Math.min(6,graded.length)} of ${graded.length} graded${mis?', furthest from your answers first':''} · ${rows.length-graded.length} not graded yet. Based on your ${counted} answer${counted===1?'':'s'} that ${counted===1?"isn't":"aren't"} Neutral; a grade needs evidence on 3 of your issues. <button type="button" class="al-link" id="al-all">See every candidate ↓</button></p>`;
 }
 function alResults(){
   const ch=chosenIssues();
@@ -920,7 +924,9 @@ function renderAlign(){
     $('#al-prev').disabled=alView.g?false:alView.page===0;
     $('#al-next').textContent=alView.g?(gi<AL_GROUPS.length-1?`Next: ${AL_GROUPS[gi+1][1]} →`:'See my results ↓'):(alView.page<pages-1?'Next →':'See my results ↓');};
   const drawQs=()=>{$('#al-qs').innerHTML=alList().map(alCard).join('');};
-  const drawLive=()=>{$('#al-live').innerHTML=alLive();const b=$('#al-all');if(b)b.addEventListener('click',()=>$('#al-results').scrollIntoView({behavior:'smooth'}));$('#alr').innerHTML=alResults();bindTips(app);};
+  const drawBox=focus=>{$('#al-live').innerHTML=alLive();const b=$('#al-all');if(b)b.addEventListener('click',()=>$('#al-results').scrollIntoView({behavior:'smooth'}));if(focus){const f=$(`#al-live [data-m="${focus}"]`);if(f)f.focus();}};
+  const drawLive=()=>{drawBox();$('#alr').innerHTML=alResults();bindTips(app);};
+  $('#al-live').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(!b||b.dataset.m===alLiveMode)return;alLiveMode=b.dataset.m;drawBox(alLiveMode);});
   const all=()=>{drawCats();drawTop();drawQs();drawLive();};
   $('#al-qs').addEventListener('click',e=>{
     const b=e.target.closest('button[data-k]');if(!b)return;
