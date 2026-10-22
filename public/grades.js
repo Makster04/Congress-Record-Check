@@ -27,8 +27,8 @@ export function ethicsScore(ethics){
   return Object.assign({pct:Math.max(0,100-cost)},n);
 }
 
-// People vs. profit: votes on bills marked by who gains, from a cited nonpartisan distributional analysis (vote.pvp = {yea:'people'|'profit', why, src}).
-// A Yea takes the marked side, a Nay the other; a missed vote counts for nothing.
+// People over profit: votes on bills marked by who gains, from a cited nonpartisan distributional analysis (vote.pvp = {yea:'people'|'profit', why, src}).
+// A Yea takes the marked side, a Nay the other; a missed vote counts for nothing. Higher is more for working people.
 export function pvpScore(votes,personId){
   let people=0,n=0;
   for(const v of votes||[]){
