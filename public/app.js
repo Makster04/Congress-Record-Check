@@ -1,5 +1,5 @@
 import {KV_MIN,leanOfVote,whyNotMarked,sideTaken,keyVoteRows,keyVoteScore} from './lean.js';
-import {MIN_CHECKS,MIN_PVP_VOTES,ETHICS_COST,letter,promiseScore,ethicsScore,pvpScore} from './grades.js';
+import {MIN_CHECKS,MIN_PVP_VOTES,ETHICS_COST,RATIO_EVEN,letter,promiseScore,ethicsScore,pvpScore,moneyRatio} from './grades.js';
 (function(){
 const $=s=>document.querySelector(s);
 const app=$('#app'), tip=$('#tip');
@@ -347,11 +347,21 @@ function reportCard(s){
   return `<div class="hc-rc">${gradeTile('Your match',m.score,md,GRADE_TIP.match)}${gradeTile('Promises delivered',pr.pct,pd,GRADE_TIP.prom,bar)}${gradeTile('Ethics',e.pct,ed,GRADE_TIP.eth)}${gradeTile('People vs. profit',v.pct,vd,GRADE_TIP.pvp)}</div>`;
 }
 function homeMonths(){const end=DATA.ie_asof.slice(0,7), out=[];let y=+end.slice(0,4), k=+end.slice(5,7);for(let i=0;i<7;i++){out.unshift(`${y}-${String(k).padStart(2,'0')}`);if(--k<1){k=12;y--;}}return out;}
+// For-to-against (or against-to-for) ratio over the charted months, beside the chart's title.
+function outRatio(f,a,s){
+  const q=moneyRatio(f,a);if(!q)return '';
+  const fw=s.out.multi?'supporting':'for', aw=s.out.multi?'opposing':'against', word=q.side==='for'?fw:aw, num=r=>r>=10?String(Math.round(r)):r.toFixed(1);
+  const text=q.side==='even'?'about even':q.r===null?`all ${word}`:`${num(q.r)} : 1 ${word}`;
+  const name=q.side==='even'?'Roughly even':q.side==='for'?'For-to-against ratio':'Against-to-for ratio';
+  const tip=`${name} for outside money in the months charted: ${fmtFull(f)} ${fw} ${s.short}, ${fmtFull(a)} ${aw}.`;
+  return `<span class="hc-ratio ${q.side[0]}" title="${esc(tip)}"><i class="sw" aria-hidden="true"></i>${text}</span>`;
+}
 function miniOutside(s){
   const months=homeMonths(), M=Object.fromEntries(months.map(m=>[m,{f:0,a:0}]));
   for(const r of IE.rows[s.race]||[]){const mo=r[0].slice(0,7);if(!M[mo])continue;const role=ieRole(s,r);if(role==='for')M[mo].f+=r[4];else if(role==='against')M[mo].a+=r[4];}
   const max=Math.max(0,...months.map(m=>Math.max(M[m].f,M[m].a)));
-  const head=`<div class="hc-mh"><span>Outside money by month</span><span>${MON[+months[0].slice(5,7)-1]} – <b>${fmtDate(DATA.ie_asof)}</b></span></div>`;
+  const F=months.reduce((t,m)=>t+M[m].f,0), A=months.reduce((t,m)=>t+M[m].a,0);
+  const head=`<div class="hc-mh"><span>Outside money by month${outRatio(F,A,s)}</span><span>${MON[+months[0].slice(5,7)-1]} – <b>${fmtDate(DATA.ie_asof)}</b></span></div>`;
   if(!max)return `<div class="hc-mini">${head}<p class="small muted" style="margin:4px 0 0">No outside spending reported in these months.</p></div>`;
   const W=280,H=60,zero=30,bw=26,gap=(W-7*bw)/6;let svg='';
   months.forEach((m,i)=>{const x=(i*(bw+gap)).toFixed(1),{f,a}=M[m];
@@ -1359,6 +1369,7 @@ function renderMethod(){
       <li><b>Ethics:</b> starts at 100 and subtracts ${ETHICS_COST.finding} for each confirmed finding, ${ETHICS_COST.open} for each open investigation, and ${ETHICS_COST.closed} for each investigation that ended without a finding against the person (an acquittal, dismissal, decision not to charge, ruling in their favor, or settlement without admission). "Open" includes investigations with no public resolution in the sources. Allegations, meaning complaints no official body acted on, are listed but cost nothing. The tags come from the Ethics section of each profile; every confirmed finding currently costs the same, whatever its size.</li>
       <li><b>People vs. profit:</b> the share of votes cast for the side of a bill that a cited nonpartisan distributional analysis (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) shows mostly helps lower- and middle-income households, rather than the wealthy and corporations. A Yea takes the marked side and a Nay the other. It needs ${MIN_PVP_VOTES} such votes. <b>No bills are marked yet</b>, so no one is graded: each bill needs its analysis cited before it counts.</li>
     </ul>
+    <p>Below the grades, each card charts outside money by month for the last seven months (spending for the candidate above the line, against below). The badge beside that title is the ratio of the larger side to the smaller over those same months: "2.1 : 1 for" means $2.10 was spent for the candidate for every $1 spent against, and "3.4 : 1 against" the reverse. It reads "all for" or "all against" when the other side spent nothing in those months, and "about even" when the two are within ${Math.round((RATIO_EVEN-1)*100)}% of each other. In races with more than two candidates it says "supporting" and "opposing". Hover over it for both dollar amounts. It covers independent expenditures reported for the general election, as in the chart, and not money given to the campaign.</p>
     <h2>Key votes marked liberal or conservative</h2>
     <p>Each key vote is checked against the issues it is coded to. Where an issue is a clear liberal-versus-conservative policy question in current U.S. politics, one side is marked liberal and the other conservative, as listed below. A bill is marked only if every issue it is coded to points the same way. Bills on unmarked issues, bipartisan deals, nominations and stopgap funding bills are left unmarked, and each unmarked bill shows its reason on the Legislative record tab. The marking is a judgment, kept in one place (<span class="mono">liberalSide</span> on each issue in <span class="mono">research.json</span>) so it can be reviewed and changed.</p>
     <ul class="list">${ISS.map(i=>i.liberalSide?`<li><b>${esc(i.label)}:</b> liberal side = "${esc(i[i.liberalSide])}"; conservative side = "${esc(i[i.liberalSide==='A'?'B':'A'])}".</li>`:`<li><b>${esc(i.label)}:</b> not marked. ${esc(i.leanNote)}</li>`).join('')}</ul>

@@ -40,3 +40,15 @@ export function pvpScore(votes,personId){
   }
   return {pct:n>=MIN_PVP_VOTES?Math.round(people/n*100):null,people,n};
 }
+
+// Outside money ratio beside the home card's monthly chart: the larger side to 1, over the months charted.
+// side is 'for', 'against' or 'even' (within RATIO_EVEN of 1 : 1); r is null when one side is zero ("all for" / "all against").
+export const RATIO_EVEN=1.1;
+export function moneyRatio(f,a){
+  f=Math.max(0,+f||0);a=Math.max(0,+a||0);
+  if(!f&&!a)return null;
+  if(!a)return {side:'for',r:null};
+  if(!f)return {side:'against',r:null};
+  const r=Math.max(f,a)/Math.min(f,a);
+  return {side:r<RATIO_EVEN?'even':f>a?'for':'against',r};
+}
