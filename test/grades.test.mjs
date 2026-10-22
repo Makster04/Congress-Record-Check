@@ -24,7 +24,7 @@ test('ethics: findings, open and closed investigations cost points; allegations 
   assert.equal(ethicsScore([e('investigation','closed')]).pct,100-ETHICS_COST.closed);
   assert.equal(ethicsScore(Array(9).fill(e('finding'))).pct,0);
 });
-test('people vs. profit: a Yea takes the marked side, a Nay the other, absences count for nothing; needs 3 votes',()=>{
+test('people over profit: a Yea takes the marked side, a Nay the other, absences count for nothing; needs 3 votes',()=>{
   const v=(yea,pos)=>({pvp:{yea},pos:{p:pos}});
   assert.deepEqual(pvpScore([v('people','Yea'),v('profit','Nay'),v('profit','Yea')],'p'),{pct:67,people:2,n:3});
   assert.equal(pvpScore([v('people','Yea'),v('people','Not Voting')],'p').pct,null);
@@ -33,7 +33,7 @@ test('people vs. profit: a Yea takes the marked side, a Nay the other, absences 
 test('every displayed investigation says whether it is open or closed',()=>{
   for(const s of people)for(const e of s.ethics)if(e.status==='investigation')assert.ok(['open','closed'].includes(e.stage),`${s.id}: ${e.title}`);
 });
-test('any bill marked for people vs. profit cites its source',()=>{
+test('any bill marked for people over profit cites its source',()=>{
   for(const v of data.votes.concat(data.hvotes))if(v.pvp){assert.ok(['people','profit'].includes(v.pvp.yea),v.id);assert.ok(v.pvp.src&&/^https:\/\//.test(v.pvp.src.u),v.id+' needs a source link');}
 });
 test('My alignment: every issue has a statement to agree or disagree with, and a known category',()=>{
