@@ -1,4 +1,5 @@
 import {KV_MIN,leanOfVote,whyNotMarked,sideTaken,keyVoteRows,keyVoteScore} from './lean.js';
+import {MIN_CHECKS,MIN_PVP_VOTES,ETHICS_COST,letter,promiseScore,ethicsScore,pvpScore} from './grades.js';
 (function(){
 const $=s=>document.querySelector(s);
 const app=$('#app'), tip=$('#tip');
@@ -324,6 +325,70 @@ function route(){
 }
 window.addEventListener('hashchange',route);
 
+// ---------- home cards: who they are, four A-F grades, campaign and outside money, outside money by month ----------
+const GRADE_TIP={
+  match:'How their documented record compares with the positions you chose in My alignment. Needs evidence on at least 3 of your issues.',
+  prom:`Checked statements: 1 if the record supports it, ½ if partly supported or changed, 0 if contradicted; ambiguous and outcome checks are left out. Needs ${MIN_CHECKS} clear checks.`,
+  eth:`Starts at 100: −${ETHICS_COST.finding} per confirmed finding, −${ETHICS_COST.open} per open investigation, −${ETHICS_COST.closed} per investigation closed without a finding. Allegations are listed but not scored.`,
+  pvp:`Votes on bills that a cited nonpartisan analysis shows mostly help lower- and middle-income households, or the wealthy and corporations. Needs ${MIN_PVP_VOTES} such votes.`
+};
+const initials=n=>{const w=n.replace(/\b(Jr|Sr|III|II)\b\.?/g,'').split(/\s+/).filter(x=>/^[A-Z][a-z'-]/.test(x));return ((w[0]||'?')[0]+(w.length>1?w[w.length-1][0]:'')).toUpperCase()};
+function gradeTile(label,pct,detail,tip,extra=''){
+  const g=pct==null?null:letter(pct);
+  return `<div class="hc-gt" title="${esc(tip)}"><div class="hc-gl">${label}</div><div class="hc-gv">${g?`<b class="gr-${g}">${g}</b><span>${pct}%</span>`:'<span class="hc-ng">Not graded</span>'}</div>${extra}<div class="hc-gd">${detail}</div></div>`;
+}
+function reportCard(s){
+  const m=scoreFor(s), pr=promiseScore(s.statements), e=ethicsScore(s.ethics), v=pvpScore(DATA.votes.concat(DATA.hvotes),s.id);
+  const md=!m.nChosen?'Choose issues in My alignment':m.score==null?`evidence on ${m.nCov} of ${m.nChosen} issues`:`${m.nCov} of your ${m.nChosen} issues`;
+  const bar=pr.pct!=null?`<div class="hc-seg" aria-hidden="true">${pr.kept?`<i style="flex:${pr.kept};background:var(--good)"></i>`:''}${pr.half?`<i style="flex:${pr.half};background:var(--warn)"></i>`:''}${pr.broken?`<i style="flex:${pr.broken};background:var(--crit)"></i>`:''}</div>`:'';
+  const pd=pr.pct!=null?`${pr.kept} of ${pr.clear} kept`:pr.total?`${pr.clear} of ${MIN_CHECKS} clear checks`:'no checks yet';
+  const ed=[e.finding&&`${e.finding} finding${e.finding>1?'s':''}`,e.open&&`${e.open} open inquir${e.open>1?'ies':'y'}`,e.closed&&`${e.closed} closed inquir${e.closed>1?'ies':'y'}`,e.allegation&&`${e.allegation} allegation${e.allegation>1?'s':''}`].filter(Boolean).join(' · ')||'none located';
+  const vd=v.pct!=null?`${v.people} of ${v.n} votes for people`:v.n?`${v.n} of ${MIN_PVP_VOTES} scored bills`:'no bills scored yet';
+  return `<div class="hc-rc">${gradeTile('Your match',m.score,md,GRADE_TIP.match)}${gradeTile('Promises delivered',pr.pct,pd,GRADE_TIP.prom,bar)}${gradeTile('Ethics',e.pct,ed,GRADE_TIP.eth)}${gradeTile('People vs. profit',v.pct,vd,GRADE_TIP.pvp)}</div>`;
+}
+function homeMonths(){const end=DATA.ie_asof.slice(0,7), out=[];let y=+end.slice(0,4), k=+end.slice(5,7);for(let i=0;i<7;i++){out.unshift(`${y}-${String(k).padStart(2,'0')}`);if(--k<1){k=12;y--;}}return out;}
+function miniOutside(s){
+  const months=homeMonths(), M=Object.fromEntries(months.map(m=>[m,{f:0,a:0}]));
+  for(const r of IE.rows[s.race]||[]){const mo=r[0].slice(0,7);if(!M[mo])continue;const role=ieRole(s,r);if(role==='for')M[mo].f+=r[4];else if(role==='against')M[mo].a+=r[4];}
+  const max=Math.max(0,...months.map(m=>Math.max(M[m].f,M[m].a)));
+  const head=`<div class="hc-mh"><span>Outside money by month</span><span>${MON[+months[0].slice(5,7)-1]} – <b>${fmtDate(DATA.ie_asof)}</b></span></div>`;
+  if(!max)return `<div class="hc-mini">${head}<p class="small muted" style="margin:4px 0 0">No outside spending reported in these months.</p></div>`;
+  const W=280,H=60,zero=30,bw=26,gap=(W-7*bw)/6;let svg='';
+  months.forEach((m,i)=>{const x=(i*(bw+gap)).toFixed(1),{f,a}=M[m];
+    if(f>0){const h=Math.max(1.5,f/max*(zero-2));svg+=`<rect class="hc-f" x="${x}" y="${(zero-h).toFixed(1)}" width="${bw}" height="${h.toFixed(1)}"></rect>`;}
+    if(a>0){const h=Math.max(1.5,a/max*(H-zero-2));svg+=`<rect class="hc-a" x="${x}" y="${zero+1}" width="${bw}" height="${h.toFixed(1)}"></rect>`;}});
+  svg+=`<line class="hc-z" x1="0" x2="${W}" y1="${zero}" y2="${zero}"></line>`;
+  const label=months.map(m=>{const o=M[m];return `${monLabel(m)}: ${fmt$(o.f)} for, ${fmt$(o.a)} against`}).join('; ');
+  return `<div class="hc-mini">${head}<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Outside spending by month. ${esc(label)}">${svg}</svg><div class="hc-ms"><span><i class="sw" style="background:var(--s3)"></i>${s.out.multi?'supporting':'for'}</span><span><i class="sw" style="background:var(--s2)"></i>${s.out.multi?'opposing':'against'}</span><span>tallest month ${fmt$(max)}</span></div></div>`;
+}
+function homeCard(s){
+  const c=s.camp, o=s.out, it=ideoText(s), race=raceOf(s), riv=rivalsOf(s);
+  const ideo=s.cand&&!s.ideo&&s.ideoKind!=='former_text'&&s.ideoKind!=='state'?`No voting score · ${REC_LABEL[s.recordType]||it.short}`:it.short;
+  const sub=s.cand?`${s.openSeat?'Open seat':s.term} · ${s.since}`:`In the ${CH[s.chamber].name} since ${String(s.since).split(' (')[0]} · ${s.term}`;
+  return `<article class="card sen-card hc" tabindex="0" data-id="${s.id}" role="link" aria-label="Open profile of ${esc(s.name)}">
+    <div class="hc-top"><div class="hc-av ${s.party}" aria-hidden="true">${initials(s.name)}</div><div class="hc-who">
+      <div class="row" style="gap:5px"><span class="chip ${s.party}">${s.party} · ${esc(seatLabel(s))}</span><span class="chip ch">${chipCh(s)}</span></div>
+      <div class="name">${esc(s.name)}</div><div class="hc-sub">${esc(sub)}</div></div></div>
+    <div class="hc-ideo">${esc(ideo)}</div>
+    ${reportCard(s)}
+    <div class="hc-money">
+      <div class="hc-mt">${c.missing?'<b class="hc-na">Not yet reported</b><span>Campaign funds raised</span><small>no FEC report filed yet</small>':`<b>${fmt$(c.receipts)}</b><span>Campaign funds raised</span><small>${shortPer(c.end)}</small>`}</div>
+      <div class="hc-mt"><b class="hc-two"><i class="sw" style="background:var(--s3)"></i>${fmt$(o.for.total)} <em>${o.multi?'supporting':'for'}</em><br><i class="sw" style="background:var(--s2)"></i>${fmt$(o.against.total)} <em>${o.multi?'opposing':'against'}</em></b><span>Outside money</span><small>${shortPer(o.end)}</small></div>
+    </div>
+    ${miniOutside(s)}
+    <div class="hc-ft"><span>${race?esc(race.label):''}</span><span class="hc-vs">${riv.length?'vs. '+esc(riv.map(x=>x.short).join(', ')):'No profiled opponent'}</span></div>
+  </article>`;
+}
+const gradeHow=()=>`<section class="hc-how" aria-labelledby="hc-how-h"><h2 id="hc-how-h" style="font-size:1.05rem">How the grades work</h2>
+  <div class="hc-howg">
+    <div><h3>Your match</h3><p>${GRADE_TIP.match} It uses your own choices, saved only in this browser.</p></div>
+    <div><h3>Promises delivered</h3><p>${GRADE_TIP.prom}</p></div>
+    <div><h3>Ethics</h3><p>${GRADE_TIP.eth}</p></div>
+    <div><h3>People vs. profit</h3><p>${GRADE_TIP.pvp}</p></div>
+    <div><h3>Grade scale</h3><p><b class="gr-A">A</b> 90–100 · <b class="gr-B">B</b> 80–89 · <b class="gr-C">C</b> 70–79 · <b class="gr-D">D</b> 60–69 · <b class="gr-F">F</b> below 60. "Not graded" means too little evidence, never a zero. <a href="#method">Full rules</a></p></div>
+  </div></section>`;
+let homeSort='';
+
 // ---------- home ----------
 function renderHome(){
   const nS=ALL.filter(s=>s.chamber==='S'&&(!s.cand||s.senInc)).length, nH=MEM.filter(s=>s.chamber==='H').length, nC=CANDS.filter(s=>!s.senInc).length, nComp=DATA.races.filter(r=>r.chamber==='S'&&r.competitive).length;
@@ -331,13 +396,15 @@ function renderHome(){
   <section class="hero">
     <div class="asof">Research snapshot · ${esc(DATA.asof)}</div>
     <h1 style="margin-top:8px">What they said. What they did. Who paid for it.</h1>
-    <p class="lede">${nS} senators and ${nH} House members on the November 3, 2026 ballot, their ${CANDS.filter(c=>!c.openSeat&&!c.senInc).length} opponents, and ${CANDS.filter(c=>c.openSeat).length} nominees for ${DATA.races.filter(r=>r.open).length} open Senate seats: ${DATA.races.length} races, including all ${nComp} Senate races rated competitive by Cook, Inside Elections or Sabato. Profiled from official records: FEC filings, roll-call votes, state legislative records, ethics findings and court records. Every profile shows the voting or official record, the money the campaign raised, outside groups' spending for and against the candidate (kept separate), and statements checked against actions. Every entry links to its source.</p>
+    <p class="lede">${nS} senators and ${nH} House members on the November 3, 2026 ballot, their ${CANDS.filter(c=>!c.openSeat&&!c.senInc).length} opponents, and ${CANDS.filter(c=>c.openSeat).length} nominees for ${DATA.races.filter(r=>r.open).length} open Senate seats: ${DATA.races.length} races, including all ${nComp} Senate races rated competitive by Cook, Inside Elections or Sabato. Profiled from official records: FEC filings, roll-call votes, state legislative records, ethics findings and court records. Every profile shows the voting or official record, the money the campaign raised, outside groups' spending for and against the candidate (kept separate), and statements checked against actions. Every entry links to its source. Each card grades four things from A to F, with the percentage beside each, and says "Not graded" rather than guessing when the evidence is thin.</p>
     <div class="toolbar">
       <div class="seg" id="chs" role="group" aria-label="Chamber"><button data-c="" class="${homeCh===''?'active':''}">All ${ALL.length}</button><button data-c="S" class="${homeCh==='S'?'active':''}">Senators</button><button data-c="H" class="${homeCh==='H'?'active':''}">House</button><button data-c="C" class="${homeCh==='C'?'active':''}">Challengers & candidates</button></div>
       <div class="search"><input id="q" type="search" placeholder="Search by name, state or district" aria-label="Search members"></div>
+      <label class="small muted">Sort <select id="hsort" aria-label="Sort candidates"><option value="">Default</option><option value="out">Most outside money</option><option value="camp">Most campaign money</option><option value="name">Name</option></select></label>
     </div>
   </section>
-  <div class="grid" id="cards"></div>
+  <div class="grid hc-grid" id="cards"></div>
+  ${gradeHow()}
   <section class="section">
     <div class="cols">
       <div class="card"><h3>Head-to-head races</h3><p class="small" style="margin-top:6px">Each candidate next to their 2026 opponents: campaign funds, cash on hand, and outside groups' spending for and against each side, shown separately.</p><a class="cta" href="#races">See the ${DATA.races.length} races</a></div>
@@ -349,23 +416,13 @@ function renderHome(){
   const draw=q=>{
     q=(q||'').trim().toLowerCase();
     const list=ALL.filter(s=>(!homeCh||(homeCh==='C'?(s.cand&&!s.senInc):((!s.cand||s.senInc)&&s.chamber===homeCh)))&&(!q||[s.name,s.state,s.stateName,s.district||'',s.cand?(s.openSeat?'senate candidate open seat':'challenger '+(s.chamber==='S'?'senate':'house')):s.chamber==='S'?'senate senator':'house representative',partyName(s.party)].join(' ').toLowerCase().includes(q)));
-    cards.innerHTML=list.map(s=>{
-      const cons=s.statements.filter(x=>x.assessment==='consistent').length;
-      const it=ideoText(s);
-      return `<article class="card sen-card" tabindex="0" data-id="${s.id}" role="link" aria-label="Open profile of ${esc(s.name)}">
-        <div class="row"><span class="chip ch">${chipCh(s)}</span><span class="chip ${s.party}">${partyName(s.party)} · ${esc(seatLabel(s))}</span><span class="chip ghost">${esc(s.cand?(s.openSeat?'Open seat':s.term):s.term)}</span></div>
-        <div class="name">${esc(s.name)}</div>
-        <div class="facts">
-          <div><span>${s.cand&&!s.ideo?'Record':'Voting record'}</span><b>${esc(s.cand&&!s.ideo&&s.ideoKind!=='former_text'&&s.ideoKind!=='state'?(REC_LABEL[s.recordType]||it.short):it.short)}</b></div>
-          <div><span>Campaign funds raised</span><b>${s.camp.missing?'Not yet reported':fmt$(s.camp.receipts)}</b><small>${s.camp.missing?'no FEC report filed':shortPer(s.camp.end)}</small></div>
-          <div><span>Outside spending ${s.out.multi?'supp. / opp.':'for / against'}</span><b>${fmt$(s.out.for.total)} / ${fmt$(s.out.against.total)}</b><small>${shortPer(s.out.end)}</small></div>
-          <div><span>Statement checks</span><b>${s.statements.length} (${cons} consistent)</b></div>
-        </div>
-        <div class="small muted">${s.cand?esc(s.since):`In the ${CH[s.chamber].name} since ${esc(String(s.since).split(' (')[0])} · ${esc(s.roles.split(';')[0])}`}</div>
-      </article>`;}).join('')||`<p class="muted">No one matches that search. This release covers ${ALL.length} people in ${DATA.races.length} races; the methodology page explains how they were chosen.</p>`;
+    const key={out:s=>-(s.out.for.total+s.out.against.total),camp:s=>s.camp.missing?1:-s.camp.receipts,name:s=>s.name.split(' ').pop()+' '+s.name}[homeSort];
+    if(key)list.sort((x,y)=>{const a=key(x),b=key(y);return typeof a==='number'?a-b:String(a).localeCompare(String(b))});
+    cards.innerHTML=list.map(homeCard).join('')||`<p class="muted">No one matches that search. This release covers ${ALL.length} people in ${DATA.races.length} races; the methodology page explains how they were chosen.</p>`;
   };
   draw('');
   $('#q').addEventListener('input',e=>draw(e.target.value));
+  const hs=$('#hsort');hs.value=homeSort;hs.addEventListener('change',e=>{homeSort=e.target.value;draw($('#q').value);});
   $('#chs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;homeCh=b.dataset.c;$('#chs .active').classList.remove('active');b.classList.add('active');draw($('#q').value);});
   cards.addEventListener('click',e=>{const c=e.target.closest('.sen-card');if(c)location.hash=c.dataset.id;});
   cards.addEventListener('keydown',e=>{const c=e.target.closest('.sen-card');if(c&&(e.key==='Enter'||e.key===' ')){e.preventDefault();location.hash=c.dataset.id;}});
@@ -1203,6 +1260,14 @@ function renderMethod(){
       <li><b>Where they sit politically:</b> the candidate's DW-NOMINATE score as a dot among faint dots for every current member of their chamber. People with no congressional voting record show "No voting score" and are never placed on the line. Below it, a second chart shows how the candidate voted on the bills marked liberal or conservative (next section).</li>
       <li><b>Do their words match their actions?:</b> the count of checked statements the record supports, those it contradicts, those partly supported or changed over time, and those unclear or affected by later events. It always states how many statements were checked, because a few checks are not a full picture of what someone has said.</li>
       <li><b>Ethics:</b> a text list rather than a chart, because very different things should not look alike. Each item carries one tag, assigned from the entry's own sources. <b>Allegation:</b> a complaint or report with no official finding. <b>Investigation:</b> a formal inquiry, lawsuit or proceeding, whether pending, closed or ended without a finding against the person. <b>Confirmed finding:</b> a court, agency or ethics body found a violation or imposed a penalty, or the person admitted it. The outcome is shown beside each item, and the full entry with sources is in the Legislative record tab.</li>
+    </ul>
+    <h2 id="m-grades">Grades on the home page</h2>
+    <p>Each home-page card grades four things from A to F, with the percentage beside it: A is 90–100, B 80–89, C 70–79, D 60–69 and F below 60. A grade appears only with enough evidence; otherwise the card says "Not graded", which is never a zero. The rules live in one file (<span class="mono">public/grades.js</span>), and the inputs are the same records shown on each profile.</p>
+    <ul class="list">
+      <li><b>Your match:</b> the Voter alignment score for the positions you chose in My alignment (see Voter alignment below). It needs evidence on at least 3 of your issues and half of your total importance, and uses only your own choices, saved in your browser.</li>
+      <li><b>Promises delivered:</b> from the Statements vs. actions checks. A check counts 1 if the record supports what was said, ½ if partly supported or changed over time, and 0 if contradicted; ambiguous checks and outcome checks are left out. It needs ${MIN_CHECKS} such checks. The checks cover stated positions as well as campaign pledges; checks that are specifically promises are not yet tagged separately.</li>
+      <li><b>Ethics:</b> starts at 100 and subtracts ${ETHICS_COST.finding} for each confirmed finding, ${ETHICS_COST.open} for each open investigation, and ${ETHICS_COST.closed} for each investigation that ended without a finding against the person (an acquittal, dismissal, decision not to charge, ruling in their favor, or settlement without admission). "Open" includes investigations with no public resolution in the sources. Allegations, meaning complaints no official body acted on, are listed but cost nothing. The tags come from the Ethics section of each profile; every confirmed finding currently costs the same, whatever its size.</li>
+      <li><b>People vs. profit:</b> the share of votes cast for the side of a bill that a cited nonpartisan distributional analysis (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) shows mostly helps lower- and middle-income households, rather than the wealthy and corporations. A Yea takes the marked side and a Nay the other. It needs ${MIN_PVP_VOTES} such votes. <b>No bills are marked yet</b>, so no one is graded: each bill needs its analysis cited before it counts.</li>
     </ul>
     <h2>Key votes marked liberal or conservative</h2>
     <p>Each key vote is checked against the issues it is coded to. Where an issue is a clear liberal-versus-conservative policy question in current U.S. politics, one side is marked liberal and the other conservative, as listed below. A bill is marked only if every issue it is coded to points the same way. Bills on unmarked issues, bipartisan deals, nominations and stopgap funding bills are left unmarked, and each unmarked bill shows its reason on the Legislative record tab. The marking is a judgment, kept in one place (<span class="mono">liberalSide</span> on each issue in <span class="mono">research.json</span>) so it can be reviewed and changed.</p>

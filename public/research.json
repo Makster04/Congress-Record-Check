@@ -227,7 +227,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         },
         {
           "title": "STOCK Act periodic transaction reports",
@@ -27016,7 +27017,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "open"
         },
         {
           "title": "Jan. 6 committee subpoena and Ethics Committee referral",
@@ -27035,7 +27037,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "open"
         }
       ],
       "ethicsSearched": "Searched news and official sources for STOCK Act late-filing reports, House Ethics Committee and OCE matters (including the Jan. 6 committee referral), and court proceedings over the FBI seizure of his phone; no STOCK Act late-disclosure reports were found.",
@@ -37418,7 +37421,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         }
       ],
       "ethicsSearched": "Searched news and official sources for STOCK Act late-filing reports, House Ethics Committee and OCE/Office of Congressional Conduct matters, financial-disclosure complaints, residency challenges and election contests involving Rep. Miller-Meeks; no STOCK Act late-trade reports were found.",
@@ -60886,7 +60890,8 @@
             }
           ],
           "sev": "warn",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "open"
         }
       ],
       "fecMissing": false,
@@ -62625,7 +62630,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         },
         {
           "title": "2023 impeachment by the Texas House",
@@ -62644,7 +62650,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         },
         {
           "title": "Whistleblower lawsuit by former top aides",
@@ -62678,7 +62685,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         },
         {
           "title": "State Bar of Texas disciplinary lawsuit over 2020 election suit",
@@ -62697,7 +62705,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         }
       ],
       "fecMissing": false,
@@ -64088,7 +64097,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         },
         {
           "title": "Timing of 2026 personal financial disclosure",
@@ -67118,7 +67128,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         },
         {
           "title": "Libel suit over 2000 attorney general campaign ad (Boyce & Isley v. Cooper)",
@@ -67133,7 +67144,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         }
       ],
       "fecMissing": false,
@@ -77339,7 +77351,8 @@
             }
           ],
           "sev": "warn",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         }
       ],
       "fecMissing": false,
@@ -80963,7 +80976,8 @@
             }
           ],
           "sev": "warn",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         }
       ],
       "fecMissing": false,
@@ -84472,7 +84486,8 @@
             }
           ],
           "sev": "warn",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         }
       ],
       "fecMissing": false,
@@ -89055,7 +89070,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         },
         {
           "title": "Complaints over petition signature gathering",
@@ -89074,7 +89090,8 @@
             }
           ],
           "sev": "warn",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "open"
         }
       ],
       "fecMissing": false,
@@ -98790,7 +98807,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         }
       ],
       "fecMissing": false,
@@ -105715,7 +105733,8 @@
             }
           ],
           "sev": "warn",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "closed"
         }
       ],
       "fecMissing": false,
@@ -112496,7 +112515,8 @@
             }
           ],
           "sev": "neutral",
-          "status": "investigation"
+          "status": "investigation",
+          "stage": "open"
         }
       ],
       "fecMissing": false,
