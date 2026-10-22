@@ -1,0 +1,54 @@
+{
+  "elsayed": {
+    "file": "data/portraits/elsayed.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "turek": {
+    "file": "data/portraits/turek.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "booker": {
+    "file": "data/portraits/booker.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "talarico": {
+    "file": "data/portraits/talarico.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "paxton": {
+    "file": "data/portraits/paxton.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "cooper": {
+    "file": "data/portraits/cooper.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "whatley": {
+    "file": "data/portraits/whatley.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "flanagan": {
+    "file": "data/portraits/flanagan.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "tafoya": {
+    "file": "data/portraits/tafoya.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "stratton": {
+    "file": "data/portraits/stratton.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "tracy": {
+    "file": "data/portraits/tracy.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "cbooker": {
+    "file": "data/portraits/cbooker.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "jackson": {
+    "file": "data/portraits/jackson.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  }
+}

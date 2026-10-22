@@ -43,7 +43,7 @@ The card's "Outside money by month" chart shows spending for and against the can
 
 ## Portraits
 
-Home cards show a cut-out portrait for each person who has served in Congress, standing in a party-colored circle; everyone else shows initials in the same circle. The photos are official congressional portraits (public domain) from the [unitedstates/images](https://github.com/unitedstates/images) project. `scripts/build-portraits.py` downloads them, removes the background with MediaPipe, scales and places every face the same way, and writes `public/portraits/<id>.webp` plus `public/portraits/index.json` (who has a photo, its source and credit). To rebuild:
+Home cards show a cut-out portrait standing in a party-colored circle; anyone without a photo shows initials in the same circle. Photos are official congressional portraits (public domain) from the [unitedstates/images](https://github.com/unitedstates/images) project, plus photos supplied for use here, kept in `data/portraits/` and listed with their credit in `scripts/portrait-extra.json` (these take precedence over the official one). `scripts/build-portraits.py` downloads the official photos, removes the background with MediaPipe, scales and places every face the same way, and writes `public/portraits/<id>.webp` plus `public/portraits/index.json` (who has a photo, its source and credit). To rebuild:
 
 ```
 python3 -m venv .local/pv
@@ -51,7 +51,7 @@ python3 -m venv .local/pv
 .local/pv/bin/python scripts/build-portraits.py            # add --refresh to download the photos again
 ```
 
-To add a photo for someone without an official portrait, use one you have permission to use and list it in `scripts/portrait-extra.json`, then rebuild: `{"talarico": {"file": ".local/photos/talarico.jpg", "credit": "Photo: Talarico campaign, used with permission"}}`.
+To add or replace a photo, save one you have permission to use as `data/portraits/<id>.jpg`, list it in `scripts/portrait-extra.json` with its credit, and rebuild: `"talarico": {"file": "data/portraits/talarico.jpg", "credit": "Photo: Talarico campaign, used with permission"}`.
 
 ## Money and votes over time
 

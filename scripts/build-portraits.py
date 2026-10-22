@@ -2,9 +2,10 @@
 # public/portraits/index.json listing who has one and where each photo came from.
 #
 # Photos: official congressional portraits (public domain, U.S. government works) from
-# https://github.com/unitedstates/images, for everyone in research.json with a Bioguide ID. People without one keep
-# the initials circle. To add a photo you have permission to use, list it in scripts/portrait-extra.json:
-#   {"<person id>": {"file": "path/to/photo.jpg", "credit": "Photo: <who>, used with permission"}}
+# https://github.com/unitedstates/images, for everyone in research.json with a Bioguide ID. Other photos, supplied
+# for use here, are kept in data/portraits/ and listed in scripts/portrait-extra.json, which takes precedence:
+#   {"<person id>": {"file": "data/portraits/<id>.jpg", "credit": "Photo: <who>, used with permission", "url": optional}}
+# People with neither keep the initials circle.
 #
 # Each photo's background is removed with MediaPipe selfie segmentation, and the face is found with MediaPipe face
 # detection so every portrait is framed the same way: same eye height, same distance between the eyes.
@@ -52,7 +53,8 @@ def eyes(rgb, detector):
     res = detector.process(rgb)
     if not res.detections:
         return None
-    d = max(res.detections, key=lambda d: d.score[0])
+    # The largest face is the person; a smaller one can be a painting or poster behind them.
+    d = max(res.detections, key=lambda d: d.location_data.relative_bounding_box.width)
     k = d.location_data.relative_keypoints  # 0 = right eye, 1 = left eye
     h, w = rgb.shape[:2]
     return (k[0].x * w, k[0].y * h), (k[1].x * w, k[1].y * h)
@@ -62,11 +64,13 @@ def extend(rgba, pad_b, pad_s, k):
     """Carry a cropped photo's clothing on past its bottom and side edges, blurred along the edge so it reads as fabric."""
     f = rgba.astype(np.float32)
     f[..., :3] *= f[..., 3:4] / 255  # premultiplied, so transparent pixels add no color
+    solid = np.where(f[..., 3:4] >= 217, f, 0)  # only clothing that reaches the edge is carried on, not stray background
     h = f.shape[0]
-    bottom = cv2.GaussianBlur(f[h - 6:].mean(axis=0, keepdims=True), (k, 1), 0)
+    bottom = cv2.GaussianBlur(solid[h - 6:].mean(axis=0, keepdims=True), (k, 1), 0)
     f = np.vstack([f, np.repeat(bottom, pad_b, axis=0)])
-    left = cv2.GaussianBlur(f[:, :4].mean(axis=1, keepdims=True), (1, k), 0)
-    right = cv2.GaussianBlur(f[:, -4:].mean(axis=1, keepdims=True), (1, k), 0)
+    solid = np.vstack([solid, np.repeat(bottom, pad_b, axis=0)])
+    left = cv2.GaussianBlur(solid[:, :4].mean(axis=1, keepdims=True), (1, k), 0)
+    right = cv2.GaussianBlur(solid[:, -4:].mean(axis=1, keepdims=True), (1, k), 0)
     f = np.hstack([np.repeat(left, pad_s, axis=1), f, np.repeat(right, pad_s, axis=1)])
     a = f[..., 3:4] / 255
     f[..., :3] = np.where(a > 1e-3, f[..., :3] / np.maximum(a, 1e-3), 0)
@@ -96,6 +100,14 @@ def cutout(m, segmenter):
     # Snap the soft mask to the photo's own edges (hair, collar), then firm it up.
     mask = cv2.ximgproc.guidedFilter(guide=bgr, src=mask, radius=max(4, int(m['gap'] / 16)), eps=1e-4)
     alpha = np.clip((mask - 0.35) / 0.3, 0, 1)
+    # Keep only the person: drop loose specks of background the segmentation picked up.
+    r = max(2, int(m['gap'] / 20))
+    disk = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1))
+    core = cv2.morphologyEx((alpha > 0.5).astype(np.uint8), cv2.MORPH_OPEN, disk)  # cut thin bridges to specks
+    n, lab, stats, _ = cv2.connectedComponentsWithStats(core, connectivity=8)
+    if n > 1:
+        body = (lab == 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))).astype(np.uint8)
+        alpha *= cv2.dilate(body, disk, iterations=2)
     (rx, ry), (lx, ly) = m['eyes']
     s = EYE_GAP / max(1.0, m['gap'])
     cx, cy = (rx + lx) / 2, (ry + ly) / 2
@@ -115,7 +127,9 @@ def main():
     extra_path = os.path.join(ROOT, 'scripts', 'portrait-extra.json')
     extra = json.load(open(extra_path, encoding='utf8')) if os.path.exists(extra_path) else {}
     os.makedirs(OUT, exist_ok=True)
-    people, missing = {}, []
+    old_path = os.path.join(OUT, 'index.json')
+    old = json.load(open(old_path, encoding='utf8'))['people'] if os.path.exists(old_path) else {}
+    people, missing, listed = {}, [], set()
     seg = mp.solutions.selfie_segmentation.SelfieSegmentation(model_selection=0)
     det = mp.solutions.face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
     for s in D['members'] + D.get('cands', []):
@@ -126,6 +140,7 @@ def main():
             options, credit = [o for o in (fetch(s['bioguide'], z) for z in SIZES) if o], OFFICIAL
         else:
             continue
+        listed.add(s['id'])
         # Of the versions of the photo, use the one that fills the frame best; on a near tie, the sharper one.
         best = None
         for path, url in options:
@@ -135,11 +150,15 @@ def main():
         img = cutout(best[0], seg) if best else None
         if img is None:
             missing.append(s['id'])
+            if s['id'] in old and os.path.exists(os.path.join(OUT, s['id'] + '.webp')):
+                people[s['id']] = old[s['id']]  # keep the portrait already built rather than lose it
             continue
         img.save(os.path.join(OUT, s['id'] + '.webp'), 'WEBP', quality=82, method=6)
-        people[s['id']] = {'file': f'portraits/{s["id"]}.webp', 'credit': credit, 'src': best[1]}
+        people[s['id']] = {'file': f'portraits/{s["id"]}.webp', 'credit': credit}
+        if best[1]:
+            people[s['id']]['src'] = best[1]
     for f in os.listdir(OUT):  # drop portraits of people no longer listed
-        if f.endswith('.webp') and f[:-5] not in people:
+        if f.endswith('.webp') and f[:-5] not in listed:
             os.remove(os.path.join(OUT, f))
     index = {'about': 'Transparent portraits for the home cards. See scripts/build-portraits.py.',
              'built': date.today().isoformat(), 'people': people}

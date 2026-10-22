@@ -12,7 +12,7 @@ test('every portrait belongs to a profiled person, exists as a WebP, and says wh
     const b=await fs.readFile(new URL(p.file,root));
     assert.equal(b.toString('latin1',0,4)+b.toString('latin1',8,12),'RIFFWEBP',id+' is not a WebP');
     assert.ok(p.credit&&p.credit.length>10,id+' needs a credit');
-    assert.match(p.src||'',/^https:\/\//,id+' needs a source link');
+    if(p.src)assert.match(p.src,/^https:\/\//,id+' has a bad source link');
   }
 });
 test('no stray portrait files',async()=>{
