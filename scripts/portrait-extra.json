@@ -1,7 +1,9 @@
 {
   "elsayed": {
     "file": "data/portraits/elsayed.jpg",
-    "credit": "Photo supplied by the site's editor for use on this site"
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "tighten": true,
+    "choke": 2
   },
   "turek": {
     "file": "data/portraits/turek.jpg",
@@ -49,6 +51,8 @@
   },
   "jackson": {
     "file": "data/portraits/jackson.jpg",
-    "credit": "Photo supplied by the site's editor for use on this site"
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "tighten": true,
+    "choke": 2
   }
 }

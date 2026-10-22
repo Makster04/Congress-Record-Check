@@ -5,6 +5,8 @@
 # https://github.com/unitedstates/images, for everyone in research.json with a Bioguide ID. Other photos, supplied
 # for use here, are kept in data/portraits/ and listed in scripts/portrait-extra.json, which takes precedence:
 #   {"<person id>": {"file": "data/portraits/<id>.jpg", "credit": "Photo: <who>, used with permission", "url": optional}}
+# For a photo whose cut-out keeps a halo of a light background, add "tighten": true (refit the edge to the photo's own
+# colors) and/or "choke": <px> (trim that many output pixels off the edge).
 # People with neither keep the initials circle.
 #
 # Each photo's background is removed with MediaPipe selfie segmentation, and the face is found with MediaPipe face
@@ -88,15 +90,47 @@ def measure(path, detector):
         return None
     (rx, ry), (lx, ly) = e
     gap = abs(lx - rx)
+    if gap > 150:  # far more detail than the card needs; shrink first so the cut-out is quick
+        f = 150 / gap
+        bgr = cv2.resize(bgr, None, fx=f, fy=f, interpolation=cv2.INTER_AREA)
+        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        (rx, ry), (lx, ly), gap = (rx * f, ry * f), (lx * f, ly * f), 150.0
+        e = (rx, ry), (lx, ly)
     s = EYE_GAP / max(1.0, gap)
     cy = (ry + ly) / 2
     cover = min(cy * s, EYE_Y - 20) + min((rgb.shape[0] - cy) * s, H - EYE_Y)
     return {'bgr': bgr, 'rgb': rgb, 'eyes': e, 'gap': gap, 'cover': cover}
 
 
-def cutout(m, segmenter):
+def tighten(bgr, mask, r):
+    """Refit the person's outline to the photo's own colors (GrabCut), starting from the segmentation."""
+    k = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4 * r + 1, 4 * r + 1))
+    gc = np.where(mask > 0.5, cv2.GC_PR_FGD, cv2.GC_PR_BGD).astype(np.uint8)
+    gc[cv2.erode((mask > 0.9).astype(np.uint8), k) > 0] = cv2.GC_FGD
+    gc[cv2.dilate((mask > 0.1).astype(np.uint8), k) == 0] = cv2.GC_BGD
+    cv2.grabCut(bgr, gc, None, np.zeros((1, 65)), np.zeros((1, 65)), 5, cv2.GC_INIT_WITH_MASK)
+    return np.isin(gc, (cv2.GC_FGD, cv2.GC_PR_FGD)).astype(np.float32)
+
+
+def defringe(rgb, alpha, sigma):
+    """Edge pixels carry some of the old background's color; give them the person's own color from just inside."""
+    solid = (alpha > 0.95).astype(np.float32)
+    fg = np.zeros_like(rgb, dtype=np.float32)
+    for sg in (sigma, sigma * 4):  # near the person first, then further out for anything left
+        den = cv2.GaussianBlur(solid, (0, 0), sg)
+        num = cv2.GaussianBlur(rgb.astype(np.float32) * solid[..., None], (0, 0), sg)
+        est = num / np.maximum(den, 1e-6)[..., None]
+        fill = (den > 0.02) & (fg.sum(axis=2) == 0)
+        fg[fill] = est[fill]
+    w = np.clip((0.95 - alpha) / 0.95, 0, 1)[..., None] * (fg.sum(axis=2) > 0)[..., None]
+    return np.clip(rgb * (1 - w) + fg * w, 0, 255).astype(np.uint8)
+
+
+def cutout(m, segmenter, opts):
     bgr, rgb = m['bgr'], m['rgb']
     mask = segmenter.process(rgb).segmentation_mask.astype(np.float32)
+    if opts.get('tighten'):
+        mask = tighten(bgr, mask, max(2, int(m['gap'] / 20)))
     # Snap the soft mask to the photo's own edges (hair, collar), then firm it up.
     mask = cv2.ximgproc.guidedFilter(guide=bgr, src=mask, radius=max(4, int(m['gap'] / 16)), eps=1e-4)
     alpha = np.clip((mask - 0.35) / 0.3, 0, 1)
@@ -108,8 +142,12 @@ def cutout(m, segmenter):
     if n > 1:
         body = (lab == 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))).astype(np.uint8)
         alpha *= cv2.dilate(body, disk, iterations=2)
-    (rx, ry), (lx, ly) = m['eyes']
     s = EYE_GAP / max(1.0, m['gap'])
+    if opts.get('choke'):
+        c = max(1, round(opts['choke'] / s))
+        alpha = cv2.erode(alpha, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * c + 1, 2 * c + 1)))
+    rgb = defringe(rgb, alpha, max(1.5, m['gap'] / 30))
+    (rx, ry), (lx, ly) = m['eyes']
     cx, cy = (rx + lx) / 2, (ry + ly) / 2
     # A tightly cropped photo ends before the frame does: carry its clothing on to the edge. That part sits inside
     # the bottom of the card's circle, so it reads as more of the jacket rather than a cut-off line.
@@ -147,7 +185,7 @@ def main():
             m = measure(path, det)
             if m and m['gap'] >= 36 and (not best or m['cover'] > best[0]['cover'] + 8 or (m['cover'] > best[0]['cover'] - 8 and m['gap'] > best[0]['gap'])):
                 best = (m, url)
-        img = cutout(best[0], seg) if best else None
+        img = cutout(best[0], seg, extra.get(s['id'], {})) if best else None
         if img is None:
             missing.append(s['id'])
             if s['id'] in old and os.path.exists(os.path.join(OUT, s['id'] + '.webp')):
