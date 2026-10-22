@@ -49,6 +49,7 @@ Home cards show a cut-out portrait standing in a party-colored circle; anyone wi
 python3 -m venv .local/pv
 .local/pv/bin/pip install mediapipe==0.10.14 pillow
 .local/pv/bin/python scripts/build-portraits.py            # add --refresh to download the photos again
+.local/pv/bin/python scripts/build-portraits.py --only osborn,alme   # rebuild just those people
 ```
 
 To add or replace a photo, save one you have permission to use as `data/portraits/<id>.jpg`, list it in `scripts/portrait-extra.json` with its credit, and rebuild: `"talarico": {"file": "data/portraits/talarico.jpg", "credit": "Photo: Talarico campaign, used with permission"}`. If a cut-out keeps a light halo from a bright background, add `"tighten": true` and `"choke": 2` to that entry (as for El-Sayed and Jackson) and rebuild.

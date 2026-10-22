@@ -84,5 +84,25 @@
     "credit": "Photo supplied by the site's editor for use on this site",
     "tighten": true,
     "choke": 2
+  },
+  "osborn": {
+    "file": "data/portraits/osborn.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "choke": 2
+  },
+  "bodnar": {
+    "file": "data/portraits/bodnar.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "alme": {
+    "file": "data/portraits/alme.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "choke": 2
+  },
+  "bankhead": {
+    "file": "data/portraits/bankhead.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "tighten": true,
+    "choke": 2
   }
 }
