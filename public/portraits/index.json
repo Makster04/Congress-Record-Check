@@ -145,6 +145,18 @@
       "credit": "Official congressional portrait (public domain), via the unitedstates/images project",
       "src": "https://raw.githubusercontent.com/unitedstates/images/gh-pages/congress/original/M001212.jpg"
     },
+    "bankhead": {
+      "file": "portraits/bankhead.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "alme": {
+      "file": "portraits/alme.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "bodnar": {
+      "file": "portraits/bodnar.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
     "hageman": {
       "file": "portraits/hageman.webp",
       "credit": "Official congressional portrait (public domain), via the unitedstates/images project",
@@ -173,6 +185,10 @@
       "file": "portraits/ricketts.webp",
       "credit": "Official congressional portrait (public domain), via the unitedstates/images project",
       "src": "https://raw.githubusercontent.com/unitedstates/images/gh-pages/congress/450x550/R000618.jpg"
+    },
+    "osborn": {
+      "file": "portraits/osborn.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
     },
     "jackson": {
       "file": "portraits/jackson.webp",

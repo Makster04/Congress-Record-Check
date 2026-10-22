@@ -15,6 +15,7 @@
 #   python3 -m venv .local/pv && .local/pv/bin/pip install mediapipe==0.10.14 pillow
 #   .local/pv/bin/python scripts/build-portraits.py            downloads photos into .local/portraits/
 #   .local/pv/bin/python scripts/build-portraits.py --refresh  downloads them again
+#   .local/pv/bin/python scripts/build-portraits.py --only osborn,alme   rebuilds just those, keeping the rest
 import json, os, sys, urllib.request
 from datetime import date
 
@@ -170,7 +171,13 @@ def main():
     people, missing, listed = {}, [], set()
     seg = mp.solutions.selfie_segmentation.SelfieSegmentation(model_selection=0)
     det = mp.solutions.face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5)
+    only = set(sys.argv[sys.argv.index('--only') + 1].split(',')) if '--only' in sys.argv else None
     for s in D['members'] + D.get('cands', []):
+        if only is not None and s['id'] not in only:
+            if s['id'] in old:
+                people[s['id']] = old[s['id']]
+                listed.add(s['id'])
+            continue
         if s['id'] in extra:
             x = extra[s['id']]
             options, credit = [(os.path.join(ROOT, x['file']), x.get('url'))], x['credit']
