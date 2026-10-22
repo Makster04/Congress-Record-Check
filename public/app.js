@@ -1,5 +1,5 @@
 import {KV_MIN,leanOfVote,whyNotMarked,sideTaken,keyVoteRows,keyVoteScore} from './lean.js';
-import {MIN_CHECKS,MIN_PVP_VOTES,ETHICS_COST,RATIO_EVEN,letter,promiseScore,ethicsScore,pvpScore,moneyRatio} from './grades.js';
+import {MIN_CHECKS,MIN_PVP_VOTES,ETHICS_COST,letter,promiseScore,ethicsScore,pvpScore,moneyRatio} from './grades.js';
 (function(){
 const $=s=>document.querySelector(s);
 const app=$('#app'), tip=$('#tip');
@@ -347,29 +347,34 @@ function reportCard(s){
   return `<div class="hc-rc">${gradeTile('Your match',m.score,md,GRADE_TIP.match)}${gradeTile('Promises delivered',pr.pct,pd,GRADE_TIP.prom,bar)}${gradeTile('Ethics',e.pct,ed,GRADE_TIP.eth)}${gradeTile('People vs. profit',v.pct,vd,GRADE_TIP.pvp)}</div>`;
 }
 function homeMonths(){const end=DATA.ie_asof.slice(0,7), out=[];let y=+end.slice(0,4), k=+end.slice(5,7);for(let i=0;i<7;i++){out.unshift(`${y}-${String(k).padStart(2,'0')}`);if(--k<1){k=12;y--;}}return out;}
-// For-to-against (or against-to-for) ratio over the charted months, beside the chart's title.
-function outRatio(f,a,s){
-  const q=moneyRatio(f,a);if(!q)return '';
-  const fw=s.out.multi?'supporting':'for', aw=s.out.multi?'opposing':'against', word=q.side==='for'?fw:aw, num=r=>r>=10?String(Math.round(r)):r.toFixed(1);
-  const text=q.side==='even'?'about even':q.r===null?`all ${word}`:`${num(q.r)} : 1 ${word}`;
-  const name=q.side==='even'?'Roughly even':q.side==='for'?'For-to-against ratio':'Against-to-for ratio';
-  const tip=`${name} for outside money in the months charted: ${fmtFull(f)} ${fw} ${s.short}, ${fmtFull(a)} ${aw}.`;
-  return `<span class="hc-ratio ${q.side[0]}" title="${esc(tip)}"><i class="sw" aria-hidden="true"></i>${text}</span>`;
-}
+// Outside money by month: for and against side by side, with the month's for-to-against ratio as a line on its own scale (right).
+const RATIO_TICKS=[[1,'all for'],[.75,'3 : 1'],[.5,'1 : 1'],[.25,'1 : 3'],[0,'all against']];
 function miniOutside(s){
   const months=homeMonths(), M=Object.fromEntries(months.map(m=>[m,{f:0,a:0}]));
   for(const r of IE.rows[s.race]||[]){const mo=r[0].slice(0,7);if(!M[mo])continue;const role=ieRole(s,r);if(role==='for')M[mo].f+=r[4];else if(role==='against')M[mo].a+=r[4];}
+  const fw=s.out.multi?'supporting':'for', aw=s.out.multi?'opposing':'against';
   const max=Math.max(0,...months.map(m=>Math.max(M[m].f,M[m].a)));
-  const F=months.reduce((t,m)=>t+M[m].f,0), A=months.reduce((t,m)=>t+M[m].a,0);
-  const head=`<div class="hc-mh"><span>Outside money by month${outRatio(F,A,s)}</span><span>${MON[+months[0].slice(5,7)-1]} – <b>${fmtDate(DATA.ie_asof)}</b></span></div>`;
+  const F=months.reduce((t,m)=>t+M[m].f,0), A=months.reduce((t,m)=>t+M[m].a,0), q=moneyRatio(F,A,fw,aw);
+  const badge=q?`<span class="hc-ratio" title="${esc(`For-to-against ratio of outside money in the months charted: ${fmtFull(F)} ${fw} ${s.short}, ${fmtFull(A)} ${aw}.`)}">For-to-against <b class="${q.side}">${q.text}</b></span>`:'';
+  const head=`<div class="hc-mh"><span>Outside money by month${badge}</span><span>${MON[+months[0].slice(5,7)-1]} – <b>${fmtDate(DATA.ie_asof)}</b></span></div>`;
   if(!max)return `<div class="hc-mini">${head}<p class="small muted" style="margin:4px 0 0">No outside spending reported in these months.</p></div>`;
-  const W=280,H=60,zero=30,bw=26,gap=(W-7*bw)/6;let svg='';
-  months.forEach((m,i)=>{const x=(i*(bw+gap)).toFixed(1),{f,a}=M[m];
-    if(f>0){const h=Math.max(1.5,f/max*(zero-2));svg+=`<rect class="hc-f" x="${x}" y="${(zero-h).toFixed(1)}" width="${bw}" height="${h.toFixed(1)}"></rect>`;}
-    if(a>0){const h=Math.max(1.5,a/max*(H-zero-2));svg+=`<rect class="hc-a" x="${x}" y="${zero+1}" width="${bw}" height="${h.toFixed(1)}"></rect>`;}});
-  svg+=`<line class="hc-z" x1="0" x2="${W}" y1="${zero}" y2="${zero}"></line>`;
-  const label=months.map(m=>{const o=M[m];return `${monLabel(m)}: ${fmt$(o.f)} for, ${fmt$(o.a)} against`}).join('; ');
-  return `<div class="hc-mini">${head}<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Outside spending by month. ${esc(label)}">${svg}</svg><div class="hc-ms"><span><i class="sw" style="background:var(--s3)"></i>${s.out.multi?'supporting':'for'}</span><span><i class="sw" style="background:var(--s2)"></i>${s.out.multi?'opposing':'against'}</span><span>tallest month ${fmt$(max)}</span></div></div>`;
+  const W=280,top=6,base=96,gw=W/7,bw=14,y=sh=>top+(1-sh)*(base-top);
+  let svg=RATIO_TICKS.slice(1,4).map(([sh])=>`<line class="${sh===.5?'hc-g1':'hc-g'}" x1="0" x2="${W}" y1="${y(sh)}" y2="${y(sh)}"></line>`).join('');
+  const pts=months.map((m,i)=>{const {f,a}=M[m], x0=i*gw+(gw-2*bw-2)/2, r=moneyRatio(f,a,fw,aw);
+    if(f>0){const h=Math.max(1.5,f/max*(base-top));svg+=`<rect class="hc-f" x="${x0.toFixed(1)}" y="${(base-h).toFixed(1)}" width="${bw}" height="${h.toFixed(1)}"></rect>`;}
+    if(a>0){const h=Math.max(1.5,a/max*(base-top));svg+=`<rect class="hc-a" x="${(x0+bw+2).toFixed(1)}" y="${(base-h).toFixed(1)}" width="${bw}" height="${h.toFixed(1)}"></rect>`;}
+    return r&&{x:(i*gw+gw/2).toFixed(1),y:y(r.share).toFixed(1),m,r};});
+  svg+=`<line class="hc-z" x1="0" x2="${W}" y1="${base}" y2="${base}"></line>`;
+  // The line breaks over a month with no outside money, since it has no ratio.
+  const d=pts.map((p,i)=>p?`${pts[i-1]?'L':'M'}${p.x} ${p.y}`:'').join('');
+  if(d)svg+=`<path class="hc-rl-h" d="${d}"></path><path class="hc-rl" d="${d}"></path>`;
+  svg+=pts.filter(Boolean).map(p=>`<path class="hc-rd" d="M${p.x} ${p.y}h0"></path>`).join('');
+  svg+=months.map((m,i)=>{const {f,a}=M[m],r=pts[i];return `<rect class="hc-hit" x="${(i*gw).toFixed(1)}" y="0" width="${gw.toFixed(1)}" height="100"><title>${esc(`${monLabel(m)}: ${fmt$(f)} ${fw}, ${fmt$(a)} ${aw}${!r?'':r.r.text.startsWith('all')?` · ${r.r.text}`:` · for-to-against ${r.r.text}`}`)}</title></rect>`}).join('');
+  const label=months.map((m,i)=>`${monLabel(m)}: ${fmt$(M[m].f)} ${fw}, ${fmt$(M[m].a)} ${aw}${pts[i]?`, ratio ${pts[i].r.text}`:''}`).join('; ');
+  const rax=RATIO_TICKS.map(([sh,t])=>`<span style="top:${y(sh)}%">${t}</span>`).join('');
+  return `<div class="hc-mini">${head}<div class="hc-plot"><svg viewBox="0 0 ${W} 100" preserveAspectRatio="none" role="img" aria-label="${esc(`Outside spending by month, with the for-to-against ratio. ${label}`)}">${svg}</svg><div class="hc-rax" aria-hidden="true">${rax}</div></div>
+    <div class="hc-mx" aria-hidden="true">${months.map(m=>`<span>${MON[+m.slice(5,7)-1]}</span>`).join('')}</div>
+    <div class="hc-ms"><span><i class="sw" style="background:var(--s3)"></i>${fw}</span><span><i class="sw" style="background:var(--s2)"></i>${aw}</span><span><i class="hc-ln"></i>ratio, right scale</span><span>tallest bar ${fmt$(max)}</span></div></div>`;
 }
 function homeCard(s){
   const c=s.camp, o=s.out, it=ideoText(s), race=raceOf(s), riv=rivalsOf(s);
@@ -1369,7 +1374,7 @@ function renderMethod(){
       <li><b>Ethics:</b> starts at 100 and subtracts ${ETHICS_COST.finding} for each confirmed finding, ${ETHICS_COST.open} for each open investigation, and ${ETHICS_COST.closed} for each investigation that ended without a finding against the person (an acquittal, dismissal, decision not to charge, ruling in their favor, or settlement without admission). "Open" includes investigations with no public resolution in the sources. Allegations, meaning complaints no official body acted on, are listed but cost nothing. The tags come from the Ethics section of each profile; every confirmed finding currently costs the same, whatever its size.</li>
       <li><b>People vs. profit:</b> the share of votes cast for the side of a bill that a cited nonpartisan distributional analysis (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) shows mostly helps lower- and middle-income households, rather than the wealthy and corporations. A Yea takes the marked side and a Nay the other. It needs ${MIN_PVP_VOTES} such votes. <b>No bills are marked yet</b>, so no one is graded: each bill needs its analysis cited before it counts.</li>
     </ul>
-    <p>Below the grades, each card charts outside money by month for the last seven months (spending for the candidate above the line, against below). The badge beside that title is the ratio of the larger side to the smaller over those same months: "2.1 : 1 for" means $2.10 was spent for the candidate for every $1 spent against, and "3.4 : 1 against" the reverse. It reads "all for" or "all against" when the other side spent nothing in those months, and "about even" when the two are within ${Math.round((RATIO_EVEN-1)*100)}% of each other. In races with more than two candidates it says "supporting" and "opposing". Hover over it for both dollar amounts. It covers independent expenditures reported for the general election, as in the chart, and not money given to the campaign.</p>
+    <p>Below the grades, each card charts outside money by month for the last seven months: spending for the candidate (green) and against them (orange), side by side. The line is each month's <b>for-to-against ratio</b>, read on the scale at the right, which runs from "all for" at the top through 1 : 1 in the middle to "all against" at the bottom. The ratio is always written for-to-against, with the larger side given as a number and the other as 1: "2.1 : 1" means $2.10 was spent for the candidate for every $1 spent against, and "1 : 2.1" the reverse. The line is placed by the share of the month's outside money spent for the candidate (so 3 : 1 is 75%, 1 : 3 is 25%), which keeps "all for" and "all against" on the scale; it breaks over a month with no outside money. The badge beside the chart's title gives the same ratio for all seven months together, in green when more was spent for the candidate, orange when more was spent against, and uncolored at 1 : 1. Hover over a month, or the badge, for the dollar amounts. In races with more than two candidates the chart says "supporting" and "opposing". It covers independent expenditures reported for the general election, not money given to the campaign.</p>
     <h2>Key votes marked liberal or conservative</h2>
     <p>Each key vote is checked against the issues it is coded to. Where an issue is a clear liberal-versus-conservative policy question in current U.S. politics, one side is marked liberal and the other conservative, as listed below. A bill is marked only if every issue it is coded to points the same way. Bills on unmarked issues, bipartisan deals, nominations and stopgap funding bills are left unmarked, and each unmarked bill shows its reason on the Legislative record tab. The marking is a judgment, kept in one place (<span class="mono">liberalSide</span> on each issue in <span class="mono">research.json</span>) so it can be reviewed and changed.</p>
     <ul class="list">${ISS.map(i=>i.liberalSide?`<li><b>${esc(i.label)}:</b> liberal side = "${esc(i[i.liberalSide])}"; conservative side = "${esc(i[i.liberalSide==='A'?'B':'A'])}".</li>`:`<li><b>${esc(i.label)}:</b> not marked. ${esc(i.leanNote)}</li>`).join('')}</ul>

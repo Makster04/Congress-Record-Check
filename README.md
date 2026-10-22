@@ -39,7 +39,7 @@ The politics visual also scores how the candidate voted on key bills marked libe
 
 Each home-page card shows four A-F grades with percentages: Your match (the viewer's My alignment score), Promises delivered (statement checks), Ethics (confirmed findings, open and closed investigations; allegations are not scored) and People vs. profit (votes on bills marked by a cited distributional analysis). The rules are in `public/grades.js` and on the Methodology page; a grade shows "Not graded" when evidence is thin. Investigations carry `stage: "open" | "closed"` in `public/research.json`. To score a bill for People vs. profit, add `"pvp": {"yea": "people" | "profit", "why": "...", "src": {"t": "...", "u": "..."}}` to its vote; none are marked yet.
 
-Beside the card's "Outside money by month" title, a badge gives the for-to-against (or against-to-for) ratio of outside spending over the same seven months, such as "2.1 : 1 for", "all against" or "about even" (within 10%). The rule is `moneyRatio` in `public/grades.js`.
+The card's "Outside money by month" chart shows spending for and against the candidate side by side, with each month's for-to-against ratio as a line on a scale at the right (all for, 3 : 1, 1 : 1, 1 : 3, all against). The badge beside its title gives the ratio for all seven months, always written for-to-against, such as "2.1 : 1" (green: more for) or "1 : 2.1" (orange: more against). The rule is `moneyRatio` in `public/grades.js`.
 
 ## Money and votes over time
 

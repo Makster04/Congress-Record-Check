@@ -43,14 +43,22 @@ test('My alignment: every issue has a statement to agree or disagree with, and a
     assert.ok(typeof i.statement==='string'&&i.statement.length>20&&/[.]$/.test(i.statement),`${i.id}: statement`);
   }
 });
-test('outside money ratio: larger side to 1, "all" when one side is zero, "even" within 10%, nothing when both are zero',()=>{
-  assert.deepEqual(moneyRatio(210,100),{side:'for',r:2.1});
-  assert.deepEqual(moneyRatio(100,340),{side:'against',r:3.4});
-  assert.deepEqual(moneyRatio(500,0),{side:'for',r:null});
-  assert.deepEqual(moneyRatio(0,500),{side:'against',r:null});
-  assert.equal(moneyRatio(105,100).side,'even');
-  assert.equal(moneyRatio(100,109).side,'even');
-  assert.equal(moneyRatio(100,111).side,'against');
+test('outside money ratio is always for-to-against: larger side gets the number, "all" when one side is zero, nothing when both are',()=>{
+  const r=(f,a)=>moneyRatio(f,a).text;
+  assert.equal(r(210,100),'2.1 : 1');
+  assert.equal(r(100,340),'1 : 3.4');
+  assert.equal(r(200,100),'2 : 1');
+  assert.equal(r(104,100),'1 : 1');
+  assert.equal(r(100,104),'1 : 1');
+  assert.equal(r(2100,100),'21 : 1');
+  assert.equal(r(9.97,1),'10 : 1');
+  assert.equal(r(500,0),'all for');
+  assert.equal(r(0,500),'all against');
+  assert.equal(moneyRatio(0,500,'supporting','opposing').text,'all opposing');
+  assert.deepEqual([[210,100],[100,340],[500,0],[0,500],[104,100],[100,100]].map(([f,a])=>moneyRatio(f,a).side),['for','against','for','against','even','even']);
   assert.equal(moneyRatio(0,0),null);
   assert.equal(moneyRatio(-5,0),null);
+  assert.equal(moneyRatio(300,100).share,.75);
+  assert.equal(moneyRatio(100,100).share,.5);
+  assert.equal(moneyRatio(0,9).share,0);
 });
