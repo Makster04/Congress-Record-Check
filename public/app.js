@@ -333,6 +333,18 @@ const GRADE_TIP={
   pvp:`Higher means their votes delivered more for working people; lower means more for the wealthy and corporations. Counts votes on bills that a cited nonpartisan analysis shows mostly help lower- and middle-income households, or mostly the wealthy and corporations. Needs ${MIN_PVP_VOTES} such votes.`
 };
 const initials=n=>{const w=n.replace(/\b(Jr|Sr|III|II)\b\.?/g,'').split(/\s+/).filter(x=>/^[A-Z][a-z'-]/.test(x));return ((w[0]||'?')[0]+(w.length>1?w[w.length-1][0]:'')).toUpperCase()};
+// Portrait: a cut-out photo standing in a party-colored circle, head rising above its top edge (public/portraits/,
+// built by scripts/build-portraits.py). Without a photo, or if it fails to load, the same circle shows initials.
+const PORTRAITS=window.PORTRAITS||{};
+function portrait(s){
+  const p=PORTRAITS[s.id], ini=initials(s.name);
+  return p?`<div class="hc-pv ${s.party}" data-ini="${ini}"><img src="/${esc(p.file)}" alt="" width="88" height="104" loading="lazy" decoding="async"></div>`
+    :`<div class="hc-pv ${s.party} ini" aria-hidden="true"><span>${ini}</span></div>`;
+}
+document.addEventListener('error',e=>{
+  const pv=e.target.tagName==='IMG'&&e.target.parentNode.classList.contains('hc-pv')?e.target.parentNode:null;if(!pv)return;
+  const span=document.createElement('span');span.textContent=pv.dataset.ini;pv.replaceChildren(span);pv.classList.add('ini');pv.setAttribute('aria-hidden','true');
+},true);
 function gradeTile(label,pct,detail,tip,extra=''){
   const g=pct==null?null:letter(pct);
   return `<div class="hc-gt" title="${esc(tip)}"><div class="hc-gl">${label}</div><div class="hc-gv">${g?`<b class="gr-${g}">${g}</b><span>${pct}%</span>`:'<span class="hc-ng">Not graded</span>'}</div>${extra}<div class="hc-gd">${detail}</div></div>`;
@@ -381,7 +393,7 @@ function homeCard(s){
   const ideo=s.cand&&!s.ideo&&s.ideoKind!=='former_text'&&s.ideoKind!=='state'?`No voting score · ${REC_LABEL[s.recordType]||it.short}`:it.short;
   const sub=s.cand?`${s.openSeat?'Open seat':s.term} · ${s.since}`:`In the ${CH[s.chamber].name} since ${String(s.since).split(' (')[0]} · ${s.term}`;
   return `<article class="card sen-card hc" tabindex="0" data-id="${s.id}" role="link" aria-label="Open profile of ${esc(s.name)}">
-    <div class="hc-top"><div class="hc-av ${s.party}" aria-hidden="true">${initials(s.name)}</div><div class="hc-who">
+    <div class="hc-top">${portrait(s)}<div class="hc-who">
       <div class="row" style="gap:5px"><span class="chip ${s.party}">${s.party} · ${esc(seatLabel(s))}</span><span class="chip ch">${chipCh(s)}</span></div>
       <div class="name">${esc(s.name)}</div><div class="hc-sub">${esc(sub)}</div></div></div>
     <div class="hc-ideo">${esc(ideo)}</div>
@@ -1379,6 +1391,8 @@ function renderMethod(){
     <p>Each key vote is checked against the issues it is coded to. Where an issue is a clear liberal-versus-conservative policy question in current U.S. politics, one side is marked liberal and the other conservative, as listed below. A bill is marked only if every issue it is coded to points the same way. Bills on unmarked issues, bipartisan deals, nominations and stopgap funding bills are left unmarked, and each unmarked bill shows its reason on the Legislative record tab. The marking is a judgment, kept in one place (<span class="mono">liberalSide</span> on each issue in <span class="mono">research.json</span>) so it can be reviewed and changed.</p>
     <ul class="list">${ISS.map(i=>i.liberalSide?`<li><b>${esc(i.label)}:</b> liberal side = "${esc(i[i.liberalSide])}"; conservative side = "${esc(i[i.liberalSide==='A'?'B':'A'])}".</li>`:`<li><b>${esc(i.label)}:</b> not marked. ${esc(i.leanNote)}</li>`).join('')}</ul>
     <p>A person's key-vote position counts only the marked bills they voted on: a Yea takes the side the bill is marked with and a Nay takes the other. A missed vote, and any bill from before the person took office, is not counted. A position is shown only with at least ${KV_MIN} such votes, and the chart places the person by the share of those votes taken on the conservative side. This counts a small, selected set of consequential votes. It is not a statistical ideology score, it can be compared only within a chamber because the House and Senate sets differ, and it should not be confused with the DW-NOMINATE career score above it, which uses every roll call. Vote text is always plain black; the "Side taken" column says whether each vote was on the liberal or the conservative side.</p>
+    <h2>Portraits</h2>
+    <p>Home cards show a portrait for each person who has served in Congress: their official congressional portrait, a public-domain U.S. government photo, taken from the <a href="https://github.com/unitedstates/images" target="_blank" rel="noopener">unitedstates/images</a> project. The background is removed automatically and each face is scaled and placed the same way, so no one is shown larger or more flattering than anyone else; where a photo was cropped tightly, the clothing is extended into the bottom of the circle. Former members' photos date from their time in Congress, which for some was years ago. People who have not served in Congress, and anyone whose official portrait is not yet in that project, show their initials until a photo with clear permission to use is added. That means that in some races only one candidate has a photo; it says nothing about the candidates.</p>
     <h2>Who is covered</h2>
     <p><b>Senate incumbents:</b> six senators on the November 3, 2026 ballot, three Republicans and three Democrats, chosen as a bipartisan sample of competitive and safe seats. Two senators originally selected were replaced during research because they will not be on the ballot: Sen. Lindsey Graham (R-SC) died in July 2026 and Sen. Markwayne Mullin (R-OK) left the Senate for an administration post.</p>
     <p><b>House:</b> the Cook Political Report rates 22 House races Toss-up (Sept. 25, 2026). Eight have full profiles of both nominees (four seats held by each party). The other 14 are shown on the Races page with their nominees (verified from election results or news reports), campaign funds and outside spending only; their records, statements and ethics have not been researched yet.</p>
