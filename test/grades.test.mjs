@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import {letter,promiseScore,ethicsScore,pvpScore,MIN_CHECKS,ETHICS_COST} from '../public/grades.js';
+import {letter,promiseScore,ethicsScore,pvpScore,moneyRatio,MIN_CHECKS,ETHICS_COST} from '../public/grades.js';
 const data=JSON.parse(await fs.readFile(new URL('../public/research.json',import.meta.url),'utf8'));
 const people=data.members.concat(data.cands);
 const st=(...a)=>a.map(assessment=>({assessment}));
@@ -42,4 +42,15 @@ test('My alignment: every issue has a statement to agree or disagree with, and a
     assert.ok(groups.has(i.group),`${i.id}: group ${i.group}`);
     assert.ok(typeof i.statement==='string'&&i.statement.length>20&&/[.]$/.test(i.statement),`${i.id}: statement`);
   }
+});
+test('outside money ratio: larger side to 1, "all" when one side is zero, "even" within 10%, nothing when both are zero',()=>{
+  assert.deepEqual(moneyRatio(210,100),{side:'for',r:2.1});
+  assert.deepEqual(moneyRatio(100,340),{side:'against',r:3.4});
+  assert.deepEqual(moneyRatio(500,0),{side:'for',r:null});
+  assert.deepEqual(moneyRatio(0,500),{side:'against',r:null});
+  assert.equal(moneyRatio(105,100).side,'even');
+  assert.equal(moneyRatio(100,109).side,'even');
+  assert.equal(moneyRatio(100,111).side,'against');
+  assert.equal(moneyRatio(0,0),null);
+  assert.equal(moneyRatio(-5,0),null);
 });
