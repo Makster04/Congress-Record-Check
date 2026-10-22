@@ -104,5 +104,32 @@
     "credit": "Photo supplied by the site's editor for use on this site",
     "tighten": true,
     "choke": 2
+  },
+  "murphy": {
+    "file": "data/portraits/murphy.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "tighten": true,
+    "choke": 2
+  },
+  "baisley": {
+    "file": "data/portraits/baisley.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "wess": {
+    "file": "data/portraits/wess.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site"
+  },
+  "byrd": {
+    "file": "data/portraits/byrd.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "tighten": true,
+    "choke": 2,
+    "nudge": 40
+  },
+  "thomas": {
+    "file": "data/portraits/thomas.jpg",
+    "credit": "Photo supplied by the site's editor for use on this site",
+    "tighten": true,
+    "choke": 2
   }
 }

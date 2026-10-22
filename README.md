@@ -52,7 +52,7 @@ python3 -m venv .local/pv
 .local/pv/bin/python scripts/build-portraits.py --only osborn,alme   # rebuild just those people
 ```
 
-To add or replace a photo, save one you have permission to use as `data/portraits/<id>.jpg`, list it in `scripts/portrait-extra.json` with its credit, and rebuild: `"talarico": {"file": "data/portraits/talarico.jpg", "credit": "Photo: Talarico campaign, used with permission"}`. If a cut-out keeps a light halo from a bright background, add `"tighten": true` and `"choke": 2` to that entry (as for El-Sayed and Jackson) and rebuild.
+To add or replace a photo, save one you have permission to use as `data/portraits/<id>.jpg`, list it in `scripts/portrait-extra.json` with its credit, and rebuild: `"talarico": {"file": "data/portraits/talarico.jpg", "credit": "Photo: Talarico campaign, used with permission"}`. If a cut-out keeps a light halo from a bright background, add `"tighten": true` and `"choke": 2` to that entry (as for El-Sayed and Jackson) and rebuild. If something wider than the frame, like a hat brim, is cut off on one side, `"nudge": 40` moves the portrait sideways (as for Byrd).
 
 ## Money and votes over time
 
