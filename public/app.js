@@ -846,24 +846,101 @@ function bindBuilder(root,onChange){
   root.querySelectorAll('[data-ex]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.ex;PROF={issues:{}};if(k!=='clear')Object.entries(EXAMPLES[+k].set).forEach(([i,[s,w]])=>PROF.issues[i]={side:s,w});saveProf();onChange(true);}));
 }
 const ALNOTE=`<div class="note small" style="margin:10px 0"><b>What this is:</b> a comparison between the positions <i>you</i> choose and each candidate's documented record. It is not a rating of candidate quality, and the issue list covers only what could be documented. Recorded actions (votes, bills, official acts) are used where they exist; stated positions are used only for an issue with no recorded action, and are labeled. A score appears only when evidence covers at least three of your issues and half of your total importance; otherwise the candidate shows "Insufficient data", never a neutral or zero score. <a href="#method">How it is calculated</a>.</div>`;
+// ---------- My alignment: a five-point quiz over the issue list. Each answer is saved as a side and an importance:
+// strongly agree/disagree = importance 3, agree/disagree = 2, neutral = answered but not counted. ----------
+const AL_GROUPS=[['econ','Economy & health','$'],['rights','Rights & social','♥'],['imm','Immigration & elections','⛨'],['foreign','Foreign policy','◍'],['env','Environment','❦']];
+const AL_GBY=Object.fromEntries(AL_GROUPS.map(g=>[g[0],g]));
+// mixed order for "All questions": one from each category in turn
+const AL_ORDER=(()=>{const by=AL_GROUPS.map(([g])=>ISS.filter(i=>i.group===g)),out=[];for(let k=0;out.length<ISS.length&&k<ISS.length;k++)by.forEach(l=>{if(l[k])out.push(l[k])});ISS.forEach(i=>{if(!out.includes(i))out.push(i)});return out})();
+const AL_OPTS=[['B',3,'Strongly disagree'],['B',2,'Disagree'],['',0,'Neutral'],['A',2,'Agree'],['A',3,'Strongly agree']];
+const AL_PAGE=5;
+let alView={g:'',page:0};
+const alPick=id=>{const p=PROF.issues[id];if(!p)return -1;if(p.neutral)return 2;if(p.side==='B')return p.w>=3?0:1;if(p.side==='A')return p.w>=3?4:3;return -1};
+const alAnswered=()=>ISS.filter(i=>alPick(i.id)>=0).length;
+const AL_VOTES=Object.fromEntries(ISS.map(i=>[i.id,DATA.votes.map(v=>['Senate',v]).concat(DATA.hvotes.map(v=>['House',v])).filter(([,v])=>(v.codes||[]).some(c=>c.issue===i.id)).sort((a,b)=>b[1].date.localeCompare(a[1].date))]));
+function alTied(i){
+  const V=AL_VOTES[i.id];
+  if(!V.length)return 'No key congressional vote on this yet; compared with state records, official actions and statements where they exist.';
+  return 'Compared with: '+V.slice(0,2).map(([c,v])=>`${esc(v.short)} (${c}, ${v.date.slice(0,4)})`).join(' · ')+(V.length>2?` · ${V.length-2} more`:'');
+}
+function alCard(i){
+  const [g,label,icon]=AL_GBY[i.group]||['econ','Other','•'], n=AL_ORDER.indexOf(i)+1, k=alPick(i.id);
+  return `<article class="al-q" data-i="${i.id}"><div class="al-qh"><span class="al-ic al-${g}" aria-hidden="true">${icon}</span><span class="al-tag al-${g}">${label}</span><span class="al-qn">Question ${n} of ${ISS.length}</span></div>
+    <h3 id="alq-${i.id}">${esc(i.statement||i.A)}</h3><p class="al-tied">${alTied(i)}</p>
+    <div class="al-opts" role="radiogroup" aria-labelledby="alq-${i.id}">${AL_OPTS.map((o,j)=>`<button type="button" role="radio" aria-checked="${k===j}" data-k="${j}" class="${k===j?'on':''}"><span class="al-r" aria-hidden="true"></span>${o[2]}</button>`).join('')}</div></article>`;
+}
+function alList(){return alView.g?AL_ORDER.filter(i=>i.group===alView.g):AL_ORDER.slice(alView.page*AL_PAGE,alView.page*AL_PAGE+AL_PAGE);}
+function alLive(){
+  const counted=chosenIssues().length;
+  if(!counted)return `<h4>Your matches so far</h4><p class="small muted" style="margin:0">Answer a few questions${alAnswered()?' (Neutral answers are not counted)':''} to see how every candidate compares.</p>`;
+  const rows=ALL.map(s=>({s,r:scoreFor(s)})), graded=rows.filter(x=>x.r.score!=null).sort((a,b)=>b.r.score-a.r.score||a.s.name.localeCompare(b.s.name));
+  const top=graded.slice(0,6).map(({s,r})=>{const L=letter(r.score);return `<a class="al-lr" href="#${s.id}-align"><span class="chip ${s.party}">${s.party}</span><span class="al-ln">${esc(s.name)}<small>${esc(seatLabel(s))} ${s.chamber==='S'?'Senate':'House'}</small></span><b class="gr-${L}">${L}</b><span class="al-lp">${r.score}%</span></a>`}).join('');
+  return `<h4>Your matches so far</h4>${top||'<p class="small muted" style="margin:0">No one has enough evidence on your issues yet.</p>'}
+    <p class="al-foot">Top ${Math.min(6,graded.length)} of ${graded.length} graded · ${rows.length-graded.length} not graded yet. Based on your ${counted} answer${counted===1?'':'s'} that ${counted===1?"isn't":"aren't"} Neutral; a grade needs evidence on 3 of your issues. <button type="button" class="al-link" id="al-all">See every candidate ↓</button></p>`;
+}
+function alResults(){
+  const ch=chosenIssues();
+  if(!ch.length)return '<div class="note">Answer at least one question (other than Neutral) to see how every candidate compares, race by race.</div>';
+  return `<p class="small muted" style="margin:0 0 6px">Results for ${ch.length} issue${ch.length===1?'':'s'}. Open a candidate for the issue-by-issue breakdown and every piece of evidence.</p>`+DATA.races.map(r=>{const C=r.keys.map(k=>byId[k]);return `<article class="race"><div class="rh"><h3>${esc(r.label)}</h3><span class="small muted">${r.open?'Open seat':'Incumbent running'}</span></div>
+    <div class="tablewrap"><table><thead><tr><th>Candidate</th><th>Compared with your choices</th><th>Evidence used</th></tr></thead><tbody>${C.map(s=>{const sc=scoreFor(s);return `<tr><td><a href="#${s.id}-align"><b>${esc(s.name)}</b></a> <span class="chip ${s.party}">${s.party}</span></td><td>${sc.score==null?scoreBadge(sc):`<span class="alscore"><b class="gr-${letter(sc.score)}">${letter(sc.score)}</b> <b>${sc.score}%</b> match</span>`}<div class="small muted">${sc.nCov} of ${sc.nChosen} of your issues have evidence</div></td><td class="small">${esc(evidenceOf(s).label)}<div class="muted">${esc(evidenceMix(s))}</div></td></tr>`}).join('')}</tbody></table></div>
+    ${evidenceNote(C)?`<p class="small" style="margin:6px 0 0;color:var(--ink-2)"><b>Comparing records:</b> ${evidenceNote(C)}</p>`:''}</article>`}).join('');
+}
 function renderAlign(){
+  const pages=Math.ceil(ISS.length/AL_PAGE);
   app.innerHTML=`
-  <section class="hero" style="padding-bottom:10px"><div class="asof">Your choices · saved only in this browser</div><h1 style="margin-top:8px">My alignment</h1>
-  <p class="lede">Pick a side on the issues you care about and how much each matters. Every candidate is then compared with your choices, issue by issue, using their documented votes, bills, official actions and statements.</p></section>
-  ${ALNOTE}
-  <div class="alwrap"><div id="alb">${builderHTML()}</div><div id="alr"></div></div>`;
-  const draw=()=>{
-    const ch=chosenIssues();
-    if(!ch.length){$('#alr').innerHTML='<div class="note">Choose a side on at least one issue to see how candidates compare.</div>';return}
-    const sec=DATA.races.map(r=>{const C=r.keys.map(k=>byId[k]);return `<article class="race"><div class="rh"><h3>${esc(r.label)}</h3><span class="small muted">${r.open?'Open seat':'Incumbent running'}</span></div>
-      <div class="tablewrap"><table><thead><tr><th>Candidate</th><th>Compared with your choices</th><th>Evidence used</th></tr></thead><tbody>${C.map(s=>{const sc=scoreFor(s);return `<tr><td><a href="#${s.id}-align"><b>${esc(s.name)}</b></a> <span class="chip ${s.party}">${s.party}</span></td><td>${scoreBadge(sc)}<div class="small muted">${sc.nCov} of ${sc.nChosen} of your issues have evidence</div></td><td class="small">${esc(evidenceOf(s).label)}<div class="muted">${esc(evidenceMix(s))}</div></td></tr>`}).join('')}</tbody></table></div>
-      ${evidenceNote(C)?`<p class="small" style="margin:6px 0 0;color:var(--ink-2)"><b>Comparing records:</b> ${evidenceNote(C)}</p>`:''}</article>`}).join('');
-    $('#alr').innerHTML=`<p class="small muted" style="margin:0 0 6px">Results for ${ch.length} chosen issue${ch.length===1?'':'s'}. Open a candidate for the issue-by-issue breakdown and every piece of evidence.</p>${sec}`;
-    bindTips(app);
+  <section class="al-hero">
+    <svg class="al-dome" width="300" height="172" viewBox="0 0 330 190" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M165 10v22M158 32h14M150 60c0-14 7-26 15-28 8 2 15 14 15 28"/><path d="M118 96c0-24 21-40 47-40s47 16 47 40"/><path d="M108 96h114v10H108zM112 106v34M124 106v34M136 106v34M148 106v34M160 106v34M172 106v34M184 106v34M196 106v34M208 106v34M218 106v34"/><path d="M30 140h270v10H30zM40 150v30M290 150v30M30 180h270"/><path d="M60 150v30M80 150v30M100 150v30M230 150v30M250 150v30M270 150v30"/><path d="M95 140V122h140v18"/></svg>
+    <h1>My <em>alignment</em></h1>
+    <p class="al-lede">Say how strongly you agree or disagree with each statement. There are no right or wrong answers. Your answers are compared with every candidate's real votes, bills and statements, issue by issue.</p>
+    <div class="al-feats">
+      <div><span class="al-fi" aria-hidden="true">▤</span><div><b>${ISS.length} issues, tied to real votes</b><small>Each question lists the roll calls behind it</small></div></div>
+      <div><span class="al-fi" aria-hidden="true">🔒</span><div><b>Your answers stay with you</b><small>Saved only in this browser</small></div></div>
+      <div><span class="al-fi" aria-hidden="true">⚖</span><div><b>Not a rating of candidates</b><small>Same questions and rules for everyone</small></div></div>
+    </div>
+  </section>
+  <div class="al-wrap">
+    <nav class="al-cats" id="al-cats" aria-label="Question categories"></nav>
+    <div class="al-main">
+      <div class="al-top"><b id="al-pos"></b><span id="al-pct"></span></div>
+      <div class="al-prog" aria-hidden="true"><i id="al-bar"></i></div>
+      <div id="al-qs"></div>
+      <div class="al-nav"><button type="button" class="al-btn" id="al-prev">← Previous</button><span class="small muted">Answer as many as you like; results update as you go</span><button type="button" class="al-btn p" id="al-next">Next →</button></div>
+      <div class="al-ex"><span class="small muted">Or start from an example (you can change every answer):</span>${EXAMPLES.map((x,k)=>`<button class="pill" data-ex="${k}">${esc(x.name)}</button>`).join('')}<button class="pill ghostb" data-ex="clear">Clear all</button></div>
+    </div>
+    <aside class="al-box al-live" id="al-live" aria-live="polite"></aside>
+    <aside class="al-box al-keep"><h4>💡 Keep in mind</h4><p>"Strongly" counts three times as much as a plain agree or disagree. Neutral skips the issue, and it never counts against anyone. A match describes a record compared with your views; it is not a rating of the candidate.</p></aside>
+  </div>
+  <section class="section" id="al-results" style="padding-top:8px"><h2>Every candidate, race by race</h2>${ALNOTE}<div id="alr"></div></section>`;
+  const drawCats=()=>{$('#al-cats').innerHTML=[['','All questions','☰',ISS.length]].concat(AL_GROUPS.map(([g,l,ic])=>[g,l,ic,ISS.filter(i=>i.group===g).length])).map(([g,l,ic,n])=>{const done=(g?ISS.filter(i=>i.group===g):ISS).filter(i=>alPick(i.id)>=0).length;return `<button type="button" class="al-cat${alView.g===g?' on':''}" data-g="${g}" aria-pressed="${alView.g===g}"><span class="al-ic${g?' al-'+g:''}" aria-hidden="true">${ic}</span><span class="al-cl">${l}</span><span class="al-cn" title="${done} of ${n} answered">${n}</span></button>`}).join('');};
+  const drawTop=()=>{const L=alList(),a=alAnswered();
+    $('#al-pos').textContent=alView.g?`${AL_GBY[alView.g][1]} · ${L.length} question${L.length===1?'':'s'}`:`Questions ${alView.page*AL_PAGE+1}–${alView.page*AL_PAGE+L.length} of ${ISS.length}`;
+    $('#al-pct').textContent=`${a} of ${ISS.length} answered · ${Math.round(a/ISS.length*100)}% complete`;
+    $('#al-bar').style.width=(a/ISS.length*100)+'%';
+    const gi=AL_GROUPS.findIndex(g=>g[0]===alView.g);
+    $('#al-prev').disabled=alView.g?false:alView.page===0;
+    $('#al-next').textContent=alView.g?(gi<AL_GROUPS.length-1?`Next: ${AL_GROUPS[gi+1][1]} →`:'See my results ↓'):(alView.page<pages-1?'Next →':'See my results ↓');};
+  const drawQs=()=>{$('#al-qs').innerHTML=alList().map(alCard).join('');};
+  const drawLive=()=>{$('#al-live').innerHTML=alLive();const b=$('#al-all');if(b)b.addEventListener('click',()=>$('#al-results').scrollIntoView({behavior:'smooth'}));$('#alr').innerHTML=alResults();bindTips(app);};
+  const all=()=>{drawCats();drawTop();drawQs();drawLive();};
+  $('#al-qs').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-k]');if(!b)return;
+    const id=b.closest('.al-q').dataset.i, k=+b.dataset.k, was=alPick(id);
+    if(was===k)delete PROF.issues[id];
+    else{const [side,w]=AL_OPTS[k];PROF.issues[id]=side?{side,w}:{side:'',w:0,neutral:true};}
+    saveProf();
+    b.closest('.al-opts').querySelectorAll('button').forEach(x=>{const on=+x.dataset.k===alPick(id);x.classList.toggle('on',on);x.setAttribute('aria-checked',on);});
+    drawCats();drawTop();drawLive();
+  });
+  $('#al-cats').addEventListener('click',e=>{const b=e.target.closest('button[data-g]');if(!b)return;alView={g:b.dataset.g,page:0};all();});
+  const go=d=>{
+    if(alView.g){const gi=AL_GROUPS.findIndex(g=>g[0]===alView.g)+d;if(gi<0){alView={g:'',page:0};}else if(gi>=AL_GROUPS.length){$('#al-results').scrollIntoView({behavior:'smooth'});return}else alView.g=AL_GROUPS[gi][0];}
+    else{const p=alView.page+d;if(p>=pages){$('#al-results').scrollIntoView({behavior:'smooth'});return}alView.page=Math.max(0,p);}
+    all();$('.al-main').scrollIntoView({behavior:'smooth',block:'start'});
   };
-  const onCh=rebuild=>{if(rebuild){$('#alb').innerHTML=builderHTML();bindBuilder($('#alb'),onCh)}draw();};
-  bindBuilder($('#alb'),onCh);
-  draw();
+  $('#al-prev').addEventListener('click',()=>go(-1));
+  $('#al-next').addEventListener('click',()=>go(1));
+  app.querySelectorAll('[data-ex]').forEach(b=>b.addEventListener('click',()=>{const k=b.dataset.ex;PROF={issues:{}};if(k!=='clear')Object.entries(EXAMPLES[+k].set).forEach(([i,[s,w]])=>PROF.issues[i]={side:s,w});saveProf();all();}));
+  all();
 }
 function evRow(e,want){
   const m=want?(e.side===want):null;
@@ -1316,6 +1393,7 @@ function renderMethod(){
     <p>Entries cover findings by ethics bodies, enforcement actions, reported STOCK Act late disclosures, complaints and referrals (with their documented outcome), and investigations that ended without charges. Partisan outlets are not used as the sole source. "None found" means the listed searches turned up nothing, not that nothing exists.</p>
     <h2>Voter alignment</h2>
     <p><b>Issues.</b> ${ISS.length} issues, each with two sides written neutrally: ${ISS.map(i=>esc(i.label)).join('; ')}. The list is limited to issues on which candidates' records could be documented; it leaves out many topics voters care about.</p>
+    <p><b>Answering.</b> On My alignment each issue is one statement to agree or disagree with; agreeing takes the issue's first side and disagreeing the second. Strongly agree or strongly disagree counts as high importance (3), agree or disagree as medium (2), and Neutral is recorded as answered but left out of every score. Each question lists the key votes it is compared with. The answers are the same choices used on each profile's Voter alignment tab and in the home-page "Your match" grade.</p>
     <p><b>Evidence.</b> (1) Key congressional votes: each is assigned to an issue only when the measure's documented content makes the direction clear, with the reason shown on the vote ("Bill details"). Nominations, stopgap spending bills, bundled packages and lopsided votes are not used; each shows why. When a member voted more than once on the same bill, only the final vote counts. (2) State legislative votes, sponsored bills, official actions and statements from each profile, coded only when the item's own words make the side clear; each coded item shows the reason. Coding was proposed item by item, then reviewed; two items coded from a bill title alone were removed. No vote is inferred, and absences are never counted.</p>
     <p><b>Score.</b> For each issue you choose, the candidate's agreement is the share of their recorded actions (votes, bills, official actions) that match your side. Stated positions are used only for an issue with no recorded action, and are labeled. The overall figure is the importance-weighted average across your issues that have evidence: Σ (importance × agreement) ÷ Σ importance of covered issues. Issues without evidence are left out, not scored as zero. A figure is shown only when evidence covers at least three of your issues (or all of them, if you chose fewer than three) and at least half of your total importance; otherwise the result is "Insufficient data". The figure compares a record with your choices; it is not a rating of the candidate, and candidates with more votes on record have more chances to differ from you.</p>
     <p><b>Your choices</b> are stored only in your browser. The example starting points are labeled by their content, and every choice can be changed.</p>

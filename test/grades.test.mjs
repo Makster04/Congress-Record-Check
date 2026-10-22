@@ -36,3 +36,10 @@ test('every displayed investigation says whether it is open or closed',()=>{
 test('any bill marked for people vs. profit cites its source',()=>{
   for(const v of data.votes.concat(data.hvotes))if(v.pvp){assert.ok(['people','profit'].includes(v.pvp.yea),v.id);assert.ok(v.pvp.src&&/^https:\/\//.test(v.pvp.src.u),v.id+' needs a source link');}
 });
+test('My alignment: every issue has a statement to agree or disagree with, and a known category',()=>{
+  const groups=new Set(['econ','rights','imm','foreign','env']);
+  for(const i of data.issues){
+    assert.ok(groups.has(i.group),`${i.id}: group ${i.group}`);
+    assert.ok(typeof i.statement==='string'&&i.statement.length>20&&/[.]$/.test(i.statement),`${i.id}: statement`);
+  }
+});
