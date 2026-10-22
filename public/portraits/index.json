@@ -179,6 +179,10 @@
       "credit": "Official congressional portrait (public domain), via the unitedstates/images project",
       "src": "https://raw.githubusercontent.com/unitedstates/images/gh-pages/congress/original/H001082.jpg"
     },
+    "davis": {
+      "file": "portraits/davis.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
     "letlow": {
       "file": "portraits/letlow.webp",
       "credit": "Official congressional portrait (public domain), via the unitedstates/images project",
@@ -242,6 +246,22 @@
     },
     "bohannan": {
       "file": "portraits/bohannan.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "merrin": {
+      "file": "portraits/merrin.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "braun": {
+      "file": "portraits/braun.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "flores": {
+      "file": "portraits/flores.webp",
+      "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "beltran": {
+      "file": "portraits/beltran.webp",
       "credit": "Photo supplied by the site's editor for use on this site"
     }
   }
