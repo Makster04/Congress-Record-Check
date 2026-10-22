@@ -55,6 +55,7 @@ test('outside money ratio is always for-to-against: larger side gets the number,
   assert.equal(r(500,0),'all for');
   assert.equal(r(0,500),'all against');
   assert.equal(moneyRatio(0,500,'supporting','opposing').text,'all opposing');
+  assert.deepEqual([[210,100],[100,340],[500,0],[0,500],[104,100],[100,100]].map(([f,a])=>moneyRatio(f,a).side),['for','against','for','against','even','even']);
   assert.equal(moneyRatio(0,0),null);
   assert.equal(moneyRatio(-5,0),null);
   assert.equal(moneyRatio(300,100).share,.75);

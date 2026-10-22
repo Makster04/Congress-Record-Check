@@ -43,10 +43,12 @@ export function pvpScore(votes,personId){
 
 // Outside money: the for-to-against ratio, always that way round. The larger side gets the number and the other is 1
 // ("2.1 : 1" more for, "1 : 2.1" more against); "all for" / "all against" when one side is zero; null when both are.
+// side says which way it leans ('even' when it reads 1 : 1), for coloring.
 // share = for / (for + against) places the ratio on the chart's scale: 1 is all for, 0.5 is 1 : 1, 0 is all against.
 export function moneyRatio(f,a,fw='for',aw='against'){
   f=Math.max(0,+f||0);a=Math.max(0,+a||0);
   if(!f&&!a)return null;
   const n=x=>x>=9.95?String(Math.round(x)):String(Math.round(x*10)/10);
-  return {share:f/(f+a),text:!a?`all ${fw}`:!f?`all ${aw}`:f>=a?`${n(f/a)} : 1`:`1 : ${n(a/f)}`};
+  const text=!a?`all ${fw}`:!f?`all ${aw}`:f>=a?`${n(f/a)} : 1`:`1 : ${n(a/f)}`;
+  return {share:f/(f+a),text,side:text==='1 : 1'?'even':f>a?'for':'against'};
 }
