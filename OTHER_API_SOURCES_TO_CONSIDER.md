@@ -1,14 +1,18 @@
 # These APIs were all stated as Free
 
 ## **Already using**
-- **FEC API and bulk files:** donations, PAC contributions and outside spending **(Federal only)**. [api.open.fec.gov/developers](https://api.open.fec.gov/developers/)
-- **Congress.gov API:** bills and sponsorships **(Federal only)**.
+### Refreshed automatically while the app runs (see Updates in the app)
+- **FEC API:** campaign totals (including how much came from individual donors, as a total), PAC contributions and outside spending. It does not collect individual donors' names or employers yet. Needs a free key **(Federal only)**. [api.open.fec.gov/developers](https://api.open.fec.gov/developers/)
+- **Congress.gov API:** bills each member sponsored in the current Congress. Needs a free key **(Federal only)**.
     - Key: [api.congress.gov/sign-up](https://api.congress.gov/sign-up/)
     - Docs: [github.com/LibraryOfCongress/api.congress.gov](https://github.com/LibraryOfCongress/api.congress.gov)
-- **House Clerk roll calls:** official House votes **(Federal only)**. [clerk.house.gov/Votes](https://clerk.house.gov/Votes)
-- **Senate roll calls:** official Senate votes **(Federal only)**. [senate.gov roll call lists](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm)
-- **Voteview:** DW-NOMINATE ideology scores **(Federal only)**. [voteview.com](https://voteview.com)
-- **unitedstates/images:** official public-domain congressional portraits **(Federal only)**. [github.com/unitedstates/images](https://github.com/unitedstates/images)
+- **House Clerk roll calls:** official House votes, with no key **(Federal only)**. [clerk.house.gov/Votes](https://clerk.house.gov/Votes)
+- **Senate roll calls:** official Senate votes, with no key **(Federal only)**. [senate.gov roll call lists](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm)
+
+### Imported once and rebuilt by hand
+- **FEC bulk files:** each researched group's money to each candidate since 2019, for the funder timelines (`scripts/build-funder-history.mjs`) **(Federal only)**. [fec.gov bulk data](https://www.fec.gov/data/browse-data/?tab=bulk-data)
+- **Voteview:** DW-NOMINATE ideology scores, copied into the research file and not refreshed **(Federal only)**. [voteview.com](https://voteview.com)
+- **unitedstates/images:** official public-domain congressional portraits (`scripts/build-portraits.py`). Candidates who never served in Congress use photos supplied for the site instead **(Federal only)**. [github.com/unitedstates/images](https://github.com/unitedstates/images)
 
 ## **New: floor speeches**
 - **Congress.gov Congressional Record endpoints:** daily and bound Record, using your existing key **(Federal only)**. [Endpoint docs](https://github.com/LibraryOfCongress/api.congress.gov/blob/main/Documentation/DailyCongressionalRecordEndpoint.md)

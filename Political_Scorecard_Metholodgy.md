@@ -257,13 +257,13 @@ Scores are refreshed once a month, matching the monthly donation data.
 
 ## Data sources and current status
 
-Each data category below lists its free sources and the parts of the scorecard it feeds. The bold label shows whether a source covers federal officials, state officials, or both. Sources marked *in use* are already connected in the app.
+Each data category below lists its free sources and the parts of the scorecard it feeds. The bold label shows whether a source covers federal officials, state officials, or both. Sources marked *in use* are already used by the app. The FEC API, Congress.gov and the House and Senate roll calls refresh automatically; FEC bulk files, Voteview and unitedstates/images are imported once and rebuilt by hand.
 
 ### Bills and sponsorships
 
 *Feeds Rule 1, Your match, the Promise Score, and People over Profit.*
 
-- **Congress.gov API** *(in use)*: bills and sponsorships **(Federal only)**. [Key](https://api.congress.gov/sign-up/) · [Docs](https://github.com/LibraryOfCongress/api.congress.gov)
+- **Congress.gov API** *(in use)*: bills each member sponsored in the current Congress **(Federal only)**. [Key](https://api.congress.gov/sign-up/) · [Docs](https://github.com/LibraryOfCongress/api.congress.gov)
 - **Congress.gov cosponsored-legislation endpoint:** the bills each member co-sponsored, which Rule 1 counts. It uses the same Congress.gov key **(Federal only)**.
 
 ### Votes
@@ -277,7 +277,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 *Feeds the ideological position indicator.*
 
-- **Voteview** *(in use)*: DW-NOMINATE ideology scores **(Federal only)**. [voteview.com](https://voteview.com)
+- **Voteview** *(in use)*: DW-NOMINATE ideology scores, copied into the research file and not refreshed **(Federal only)**. [voteview.com](https://voteview.com)
 
 ### Floor speeches and hearings
 
@@ -325,7 +325,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 *Feeds the Money & Influence Analysis and its charts.*
 
-- **FEC API and bulk files** *(in use)*: donations, PAC contributions, and outside spending **(Federal only)**. [api.open.fec.gov/developers](https://api.open.fec.gov/developers/)
+- **FEC API and bulk files** *(in use)*: campaign totals (including the total from individual donors), PAC contributions, and outside spending; the bulk files feed the funder timelines. Individual donors' names and employers, which the top-donor tracking above needs, are not collected yet **(Federal only)**. [api.open.fec.gov/developers](https://api.open.fec.gov/developers/)
 
 ### Lobbying
 
@@ -341,7 +341,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 ### Profile photos
 
-- **unitedstates/images** *(in use)*: official public-domain congressional portraits **(Federal only)**. [github.com/unitedstates/images](https://github.com/unitedstates/images)
+- **unitedstates/images** *(in use)*: official public-domain congressional portraits; candidates who never served in Congress use photos supplied for the site **(Federal only)**. [github.com/unitedstates/images](https://github.com/unitedstates/images)
 
 ### Other sources
 

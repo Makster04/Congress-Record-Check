@@ -4,7 +4,7 @@ A local, automatically refreshed version of the supplied Congress Record Check H
 
 ## Run locally
 
-Open **Start Congress Record Check.cmd**, then visit **http://127.0.0.1:8787**. Requires Node.js 22.13 or later. The launcher installs dependencies if needed. Alternatively, run `npm ci` and `npm start` in this directory.
+Requires Node.js 22.13 or later. On a Mac (or Linux), open Terminal in this folder, run `npm ci` the first time, then `npm start`, and visit **http://127.0.0.1:8787**. On Windows, open **Start Congress Record Check.cmd** instead; it installs dependencies if needed.
 
 The local server binds only to your computer. It uses `.local/records.sqlite` and checks the refresh queue once a minute while running. Closing it stops the checks; saved data survives restarts. Nothing has been deployed or subscribed to.
 
@@ -15,11 +15,12 @@ The local server binds only to your computer. It uses `.local/records.sqlite` an
 3. Enter the keys after `FEC_API_KEY=` and `CONGRESS_API_KEY=`. Keep this file private.
 4. Restart the local server. Open **Updates** to see progress.
 
-House and Senate roll calls need no API keys. The Updates screen distinguishes setup requirements, queued work, successful refreshes, and retrying failures. The button runs the next eight source pages; a large source can require several batches. Frontend keys are never used, and saved request URLs exclude credentials.
+The FEC key unlocks campaign totals, PAC contributions, outside spending and the campaign-committee lookup; the Congress.gov key unlocks sponsored legislation. House and Senate roll calls need no API keys. Without keys the app still runs on the reviewed research, and the Updates screen lists the waiting sources as "Awaiting API keys". The Updates screen distinguishes setup requirements, queued work, successful refreshes, and retrying failures. The button runs the next eight source pages; a large source can require several batches. Frontend keys are never used, and saved request URLs exclude credentials.
 
 ## What refreshes
 
-- **Campaign totals:** FEC principal committee summaries, on their own reporting dates.
+- **Campaign totals:** FEC principal committee summaries, on their own reporting dates. These include how much came from individual donors as a total; individual donors' names and employers are not collected.
+- **Campaign committee:** for a candidate whose principal committee is not configured, the FEC candidate-committee lookup, rechecked weekly.
 - **PAC contributions:** processed FEC Form 3, Schedule A line 11C, in the selected two-year period. Memo entries are excluded. These contributions are part of campaign receipts.
 - **Outside spending:** processed Schedule E with `most_recent=true`. Only general-election entries directly naming the candidate, with dissemination dates within the window, enter the current totals. Support and opposition are separate; opposition to another candidate is not credited to this person. Negative corrections remain. Exact repeated transactions are deduplicated; different transaction IDs remain distinct. Primary/special/unspecified elections, memo entries, future dates and missing dates are separately counted as exclusions.
 - **Legislation:** current-Congress sponsored bills and resolutions from Congress.gov, with official links. Recently updated earlier-Congress bills are excluded. The interface shows up to 100; raw published records are retained.
@@ -27,11 +28,17 @@ House and Senate roll calls need no API keys. The Updates screen distinguishes s
 
 Each source is scheduled again 24 hours after completion, except individual roll calls: a published vote is final and is not fetched again. All pages must succeed before new financial or legislative records publish. Full replacements pick up revised totals, amendments and removed records instead of appending forever. Failed runs leave the last published snapshot intact and retry with backoff; source `Retry-After` is respected. A database lock prevents overlapping refreshers. The UI provides on-page failure/staleness notices and a refresh history; external email or push alerts are not configured.
 
-Some snapshots can have different check and coverage dates. In particular, checking the FEC today does not create a newer campaign filing. Imported financial comparisons stay labeled as research snapshots; refreshed figures appear in **Latest records** so different reporting windows are not silently mixed.
+Some snapshots can have different check and coverage dates. In particular, checking the FEC today does not create a newer campaign filing. Imported financial comparisons stay labeled as research snapshots; refreshed figures appear separately, under **Latest official records** at the bottom of each profile's **Money & Influence** tab (campaign totals, PAC contributions, outside spending) and **Your match** tab (sponsored bills and roll calls), so different reporting windows are not silently mixed.
+
+**Not refreshed automatically.** These are imported once and rebuilt by hand, so they change only when someone reruns them:
+
+- **Voteview DW-NOMINATE scores**, with the rest of the reviewed research in `public/research.json` (biographies, race ratings, ethics, statement checks, issue coding).
+- **Portraits**, from [unitedstates/images](https://github.com/unitedstates/images) plus supplied photos, built by `scripts/build-portraits.py` (see Portraits).
+- **Funder timelines**, from FEC bulk files, built by `scripts/build-funder-history.mjs` (see Money and votes over time).
 
 ## Bundled snapshot
 
-`data/seed.json` holds published snapshots from a completed refresh, so a new install shows campaign, PAC, outside-spending, legislation and vote data immediately instead of waiting hours, and works without API keys. It is loaded only when `.local/records.sqlite` is new; an existing database is never overwritten. Seeded records keep their original check dates, so with API keys an old seed refreshes in the background on the normal schedule. A seed made for a different cycle, Congress or session is ignored.
+`data/seed.json`, when present, holds published snapshots from a completed refresh, so a new install shows campaign, PAC, outside-spending, legislation and vote data immediately instead of waiting hours, and works without API keys. **None has been committed yet**, so a new install currently starts empty and fills as the refresh runs. The file is loaded only when `.local/records.sqlite` is new; an existing database is never overwritten. Seeded records keep their original check dates, so with API keys an old seed refreshes in the background on the normal schedule. A seed made for a different cycle, Congress or session is ignored.
 
 To update it, let the local server finish its refresh (every job on **Updates** has completed at least once), then run `npm run seed:export` and commit `data/seed.json`. The export stops if any job has not completed yet (`npm run seed:export -- --partial` exports what has), and refuses to write a file containing an API key.
 
@@ -78,7 +85,7 @@ Job definitions are seeded on the first launch. Changing the tracked population 
 
 ## Checks
 
-Run `npm test` for pagination, transaction deduplication, negative corrections, API identity validation, precision-safe IDs, stale-data preservation, atomic publication, refresh locking and request protection. Run `npm run check` for syntax and import validation.
+Run `npm test` for the refresher (pagination, transaction deduplication, negative corrections, API identity validation, precision-safe IDs, stale-data preservation, atomic publication, never re-fetching a published vote, the bundled seed, refresh locking and request protection) and for the reviewed data: the grades and outside-money ratio (`test/grades.test.mjs`), ideology marks and Overview inputs (`test/overview.test.mjs`), funder timelines (`test/funder-history.test.mjs`) and portraits (`test/portraits.test.mjs`). Run `npm run check` for syntax and import validation.
 
 The FEC and Congress.gov adapters are covered by representative response tests. Their authenticated live refreshes require your API keys; they have not been claimed as verified without those keys. Official House and Senate XML feeds can be checked live locally.
 
@@ -102,15 +109,20 @@ Deployment remains a later manual step because this version was requested to sta
 
 ## Files
 
-- `public/` — existing design, reviewed JSON, live data UI
+- `public/` — the site: `app.js` (pages), `live.js` (Updates and latest official records), `grades.js` (the four grades and the outside-money ratio), `lean.js` (liberal/conservative bill marks), `research.json` (reviewed research), `funder-history.json`, `portraits/`
 - `src/sources.mjs` — official-source adapters and validation
 - `src/refresh.mjs` — persistent jobs, staging and publication
 - `src/worker.mjs` — Cloudflare API and scheduled handler
 - `scripts/local.mjs` — localhost server using the same backend
+- `scripts/build-funder-history.mjs`, `scripts/build-portraits.py` — rebuild the funder timelines and portraits by hand
+- `scripts/export-seed.mjs` — writes `data/seed.json` (`npm run seed:export`)
+- `data/config.json` — who and which election and Congress are tracked; `data/portraits/` and `scripts/portrait-extra.json` — supplied photos and their credits
 - `migrations/` — portable SQLite/D1 schema
-- `test/` — backend regression tests
+- `test/` — regression tests
+- `Political_Scorecard_Metholodgy.md` — the scoring methodology; `OTHER_API_SOURCES_TO_CONSIDER.md` — free data sources in use and under consideration
 
-Sources: [FEC API](https://api.open.fec.gov/developers/), [Congress.gov API documentation](https://github.com/LibraryOfCongress/api.congress.gov), [Senate roll calls](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm), [House Clerk](https://clerk.house.gov/Votes).
+Sources: [FEC API](https://api.open.fec.gov/developers/) and [bulk files](https://www.fec.gov/data/browse-data/?tab=bulk-data), [Congress.gov API documentation](https://github.com/LibraryOfCongress/api.congress.gov), [Senate roll calls](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm), [House Clerk](https://clerk.house.gov/Votes), [Voteview](https://voteview.com), [unitedstates/images](https://github.com/unitedstates/images).
+
 # Public Ledger
 ### Follow the money. Check the record. Find your alignment.
 
