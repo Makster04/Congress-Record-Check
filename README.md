@@ -25,9 +25,15 @@ House and Senate roll calls need no API keys. The Updates screen distinguishes s
 - **Legislation:** current-Congress sponsored bills and resolutions from Congress.gov, with official links. Recently updated earlier-Congress bills are excluded. The interface shows up to 100; raw published records are retained.
 - **Votes:** the original 50 selected roll calls, the latest 30 Senate roll calls discovered from the official index, and subsequent House roll calls discovered sequentially after the latest House roll in the supplied snapshot. This is not a complete historical voting archive. New votes do not change reviewed alignment scores. House positions use Bioguide IDs; Senate positions use an unambiguous exact surname and state match, or a LIS ID if configured. An unmatched person produces no inferred vote.
 
-Each source is scheduled again 24 hours after completion. All pages must succeed before new financial or legislative records publish. Full replacements pick up revised totals, amendments and removed records instead of appending forever. Failed runs leave the last published snapshot intact and retry with backoff; source `Retry-After` is respected. A database lock prevents overlapping refreshers. The UI provides on-page failure/staleness notices and a refresh history; external email or push alerts are not configured.
+Each source is scheduled again 24 hours after completion, except individual roll calls: a published vote is final and is not fetched again. All pages must succeed before new financial or legislative records publish. Full replacements pick up revised totals, amendments and removed records instead of appending forever. Failed runs leave the last published snapshot intact and retry with backoff; source `Retry-After` is respected. A database lock prevents overlapping refreshers. The UI provides on-page failure/staleness notices and a refresh history; external email or push alerts are not configured.
 
 Some snapshots can have different check and coverage dates. In particular, checking the FEC today does not create a newer campaign filing. Imported financial comparisons stay labeled as research snapshots; refreshed figures appear in **Latest records** so different reporting windows are not silently mixed.
+
+## Bundled snapshot
+
+`data/seed.json` holds published snapshots from a completed refresh, so a new install shows campaign, PAC, outside-spending, legislation and vote data immediately instead of waiting hours, and works without API keys. It is loaded only when `.local/records.sqlite` is new; an existing database is never overwritten. Seeded records keep their original check dates, so with API keys an old seed refreshes in the background on the normal schedule. A seed made for a different cycle, Congress or session is ignored.
+
+To update it, let the local server finish its refresh (every job on **Updates** has completed at least once), then run `npm run seed:export` and commit `data/seed.json`. The export stops if any job has not completed yet (`npm run seed:export -- --partial` exports what has), and refuses to write a file containing an API key.
 
 ## Profile tabs
 
