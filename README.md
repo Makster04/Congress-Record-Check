@@ -119,7 +119,7 @@ Deployment remains a later manual step because this version was requested to sta
 - `data/config.json` — who and which election and Congress are tracked; `data/portraits/` and `scripts/portrait-extra.json` — supplied photos and their credits
 - `migrations/` — portable SQLite/D1 schema
 - `test/` — regression tests
-- `Political_Scorecard_Metholodgy.md` — the scoring methodology; `OTHER_API_SOURCES_TO_CONSIDER.md` — free data sources in use and under consideration; `ALT_README.md` — a draft of this whole README once the methodology's rules and those new sources are built
+- `1_Political_Scorecard_Metholodgy.md` — the scoring methodology; `2_API_SOURCES_TO_CONSIDER.md` — free data sources in use, under consideration, and ruled out; `3_ALT_README.md` — a draft of this whole README once the methodology's rules and those new sources are built; `4_MAJOR_OVERHAUL.md` — everything that would be added, changed or removed by that build
 
 Sources: [FEC API](https://api.open.fec.gov/developers/) and [bulk files](https://www.fec.gov/data/browse-data/?tab=bulk-data), [Congress.gov API documentation](https://github.com/LibraryOfCongress/api.congress.gov), [Senate roll calls](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm), [House Clerk](https://clerk.house.gov/Votes), [Voteview](https://voteview.com), [unitedstates/images](https://github.com/unitedstates/images).
 

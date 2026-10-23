@@ -1,6 +1,6 @@
 # Congress Record Check
 
-> **Draft, not current.** This is how the whole README will read once the rules in [Political_Scorecard_Metholodgy.md](Political_Scorecard_Metholodgy.md) are built into the app, together with the new data sources they need (listed in [OTHER_API_SOURCES_TO_CONSIDER.md](OTHER_API_SOURCES_TO_CONSIDER.md)). Most of it is not built yet. For what the app does today, see [README.md](README.md). Names marked † are placeholders for files and commands that don't exist yet. Values the methodology lists under "Open decisions" are marked *(placeholder)*.
+> **Draft, not current.** This is how the whole README will read once the rules in [1_Political_Scorecard_Metholodgy.md](1_Political_Scorecard_Metholodgy.md) are built into the app, together with the new data sources they need (listed in [2_API_SOURCES_TO_CONSIDER.md](2_API_SOURCES_TO_CONSIDER.md)). Most of it is not built yet. For what the app does today, see [README.md](README.md). Names marked † are placeholders for files and commands that don't exist yet. Values the methodology lists under "Open decisions" are marked *(placeholder)*.
 
 **What changes from today's README**
 
@@ -11,7 +11,8 @@
 - **Money & Influence Analysis:** each politician's top 20 donor organizations by month, matched to lobbying on bills they acted on, with two alignment measures and timing flags. It is shown beside the grades, never inside them.
 - **Score pages:** each grade gets its own page ranking everyone, with "Not graded" people shown as grey rows.
 - **Scores are recalculated monthly** after review, with a log of every change; the data underneath still refreshes daily.
-- **New data sources:** cosponsorships, the Congressional Record, hearings, Vote Smart, Bluesky, the Wayback Machine, Open States, congress-legislators, LDA.gov lobbying, stock trades and USAspending.
+- **New data sources:** cosponsorships, House votes, bill summaries and CRS reports from Congress.gov, the Congressional Record, hearings, the Federal Register, Vote Smart, fact-checks, news coverage, Bluesky, the Wayback Machine, Open States, official committee lists, congress-legislators, court records, FEC enforcement records, DOJ press releases, LDA.gov and FARA lobbying, stock trades, company industry codes (SEC EDGAR), nonprofit and 527 filings, USAspending and SAM.gov.
+- **Ethics leads:** court records, FEC enforcement records, DOJ press releases and news are collected as leads; a case is scored only after its status is confirmed from an official record.
 
 ## Run locally
 
@@ -28,15 +29,19 @@ The local server binds only to your computer. It uses `.local/records.sqlite` an
 
 | Key in `.dev.vars` | Get it at | Unlocks |
 |---|---|---|
-| `FEC_API_KEY` | [api.open.fec.gov/developers](https://api.open.fec.gov/developers/) | Campaign totals, donors grouped by employer, PAC contributions, outside spending, campaign-committee lookup |
-| `CONGRESS_API_KEY` | [api.congress.gov/sign-up](https://api.congress.gov/sign-up/) | Sponsored and cosponsored bills, the Congressional Record |
+| `FEC_API_KEY` | [api.open.fec.gov/developers](https://api.open.fec.gov/developers/) | Campaign totals, donors grouped by employer, PAC contributions, outside spending, campaign-committee lookup, FEC enforcement records |
+| `CONGRESS_API_KEY` | [api.congress.gov/sign-up](https://api.congress.gov/sign-up/) | Sponsored and cosponsored bills, House roll calls from 2023 on, bill summaries, amendments and CRS reports, committee meetings, the Congressional Record |
 | `GOVINFO_API_KEY` | [govinfo.gov/api-signup](https://www.govinfo.gov/api-signup) | Floor speeches and hearing transcripts. Leave it blank to try the Congress.gov key; both are api.data.gov keys |
 | `VOTESMART_API_KEY` | [votesmart.org/services_api.php](http://votesmart.org/services_api.php) | Issue positions and interest-group ratings |
 | `OPENSTATES_API_KEY` | [openstates.org/accounts/signup](https://openstates.org/accounts/signup/) | State legislators' bills, votes and sponsorships |
 | `LDA_API_KEY` (optional) | [lda.gov](https://lda.gov/) | Lobbying filings. Works without a key at a lower rate limit |
-| `STOCK_TRADES_API_KEY` | [bargo.ai/free-apis/dash](https://www.bargo.ai/free-apis/dash) | Members' stock trades, with late-filing flags |
+| `STOCK_TRADES_API_KEY` | [bargo.ai/free-apis/dash](https://www.bargo.ai/free-apis/dash) | Members' stock trades from the last 3 months, with late-filing flags |
+| `COURTLISTENER_API_TOKEN` | [courtlistener.com/help/api/rest](https://www.courtlistener.com/help/api/rest/) | Court opinions and dockets naming profiled people. A free account allows about 125 requests a day |
+| `GOOGLE_API_KEY` | [developers.google.com/fact-check-tools](https://developers.google.com/fact-check-tools) | Published fact-checks of politicians' claims |
+| `SAM_API_KEY` | [open.gsa.gov/api/entity-api](https://open.gsa.gov/api/entity-api) | Companies' federal IDs and industry codes, for matching donors to contracts |
+| `SEC_USER_AGENT` (not a key) | [SEC developer resources](https://www.sec.gov/search-filings/edgar-application-programming-interfaces) | Your name and contact email, which SEC EDGAR asks every request to include |
 
-No key is needed for House and Senate roll calls, Bluesky posts, the congress-legislators files, the Wayback Machine or USAspending. Sources whose key is missing wait on the Updates screen as "Awaiting API keys", and the app shows the reviewed research. The Updates screen distinguishes setup requirements, queued work, successful refreshes, and retrying failures. The button runs the next eight source pages; a large source can require several batches. Frontend keys are never used, and saved request URLs exclude credentials.
+No key is needed for the Senate and older House roll calls, the Senate and House committee lists, the Federal Register, Bluesky posts, the congress-legislators files, the Wayback Machine, GDELT news, DOJ press releases, SEC EDGAR, ProPublica's Nonprofit Explorer, the IRS 527 data, FARA or USAspending. Sources whose key is missing wait on the Updates screen as "Awaiting API keys", and the app shows the reviewed research. The Updates screen distinguishes setup requirements, queued work, successful refreshes, and retrying failures. The button runs the next eight source pages; a large source can require several batches. Frontend keys are never used, and saved request URLs exclude credentials.
 
 ## What refreshes
 
@@ -47,16 +52,19 @@ No key is needed for House and Senate roll calls, Bluesky posts, the congress-le
 - **Campaign committee:** for a candidate whose principal committee is not configured, the FEC candidate-committee lookup, rechecked weekly.
 - **PAC contributions:** processed FEC Form 3, Schedule A line 11C, in the selected two-year period. Memo entries are excluded. These contributions are part of campaign receipts.
 - **Outside spending:** processed Schedule E with `most_recent=true`. Only general-election entries directly naming the candidate, with dissemination dates within the window, enter the current totals. Support and opposition are separate; opposition to another candidate is not credited to this person. Negative corrections remain. Exact repeated transactions are deduplicated; different transaction IDs remain distinct. Primary/special/unspecified elections, memo entries, future dates and missing dates are separately counted as exclusions.
-- **Lobbying:** LDA.gov registrations, quarterly activity reports and lobbyist contribution reports for the tracked donor organizations.
-- **Federal contracts:** USAspending contracts and grants to the tracked donor organizations, matched by the company's federal ID (UEI), with uncertain name matches left for review.
-- **Stock trades:** members' Periodic Transaction Reports, with trade and filing dates so late reports are flagged. Each trade links to the original House Clerk or Senate eFD filing.
+- **Groups behind outside spending:** for nonprofits and 527 groups that spend in a race, their own filings from ProPublica's Nonprofit Explorer and the IRS 527 data, so "dark money" spenders show who they are.
+- **Lobbying:** LDA.gov registrations, quarterly activity reports and lobbyist contribution reports for the tracked donor organizations, plus FARA registrations for any of them lobbying for a foreign government or company.
+- **Federal contracts:** USAspending contracts and grants to the tracked donor organizations, matched by the company's federal ID (UEI) from SAM.gov, with uncertain name matches left for review.
+- **Stock trades:** members' Periodic Transaction Reports from the last 3 months (Bargo's free tier), with trade and filing dates so late reports are flagged, and each company's industry code from SEC EDGAR for the committee-conflict rule. Each trade links to the original House Clerk or Senate eFD filing.
 
 **Record**
 
 - **Legislation:** current-Congress bills and resolutions each member sponsored or cosponsored, from Congress.gov, with official links. Recently updated earlier-Congress bills are excluded. The interface shows up to 100 of each; raw published records are retained.
-- **Votes:** the original 50 selected roll calls, the latest 30 Senate roll calls discovered from the official index, and subsequent House roll calls discovered sequentially after the latest House roll in the supplied snapshot. This is not a complete historical voting archive. House positions use Bioguide IDs; Senate positions use LIS IDs from congress-legislators. An unmatched person produces no inferred vote.
+- **Bill details:** Congress.gov bill summaries, amendments, committee reports and CRS reports for each key bill, so the bill-detail panels no longer have to be written by hand.
+- **Official acts:** Federal Register documents (executive orders, rules) for profiled people who held federal executive office.
+- **Votes:** the original 50 selected roll calls, the latest 30 Senate roll calls discovered from the official index, and new House roll calls. House votes from 2023 on come from Congress.gov's House vote endpoints; earlier ones from the House Clerk's files. This is not a complete historical voting archive. House positions use Bioguide IDs; Senate positions use LIS IDs from congress-legislators. An unmatched person produces no inferred vote.
 - **State legislative records:** Open States bills, votes and sponsorships for profiled people who serve or served in a state legislature, matched by their Open States ID.
-- **Committees and member IDs:** the congress-legislators current-members and committee files: committee assignments, plus each member's IDs across systems (Bioguide, FEC, LIS and others), used to match people between sources.
+- **Committees and member IDs:** committee assignments from the official Senate and House member files, plus each member's IDs across systems (Bioguide, FEC, LIS and others) from congress-legislators, used to match people between sources. Candidates who never served in Congress are matched through Wikidata.
 
 **Statements**
 
@@ -65,24 +73,34 @@ No key is needed for House and Senate roll calls, Bluesky posts, the congress-le
 - **Issue positions:** Vote Smart positions and interest-group ratings, requested one person at a time because bulk requests aren't allowed.
 - **Social posts:** public Bluesky posts from each member's official accounts in congress-legislators, plus campaign accounts listed in `data/config.json`.
 - **Campaign websites:** each new Wayback Machine snapshot of each campaign site, so a promise can be compared with earlier versions after it is edited or deleted.
+- **Fact-checks:** published fact-checks of each politician's claims, from Google's Fact Check Tools, as leads for statement checks.
+- **News coverage:** articles naming each politician, from GDELT, as leads for statements and ethics cases.
 
-**Nothing new changes a grade by itself.** New votes, bills, speeches, posts, positions, trades and filings are listed for review; a grade changes only when the reviewed research is updated.
+**Ethics leads**
+
+- **Court records:** CourtListener opinions and dockets naming profiled people, checked weekly to stay within the free account's daily limit.
+- **FEC enforcement:** closed enforcement cases, advisory opinions and fines involving each campaign.
+- **DOJ press releases:** indictments, plea deals and settlements naming profiled people.
+
+**Nothing new changes a grade by itself.** New votes, bills, speeches, posts, positions, fact-checks, news, court and enforcement records, trades and filings are listed for review; a grade changes only when the reviewed research is updated. An ethics lead becomes a scored case only after its status is confirmed from an official record.
 
 Each source is scheduled again 24 hours after completion, except individual roll calls: a published vote is final and is not fetched again. Vote Smart requests are paced to stay within its limits. All pages must succeed before new records publish. Full replacements pick up revised totals, amendments and removed records instead of appending forever. Failed runs leave the last published snapshot intact and retry with backoff; source `Retry-After` is respected. A database lock prevents overlapping refreshers. The UI provides on-page failure/staleness notices and a refresh history; external email or push alerts are not configured.
 
 Some snapshots can have different check and coverage dates. In particular, checking the FEC today does not create a newer campaign filing. Imported comparisons stay labeled as research snapshots; refreshed records appear separately, under **Latest official records** at the bottom of each profile's tabs, so different reporting windows are not silently mixed:
 
-- **Money & Influence:** campaign totals, donors by employer, PAC contributions, outside spending, lobbying and federal contracts
-- **Your match:** sponsored and cosponsored bills, roll calls, state legislative records and committee assignments
-- **Promises Delivered:** floor speeches, hearings, issue positions, social posts and campaign-site snapshots
-- **Ethics:** stock trades and late-filing flags
+- **Money & Influence:** campaign totals, donors by employer, PAC contributions, outside spending and the groups behind it, lobbying (including FARA) and federal contracts
+- **Your match:** sponsored and cosponsored bills, bill details, official acts, roll calls, state legislative records and committee assignments
+- **Promises Delivered:** floor speeches, hearings, issue positions, social posts, campaign-site snapshots, fact-checks and news
+- **Ethics:** stock trades and late-filing flags, court records, FEC enforcement records and DOJ press releases
 
 **Not refreshed automatically.** These are imported once and rebuilt by hand, so they change only when someone reruns them:
 
 - **Voteview DW-NOMINATE scores**, with the rest of the reviewed research in `public/research.json` (biographies, race ratings, ethics, statement checks, issue coding).
-- **Portraits**, from [unitedstates/images](https://github.com/unitedstates/images) plus supplied photos, built by `scripts/build-portraits.py` (see Portraits in the README).
+- **Portraits**, from [unitedstates/images](https://github.com/unitedstates/images), supplied photos and freely licensed Wikimedia Commons photos (license and credit checked for each), built by `scripts/build-portraits.py` (see Portraits).
 - **Funder timelines**, from FEC bulk files, built by `scripts/build-funder-history.mjs` (see Money and votes over time in the README).
-- **Yearly financial disclosures** (holdings and blind trusts), from the House Clerk's yearly downloads and Senate eFD, read with the CapitolGains Python package by `scripts/build-holdings.py` (planned name). Senate eFD has no API, so each import is checked by hand.
+- **Yearly financial disclosures and older trades** (holdings, blind trusts, and trades older than Bargo's 3 months), from the House Clerk's yearly downloads and Senate eFD, read with the CapitolGains Python package by `scripts/build-holdings.py` (planned name). Senate eFD has no API, so each import is checked by hand, and its terms on automated access need checking first.
+- **Executive-branch disclosures** from the Office of Government Ethics, for candidates who held federal executive posts. OGE has no API.
+- **State campaign finance**, for state-only officials in states that publish it (for example Washington), one state at a time.
 
 ## Bundled snapshot
 
@@ -92,7 +110,7 @@ To update it, let the local server finish its refresh (every job on **Updates** 
 
 ## Scoring rules
 
-The full rules, formulas and worked examples are in [Political_Scorecard_Metholodgy.md](Political_Scorecard_Metholodgy.md), and the Methodology page in the app states the same rules. Every weight, threshold and deduction lives in one place, `public/grades.js`, so changing a value there changes every page, and `npm test` checks each rule.
+The full rules, formulas and worked examples are in [1_Political_Scorecard_Metholodgy.md](1_Political_Scorecard_Metholodgy.md), and the Methodology page in the app states the same rules. Every weight, threshold and deduction lives in one place, `public/grades.js`, so changing a value there changes every page, and `npm test` checks each rule.
 
 **Rule 1: actions count more than words.** Sponsoring or cosponsoring a bill, voting on it, and an official act (for officials who don't vote in Congress) each weigh 1.0. A floor speech or public statement weighs 0.5 and is used only on an issue with no recorded action; once a vote, sponsorship or official act exists, it replaces earlier statements. Sponsoring a bill and then voting for it counts once. A Yea or a sponsorship takes the bill's marked side and a Nay the other; missed votes are not counted; if someone says one thing and votes the other way, only the vote is scored. A person who never held federal office but held a state office is scored on that state record, with the same weights.
 
@@ -114,7 +132,7 @@ These judgments are made by people and stored in `public/research.json`, never b
 - **Bills marked People or Profit:** each mark is stored once per bill (`bills[]`†) with its side, a short reason and the cited CBO, JCT or Tax Policy Center analysis, so a vote and a sponsorship on the same bill share it: `{"id": "119-hr-1", "pvp": "profit", "why": "...", "src": {"t": "...", "u": "..."}}`. A bill whose analysis shows no clear winner is left unmarked. A tax bill counts as favoring the wealthy when the analysis shows 80% or more of its benefit going to the highest-income households and large corporations *(placeholder)*.
 - **Bills marked liberal or conservative:** `liberalSide` / `leanNote` on each issue, as today, for the key-vote position.
 - **Promises:** a statement check that is a true commitment carries `"promise": true`†, so vague goals ("fight for families") are not scored. A promise left unacted at the end of the term is closed as contradicted, with the date and reason.
-- **Ethics cases:** `status` (allegation, investigation or finding) and, for investigations, `stage` (open or closed). When a case changes, its status is updated rather than a new entry added, so it counts once.
+- **Ethics cases:** `status` (allegation, investigation or finding) and, for investigations, `stage` (open or closed). When a case changes, its status is updated rather than a new entry added, so it counts once. Leads from court records, FEC enforcement records, DOJ press releases and news become cases only after a reviewer confirms their status from an official record.
 - **Committee sectors:** which industries each committee oversees, for committee-conflict trades, in `data/committee-sectors.json`†.
 
 Who assigns People/Profit and liberal/conservative marks, and how disagreements are settled, is an open decision in the methodology.
@@ -123,7 +141,7 @@ Who assigns People/Profit and liberal/conservative marks, and how disagreements 
 
 The data underneath refreshes daily (see What refreshes). Scores are recalculated once a month, after review, matching the monthly donation data:
 
-1. Review everything new since the last update on **Updates**: votes, sponsorships, floor speeches, statements and campaign-site changes, ethics case changes, stock-trade disclosures, donation and lobbying filings.
+1. Review everything new since the last update on **Updates**: votes, sponsorships, floor speeches, statements and campaign-site changes, fact-checks, ethics leads (court records, FEC enforcement records, DOJ press releases, news) and case changes, stock-trade disclosures, donation and lobbying filings.
 2. Mark new bills People or Profit from a cited analysis, with the reason.
 3. Match new actions to existing promises, and replace earlier statements with votes where Rule 1 applies.
 4. Run `npm run scores:monthly`† to recalculate all four scores and rerun the Money & Influence flags.
@@ -136,19 +154,19 @@ Each profile has six tabs: **Overview**; one tab per grade (**Your match**, **Pr
 - **Overview:** the four grades (each opens its tab), where the campaign's money comes from, outside money for and against, how the record compares with your choices, where they sit politically, whether their words match their actions, and a short ethics list.
 - **Your match:** the comparison with the positions you chose, issue by issue, with each action's weight (votes, sponsorships and cosponsorships 1.0; speeches and statements 0.5), sorted by the importance you gave; then the record it is drawn from (ideology, key votes, bills, state record) and the latest official records.
 - **Promises Delivered:** each tagged promise and stated position next to what the record shows, with its credit; a stacked bar of supported, partly supported, changed and contradicted, using raw counts.
-- **Ethics:** every case, most serious first, with its status and deduction, and a timeline of status changes. A stock-trading section lists late or missing disclosures and committee-conflict trades with their deductions, and shows a filing-delay dot chart (days from trade to disclosure, with a line at 45 days), trades by sector (committee-overseen sectors highlighted), and a trade-and-vote timeline with flagged trades. Spouse and dependent-child trades are labeled. Returns are not scored or ranked. State-only officials show "No trading data".
+- **Ethics:** every case, most serious first, with its status and deduction, and a timeline of status changes. New court records, FEC enforcement records and DOJ press releases appear as leads for review, kept apart from the scored cases. A stock-trading section lists late or missing disclosures and committee-conflict trades with their deductions, and shows a filing-delay dot chart (days from trade to disclosure, with a line at 45 days), trades by sector (committee-overseen sectors highlighted), and a trade-and-vote timeline with flagged trades. Spouse and dependent-child trades are labeled. Returns are not scored or ranked. State-only officials show "No trading data".
 - **People Over Profit:** every scored vote and sponsorship with the bill's mark, reason and source; a diverging bar centered at 50%; a tree map of the top 20 donors (People-aligned, Profit-aligned, Other); and what their funders wanted next to how they voted.
-- **Money & Influence:** the Money & Influence Analysis (below), then where the campaign's money comes from, outside money for and against (by sector, colored People- or Profit-aligned, with the for-to-against ratio), every PAC contribution and outside-spending item, and the latest official filings.
+- **Money & Influence:** the Money & Influence Analysis (below), then where the campaign's money comes from, outside money for and against (by sector, colored People- or Profit-aligned, with the for-to-against ratio, and the nonprofit and 527 filings of the groups behind it), every PAC contribution and outside-spending item, and the latest official filings.
 
 ## Money & Influence Analysis
 
 Shown beside the grades, never inside them. It shows timing and alignment, not proof that money caused a decision.
 
 - **Top donors by month:** the politician's top 20 donor organizations in the current cycle, combining each organization's PAC and its employees' contributions (FEC itemized receipts, grouped by employer; donors' names are never shown), grouped by organization and industry.
-- **Who had a stake:** organizations that lobbied on each bill, from LDA.gov reports, matched to the bills the politician acted on.
+- **Who had a stake:** organizations that lobbied on each bill, from LDA.gov reports (and FARA registrations for foreign clients), matched to the bills the politician acted on.
 - **Vote Donor Alignment:** of the votes and sponsorships on bills a top donor lobbied on, the share that went the donor's way. **Speech Donor Alignment:** the same for speeches on issues the donor lobbied on.
 - **Timing flags** (for review, not scored), within a 6-month window *(placeholder)*: donations from an organization rose 50% or more around a decision in its favor, or fell 50% or more after one against it; the politician changed position after a 50% shift in donations from an organization that lobbied on the issue; or the politician held or traded stock in an organization that also donated and lobbied on a bill they acted on. Each flag lists the organization, its monthly totals, the decision and the dates.
-- **Federal contracts** to the top donor organizations, from USAspending, as context.
+- **Federal contracts** to the top donor organizations, from USAspending, matched through SAM.gov's company IDs, as context.
 - **Chart:** monthly donations from each top donor, with markers for related votes, speeches and stock trades, and flagged moments highlighted.
 
 Outside spending is shown as a plain number, not a grade: the politician cannot legally coordinate with those groups, and the amounts mostly reflect how competitive the race was.
@@ -194,7 +212,7 @@ Job definitions are seeded on the first launch. Changing the tracked population 
 
 ## Current status
 
-Before grades go public: review every ethics tag and open/closed label and the liberal/conservative marks, fact-check the original research file, add People over profit bills with cited analyses, and tag true campaign promises. The checklist and the open decisions (deduction values, weights, partial credit, the 80% rule, flag thresholds, who marks bills, state bills, trading deductions) are in [Political_Scorecard_Metholodgy.md](Political_Scorecard_Metholodgy.md).
+Before grades go public: review every ethics tag and open/closed label and the liberal/conservative marks, fact-check the original research file, add People over profit bills with cited analyses, and tag true campaign promises. The checklist and the open decisions (deduction values, weights, partial credit, the 80% rule, flag thresholds, who marks bills, state bills, trading deductions) are in [1_Political_Scorecard_Metholodgy.md](1_Political_Scorecard_Metholodgy.md).
 
 ## Checks
 
@@ -210,7 +228,7 @@ The local and Cloudflare servers share the same refresh and API implementation. 
 2. `npx wrangler d1 create congress-record-check`
 3. Put the returned database ID in `wrangler.jsonc`.
 4. `npm run db:migrate`
-5. `npx wrangler secret put FEC_API_KEY`, then the same for `CONGRESS_API_KEY`, `GOVINFO_API_KEY`, `VOTESMART_API_KEY`, `OPENSTATES_API_KEY`, `LDA_API_KEY` and `STOCK_TRADES_API_KEY` (skip any you don't use)
+5. `npx wrangler secret put FEC_API_KEY`, then the same for `CONGRESS_API_KEY`, `GOVINFO_API_KEY`, `VOTESMART_API_KEY`, `OPENSTATES_API_KEY`, `LDA_API_KEY`, `STOCK_TRADES_API_KEY`, `COURTLISTENER_API_TOKEN`, `GOOGLE_API_KEY`, `SAM_API_KEY` and `SEC_USER_AGENT` (skip any you don't use)
 6. `npm run cloudflare:deploy`
 
 The hosted cron checks every five minutes, processing up to eight source pages per invocation. Use the Workers paid plan for the configured CPU allowance. D1 and Worker usage may incur charges beyond included allowances; this project does not enable billing or create any cloud resources by itself. The hosted database begins empty and fills from official sources; the reviewed snapshot is bundled with the static assets. Local SQLite files and API keys are excluded from deployment.
@@ -243,12 +261,25 @@ OPENSTATES_API_KEY=
 # Optional. LDA.gov: lobbying filings (works without a key at a lower rate limit)
 # https://lda.gov/
 LDA_API_KEY=
-# Bargo: members' stock trades, with late-filing flags
+# Bargo: members' stock trades from the last 3 months, with late-filing flags
 # https://www.bargo.ai/free-apis/dash
 STOCK_TRADES_API_KEY=
+# CourtListener: court opinions and dockets (free account, about 125 requests a day)
+# https://www.courtlistener.com/help/api/rest/
+COURTLISTENER_API_TOKEN=
+# Google: published fact-checks (enable the Fact Check Tools API for this key)
+# https://developers.google.com/fact-check-tools
+GOOGLE_API_KEY=
+# SAM.gov: companies' federal IDs and industry codes
+# https://open.gsa.gov/api/entity-api
+SAM_API_KEY=
+# SEC EDGAR asks every request to name you: "Your Name you@example.com" (not a key)
+SEC_USER_AGENT=
 
-# No key needed: House and Senate roll calls, Bluesky, congress-legislators,
-# Wayback Machine, USAspending.
+# No key needed: Senate and older House roll calls, Senate and House committee
+# lists, Federal Register, Bluesky, congress-legislators, Wayback Machine, GDELT,
+# DOJ press releases, SEC EDGAR, ProPublica Nonprofit Explorer, IRS 527 data,
+# FARA, USAspending.
 
 # Local refresh runs automatically while npm start is running.
 LOCAL_AUTORUN=true
@@ -271,9 +302,9 @@ When hosting on Cloudflare, each key also needs its own `npx wrangler secret put
 - `data/config.json` — who and which election and Congress are tracked, with each person's IDs; `data/committee-sectors.json`† — sectors each committee oversees; `data/score-log.json`† — every score change; `data/portraits/` and `scripts/portrait-extra.json` — supplied photos and their credits
 - `migrations/` — portable SQLite/D1 schema
 - `test/` — regression tests
-- `Political_Scorecard_Metholodgy.md` — the scoring methodology; `OTHER_API_SOURCES_TO_CONSIDER.md` — free data sources
+- `1_Political_Scorecard_Metholodgy.md` — the scoring methodology; `2_API_SOURCES_TO_CONSIDER.md` — free data sources
 
-Sources: [FEC API](https://api.open.fec.gov/developers/) and [bulk files](https://www.fec.gov/data/browse-data/?tab=bulk-data), [Congress.gov API](https://github.com/LibraryOfCongress/api.congress.gov), [GovInfo](https://api.govinfo.gov/docs), [Senate roll calls](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm), [House Clerk](https://clerk.house.gov/Votes), [Voteview](https://voteview.com), [Vote Smart](http://votesmart.org/services_api.php), [Bluesky](https://docs.bsky.app/docs/category/http-reference), [Wayback Machine](https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server), [Open States](https://v3.openstates.org/docs/), [congress-legislators](https://github.com/unitedstates/congress-legislators), [LDA.gov](https://lda.gov/), [Bargo](https://www.bargo.ai/free-apis/congress/v1), [USAspending](https://api.usaspending.gov/), [unitedstates/images](https://github.com/unitedstates/images); People over profit marks from the [Congressional Budget Office](https://www.cbo.gov), the [Joint Committee on Taxation](https://www.jct.gov) and the [Tax Policy Center](https://www.taxpolicycenter.org).
+Sources: [FEC API](https://api.open.fec.gov/developers/) and [bulk files](https://www.fec.gov/data/browse-data/?tab=bulk-data), [Congress.gov API](https://github.com/LibraryOfCongress/api.congress.gov), [GovInfo](https://api.govinfo.gov/docs), [Senate roll calls](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm), [House Clerk](https://clerk.house.gov/Votes), [Voteview](https://voteview.com), [Vote Smart](http://votesmart.org/services_api.php), [Bluesky](https://docs.bsky.app/docs/category/http-reference), [Wayback Machine](https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server), [Open States](https://v3.openstates.org/docs/), [congress-legislators](https://github.com/unitedstates/congress-legislators), [LDA.gov](https://lda.gov/), [Bargo](https://www.bargo.ai/free-apis/congress/v1), [USAspending](https://api.usaspending.gov/), [Federal Register](https://www.federalregister.gov/developers/documentation/api/v1), [Google Fact Check Tools](https://developers.google.com/fact-check-tools), [GDELT](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/), [CourtListener](https://www.courtlistener.com/help/api/rest/), [FARA](https://efile.fara.gov/api), [SEC EDGAR](https://www.sec.gov/search-filings/edgar-application-programming-interfaces), [SAM.gov](https://open.gsa.gov/api/entity-api), [ProPublica Nonprofit Explorer](https://www.propublica.org/nerds/announcing-the-nonprofit-explorer-api), [IRS 527 data](https://www.irs.gov/node/471), [unitedstates/images](https://github.com/unitedstates/images); People over profit marks from the [Congressional Budget Office](https://www.cbo.gov), the [Joint Committee on Taxation](https://www.jct.gov) and the [Tax Policy Center](https://www.taxpolicycenter.org).
 
 ## Choices behind this draft
 
@@ -282,6 +313,11 @@ Sources: [FEC API](https://api.open.fec.gov/developers/) and [bulk files](https:
 - **Stock trades: one source, Bargo,** because it includes the late-filing flag the Ethics rule needs (−2 per late report). Eulerpool, Capitol API and Financial Modeling Prep are backups.
 - **Senate votes switch to LIS IDs** from congress-legislators, replacing today's surname-and-state matching.
 - **Donor names stay hidden:** FEC rules restrict reusing individual contributors' information, so donors are grouped by employer and names are never shown.
+- **House votes from Congress.gov** for 2023 on, since it now serves them officially with the existing key; the House Clerk's files stay for older votes.
+- **Committees from the official Senate and House lists**, with congress-legislators kept for IDs and social accounts.
+- **Stock-trade history:** Bargo's free tier covers only 3 months, so older trades come from the official filings by hand.
+- **Court records weekly, profiled people only:** CourtListener's free account allows about 125 requests a day.
+- **Optional extras left out of this plan:** YouTube, the New York Times archive, Regulations.gov comments and the House Document Repository. They're in [2_API_SOURCES_TO_CONSIDER.md](2_API_SOURCES_TO_CONSIDER.md) if needed later, along with the sources that are shut down, closing or paid.
 
 # Public Ledger
 ### Follow the money. Check the record. Find your alignment.
