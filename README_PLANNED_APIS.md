@@ -1,6 +1,6 @@
 # Planned README: with the new data sources
 
-> **Draft, not current.** This is how the README's setup and refresh sections will read once the new sources in [OTHER_API_SOURCES_TO_CONSIDER.md](OTHER_API_SOURCES_TO_CONSIDER.md) are built. None of the new sources are connected yet. For what the app does today, see [README.md](README.md).
+> **Draft, not current.** This is how the README's setup and refresh sections will read once the new sources in [OTHER_API_SOURCES_TO_CONSIDER.md](OTHER_API_SOURCES_TO_CONSIDER.md) are built. None of the new sources are connected yet. For what the app does today, see [README.md](README.md). For the whole README once the methodology's rules are also built, see [README_PLANNED_RULES.md](README_PLANNED_RULES.md).
 
 ## Run locally
 
