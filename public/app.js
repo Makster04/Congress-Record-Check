@@ -397,6 +397,8 @@ function miniOutside(s,bare){
     <div class="hc-mx" aria-hidden="true">${months.map(m=>`<span>${MON[+m.slice(5,7)-1]}</span>`).join('')}</div>
     <div class="hc-ms"><span><i class="sw" style="background:var(--s3)"></i>${fw}</span><span><i class="sw" style="background:var(--s2)"></i>${aw}</span><span><i class="hc-ln"></i>ratio, right scale</span><span>tallest bar ${fmt$(max)}</span></div></div>`;
 }
+// A titled section of a home card: the grades ("Report Card"), then the money ("Money & Influence Analysis").
+const hcHead=(icon,cls,title,sub)=>`<div class="hc-sh"><h4><i class="${cls}" aria-hidden="true">${icon}</i>${title}</h4><p>${sub}</p></div>`;
 function homeCard(s){
   const c=s.camp, o=s.out, it=ideoText(s), race=raceOf(s), riv=rivalsOf(s);
   const ideo=s.cand&&!s.ideo&&s.ideoKind!=='former_text'&&s.ideoKind!=='state'?`No voting score · ${REC_LABEL[s.recordType]||it.short}`:it.short;
@@ -406,7 +408,9 @@ function homeCard(s){
       <div class="row" style="gap:5px"><span class="chip ${s.party}">${s.party} · ${esc(seatLabel(s))}</span><span class="chip ch">${chipCh(s)}</span></div>
       <div class="name">${esc(s.name)}</div><div class="hc-sub">${esc(sub)}</div></div></div>
     <div class="hc-ideo">${esc(ideo)}</div>
+    ${hcHead('✓','rc','Report Card','Four A–F grades from the documented record and your own answers')}
     ${reportCard(s)}
+    ${hcHead('$','mi','Money &amp; Influence Analysis','Who pays for the campaign, and who spends for and against it')}
     <div class="hc-money">
       <div class="hc-mt">${c.missing?'<b class="hc-na">Not yet reported</b><span>Campaign funds raised</span><small>no FEC report filed yet</small>':`<b>${fmt$(c.receipts)}</b><span>Campaign funds raised</span><small>${shortPer(c.end)}</small>`}</div>
       <div class="hc-mt"><b class="hc-two"><i class="sw" style="background:var(--s3)"></i>${fmt$(o.for.total)} <em>${o.multi?'supporting':'for'}</em><br><i class="sw" style="background:var(--s2)"></i>${fmt$(o.against.total)} <em>${o.multi?'opposing':'against'}</em></b><span>Outside money</span><small>${shortPer(o.end)}</small></div>
