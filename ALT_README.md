@@ -1,6 +1,6 @@
 # Congress Record Check
 
-> **Draft, not current.** This is how the whole README will read once the rules in [Political_Scorecard_Metholodgy.md](Political_Scorecard_Metholodgy.md) are built into the app, together with the new data sources they need (see [README_PLANNED_APIS.md](README_PLANNED_APIS.md)). Most of it is not built yet. For what the app does today, see [README.md](README.md). Names marked † are placeholders for files and commands that don't exist yet. Values the methodology lists under "Open decisions" are marked *(placeholder)*.
+> **Draft, not current.** This is how the whole README will read once the rules in [Political_Scorecard_Metholodgy.md](Political_Scorecard_Metholodgy.md) are built into the app, together with the new data sources they need (listed in [OTHER_API_SOURCES_TO_CONSIDER.md](OTHER_API_SOURCES_TO_CONSIDER.md)). Most of it is not built yet. For what the app does today, see [README.md](README.md). Names marked † are placeholders for files and commands that don't exist yet. Values the methodology lists under "Open decisions" are marked *(placeholder)*.
 
 **What changes from today's README**
 
@@ -274,6 +274,14 @@ When hosting on Cloudflare, each key also needs its own `npx wrangler secret put
 - `Political_Scorecard_Metholodgy.md` — the scoring methodology; `OTHER_API_SOURCES_TO_CONSIDER.md` — free data sources
 
 Sources: [FEC API](https://api.open.fec.gov/developers/) and [bulk files](https://www.fec.gov/data/browse-data/?tab=bulk-data), [Congress.gov API](https://github.com/LibraryOfCongress/api.congress.gov), [GovInfo](https://api.govinfo.gov/docs), [Senate roll calls](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm), [House Clerk](https://clerk.house.gov/Votes), [Voteview](https://voteview.com), [Vote Smart](http://votesmart.org/services_api.php), [Bluesky](https://docs.bsky.app/docs/category/http-reference), [Wayback Machine](https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server), [Open States](https://v3.openstates.org/docs/), [congress-legislators](https://github.com/unitedstates/congress-legislators), [LDA.gov](https://lda.gov/), [Bargo](https://www.bargo.ai/free-apis/congress/v1), [USAspending](https://api.usaspending.gov/), [unitedstates/images](https://github.com/unitedstates/images); People over profit marks from the [Congressional Budget Office](https://www.cbo.gov), the [Joint Committee on Taxation](https://www.jct.gov) and the [Tax Policy Center](https://www.taxpolicycenter.org).
+
+## Choices behind this draft
+
+- **State records: Open States only.** It covers the same state bills and votes as LegiScan without a monthly query cap, so LegiScan isn't used.
+- **Speeches: the GovInfo API directly.** The refresher runs in JavaScript, so the `crec` Python package isn't needed for automatic updates.
+- **Stock trades: one source, Bargo,** because it includes the late-filing flag the Ethics rule needs (−2 per late report). Eulerpool, Capitol API and Financial Modeling Prep are backups.
+- **Senate votes switch to LIS IDs** from congress-legislators, replacing today's surname-and-state matching.
+- **Donor names stay hidden:** FEC rules restrict reusing individual contributors' information, so donors are grouped by employer and names are never shown.
 
 # Public Ledger
 ### Follow the money. Check the record. Find your alignment.
