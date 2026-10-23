@@ -29,6 +29,10 @@ Each source is scheduled again 24 hours after completion. All pages must succeed
 
 Some snapshots can have different check and coverage dates. In particular, checking the FEC today does not create a newer campaign filing. Imported financial comparisons stay labeled as research snapshots; refreshed figures appear in **Latest records** so different reporting windows are not silently mixed.
 
+## Profile tabs
+
+Each profile has six tabs: **Overview**; one tab per home-page grade (**Your match**, **Promises Delivered**, **Ethics**, **People Over Profit**), each opening with its letter, percentage and arithmetic, then the evidence; and **Campaign Finance**. Your match holds the alignment comparison and the voting record behind it (ideology, key votes, bills, state record, latest official bills and votes). Promises Delivered holds the statement checks. Ethics lists every entry with its tag and point cost. People Over Profit holds scored votes and the funders-vs.-votes comparisons. Campaign Finance holds where the money comes from, outside money (including the monthly chart and ratio), every PAC contribution and outside-spending item, and the latest official filings. Older links such as `#collins-record` or `#collins-funding` open the tab that now holds that content.
+
 ## Profile Overview
 
 A candidate's page opens on its Overview tab: where the campaign's money comes from (FEC two-year receipts split into small donors, larger individual donors, PACs, party committees, the candidate's own money and a joint-fundraising/other remainder), outside money for and against with the largest spenders named, a per-issue comparison with the viewer's My alignment choices (no evidence is left blank, never scored as a mismatch), a strip showing where the candidate sits among their chamber's DW-NOMINATE scores, and a tally of checked statements that always shows how many were checked. Ethics appears as a short text list tagged allegation, investigation or confirmed finding. The tag is the `status` field of each entry in `public/research.json`; `npm test` fails if a displayed entry lacks one. The Methodology page defines the tags and how each visual is computed.
@@ -56,7 +60,7 @@ To add or replace a photo, save one you have permission to use as `data/portrait
 
 ## Money and votes over time
 
-On the Legislative record tab, each funder comparison has a timeline of that organization's money to or about the candidate since January 2019, with the compared votes on the same axis. `public/funder-history.json` holds the month-by-month figures. Rebuild it with `node scripts/build-funder-history.mjs` (downloads about 90 MB of FEC bulk files into `.local/fec-bulk/`; add `--refresh` to fetch newer files). It uses each group's FEC committee IDs (`groupPos[].fecIds`) and each candidate's current and earlier FEC candidate IDs (`fecCand`, `fecCandPast`) from `public/research.json`. Outside spending from January 2025 on comes from the reviewed outside-spending data instead, because the bulk file lags the latest notices.
+On the People Over Profit tab, each funder comparison has a timeline of that organization's money to or about the candidate since January 2019, with the compared votes on the same axis. `public/funder-history.json` holds the month-by-month figures. Rebuild it with `node scripts/build-funder-history.mjs` (downloads about 90 MB of FEC bulk files into `.local/fec-bulk/`; add `--refresh` to fetch newer files). It uses each group's FEC committee IDs (`groupPos[].fecIds`) and each candidate's current and earlier FEC candidate IDs (`fecCand`, `fecCandPast`) from `public/research.json`. Outside spending from January 2025 on comes from the reviewed outside-spending data instead, because the bulk file lags the latest notices.
 
 ## Reviewed research
 
