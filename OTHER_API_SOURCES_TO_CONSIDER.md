@@ -1,4 +1,4 @@
-**Stock trades and holdings**
+## Stock trades and holdings
 - **House Clerk disclosures**: official yearly downloads, with trades as PDFs. [disclosures-clerk.house.gov/FinancialDisclosure](https://disclosures-clerk.house.gov/FinancialDisclosure)
 - **Senate eFD**: official search portal, no API. [efdsearch.senate.gov](https://efdsearch.senate.gov)
 - **CapitolGains**: free Python package for trades, holdings and blind trusts from both chambers. [pypi.org/project/capitolgains](https://pypi.org/project/capitolgains/)
