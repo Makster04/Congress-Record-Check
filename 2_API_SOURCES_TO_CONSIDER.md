@@ -2,6 +2,8 @@
 
 Checked October 23, 2026. Details marked *(unconfirmed)* come from third-party pages rather than the source's own site, so check them before relying on them.
 
+**How the plan uses them:** every source here with a free key or no key that can run alongside the others is used at the same time (see [3_ALT_README.md](3_ALT_README.md)). Where several cover the same thing, such as the three stock-trade services, their records are merged and the official record wins when they disagree. Only the `crec` package and Capitol API are left out, because they repeat work other sources already do.
+
 ## **Already using**
 ### Refreshed automatically while the app runs (see Updates in the app)
 - **FEC API:** campaign totals (including how much came from individual donors, as a total), PAC contributions and outside spending. It does not collect individual donors' names or employers yet. Needs a free key **(Federal only)**. [api.open.fec.gov/developers](https://api.open.fec.gov/developers/)
