@@ -2,7 +2,8 @@ Here's everything that would change if you build what's in `ALT_README.md`, comp
 
 ## WHATS NEW:
 
-**New data the app would fetch automatically**
+**New and a lot more existing data the app would fetch automatically**
+
 - **Cosponsored bills** (Congress.gov, existing key)
 - **Individual donors grouped by employer** (FEC, existing key), for the top-20 donor tracking
 - **Floor speeches and hearing transcripts** (GovInfo, new key)
