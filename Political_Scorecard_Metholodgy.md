@@ -257,7 +257,105 @@ Scores are refreshed once a month, matching the monthly donation data.
 
 ## Data sources and current status
 
-**Sources:** Congress.gov for bills, sponsors, and actions; House and Senate roll-call records for votes; the Congressional Record for floor speeches; FEC filings for donations; House and Senate Periodic Transaction Reports for stock trades and annual financial disclosure reports for holdings, with an aggregator such as Quiver Quantitative to cross-check; federal lobbying disclosure reports for who lobbied on which bills; Voteview for DW-NOMINATE scores; and the project's original research file for vote records, statement checks, ethics summaries, and the issue coding of each vote.
+Each data category below lists its free sources and the parts of the scorecard it feeds. The bold label shows whether a source covers federal officials, state officials, or both. Sources marked *in use* are already connected in the app.
+
+### Bills and sponsorships
+
+*Feeds Rule 1, Your match, the Promise Score, and People over Profit.*
+
+- **Congress.gov API** *(in use)*: bills and sponsorships **(Federal only)**. [Key](https://api.congress.gov/sign-up/) · [Docs](https://github.com/LibraryOfCongress/api.congress.gov)
+- **Congress.gov cosponsored-legislation endpoint:** the bills each member co-sponsored, which Rule 1 counts. It uses the same Congress.gov key **(Federal only)**.
+
+### Votes
+
+*Feeds Rule 1, Your match, the Promise Score, People over Profit, and key-vote position.*
+
+- **House Clerk roll calls** *(in use)*: official House votes **(Federal only)**. [clerk.house.gov/Votes](https://clerk.house.gov/Votes)
+- **Senate roll calls** *(in use)*: official Senate votes **(Federal only)**. [senate.gov roll call lists](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm)
+
+### Ideological position
+
+*Feeds the ideological position indicator.*
+
+- **Voteview** *(in use)*: DW-NOMINATE ideology scores **(Federal only)**. [voteview.com](https://voteview.com)
+
+### Floor speeches and hearings
+
+*Feeds Rule 1 statements and the Promise Score.*
+
+- **Congress.gov Congressional Record endpoints:** daily and bound Record, using the Congress.gov key **(Federal only)**. [Endpoint docs](https://github.com/LibraryOfCongress/api.congress.gov/blob/main/Documentation/DailyCongressionalRecordEndpoint.md)
+- **GovInfo API:** the Congressional Record broken into individual speeches, plus hearing transcripts. It uses a free api.data.gov key, so the Congress.gov key may work **(Federal only)**. [Docs](https://api.govinfo.gov/docs) · [Key](https://www.govinfo.gov/api-signup)
+- **crec:** free Python package that turns GovInfo's Record into a table of speeches with dates **(Federal only)**. [crec.readthedocs.io](https://crec.readthedocs.io)
+
+### Statements, issue positions, and campaign promises
+
+*Feeds Rule 1 statements, Your match, and the Promise Score.*
+
+- **Vote Smart API:** candidates' issue positions, votes, and interest-group ratings. It needs a free key and does not allow bulk requests **(State and federal)**. [votesmart.org/services_api.php](http://votesmart.org/services_api.php)
+- **Bluesky public API:** officials' public posts, with no login or key **(State and federal)**. [Docs](https://docs.bsky.app/docs/category/http-reference)
+- **congress-legislators:** each member's official social media accounts, so you know which feeds to follow **(Federal only)**. [github.com/unitedstates/congress-legislators](https://github.com/unitedstates/congress-legislators)
+- **Wayback Machine:** every archived snapshot of a campaign website, to capture promises before they are edited or deleted. It is free with no key **(State and federal)**. [Docs](https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server) · [Endpoint](https://web.archive.org/cdx/search/cdx)
+
+### State officials' records
+
+*Feeds the State officials rule in Rule 1.*
+
+- **Open States API:** state bills, votes, sponsorships, legislators, committees, and governors for all 50 states, DC, and Puerto Rico, with a free key **(State only)**. [Docs](https://v3.openstates.org/docs/) · [Key](https://openstates.org/accounts/signup/)
+- **LegiScan:** legislation in all 50 states and Congress, with a free key and a monthly query cap. Its weekly bulk files do not count against the cap **(State and federal)**. [legiscan.com/legiscan](https://legiscan.com/legiscan)
+
+### Committees and member IDs
+
+*Feeds committee-conflict trades in the Ethics Score, and matches records across every source.*
+
+- **congress-legislators:** current committee assignments, plus each member's IDs across systems (Bioguide, FEC, Senate ID, and others) **(Federal only)**. [Project](https://github.com/unitedstates/congress-legislators) · [Current members file](https://unitedstates.github.io/congress-legislators/legislators-current.json)
+
+### Stock trades and holdings
+
+*Feeds Stock trading in the Ethics Score and the stock flag in the Money & Influence Analysis.*
+
+- **House Clerk disclosures:** official yearly downloads, with trades as PDFs **(Federal only)**. [disclosures-clerk.house.gov/FinancialDisclosure](https://disclosures-clerk.house.gov/FinancialDisclosure)
+- **Senate eFD:** official search portal, no API **(Federal only)**. [efdsearch.senate.gov](https://efdsearch.senate.gov/)
+- **CapitolGains:** free Python package for trades, holdings, and blind trusts from both chambers **(Federal only)**. [pypi.org/project/capitolgains](https://pypi.org/project/capitolgains/)
+- **Capitol API:** open-source and self-hostable; its GitHub repo is crnicholson/capitol-api **(Federal only)**. [Archived copy](https://archive.hackclub.com/archive/8ODyA/mhtml/html)
+- **Bargo Congress Trades API:** free with limits, and includes a late-filing flag **(Federal only)**. [API](https://www.bargo.ai/free-apis/congress/v1) · [Free key](https://www.bargo.ai/free-apis/dash)
+- **Eulerpool:** free tier of 100,000 requests a month, with party and committee filters **(Federal only)**. [Docs](https://eulerpool.com/financial-data-api/congress-trading-data) · [Free key](https://eulerpool.com/developers/register)
+- **Financial Modeling Prep:** has a free plan, but check whether it includes congressional trades **(Federal only)**. [Senate trading API docs](https://site.financialmodelingprep.com/developer/docs/senate-trading-api)
+
+### Donations and outside spending
+
+*Feeds the Money & Influence Analysis and its charts.*
+
+- **FEC API and bulk files** *(in use)*: donations, PAC contributions, and outside spending **(Federal only)**. [api.open.fec.gov/developers](https://api.open.fec.gov/developers/)
+
+### Lobbying
+
+*Feeds the Money & Influence Analysis.*
+
+- **LDA.gov:** official lobbying registrations, quarterly activity reports, and lobbyist contribution reports, with an API. A free key raises the rate limit **(Federal only)**. [lda.gov](https://lda.gov/)
+
+### Federal contracts
+
+*Optional context for the Money & Influence Analysis: federal contracts and grants to donor companies.*
+
+- **USAspending API:** federal contracts and grants by company, with no key or quota **(Federal only)**. [api.usaspending.gov](https://api.usaspending.gov/)
+
+### Profile photos
+
+- **unitedstates/images** *(in use)*: official public-domain congressional portraits **(Federal only)**. [github.com/unitedstates/images](https://github.com/unitedstates/images)
+
+### Other sources
+
+- Nonpartisan analyses from the Congressional Budget Office, the Joint Committee on Taxation, and the Tax Policy Center mark People over Profit bills.
+- The project's original research file supplies vote records, statement checks, ethics summaries, and the issue coding of each vote.
+
+### Do not use (shut down)
+
+- **ProPublica Congress API:** no longer available and no new keys **(Federal only)**. [Shutdown notice](https://projects.propublica.org/api-docs/congress-api/)
+- **OpenSecrets API:** reported switched off in 2025; use FEC data directly instead **(Federal only)**.
+
+Some links were built from paths the sites list rather than opened directly (voteview.com, the Eulerpool docs, LDA.gov, and the congress-legislators project page). If one does not load, use the site's home page.
+
+### Current status
 
 **Where things stand now:**
 
