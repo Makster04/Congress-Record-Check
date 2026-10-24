@@ -23,7 +23,7 @@ test('the monthly scores agree with the page, and the committed log is well form
   const collins=research.members.find(s=>s.id==='collins'),p=personScores(collins,scorer,null);
   assert.equal(p.ethics.pct,scorer.ethics(collins).pct);assert.equal(p.promises.pct,scorer.promises(collins).pct);
   const e=buildEntry(research,committees,sectors,null,config,'2026-11-01');
-  assert.equal(Object.keys(e.scores).length,research.members.length+research.cands.length);assert.match(e.research,/^[0-9a-f]{12}$/);
+  assert.equal(Object.keys(e.scores).length,research.members.length+research.cands.length+(research.featured||[]).length);assert.match(e.research,/^[0-9a-f]{12}$/);
   const log=await read('public/score-log.json');
   assert.ok(log.entries.length>=1);
   for(const x of log.entries){assert.match(x.date,/^\d{4}-\d{2}-\d{2}$/);assert.ok(Array.isArray(x.changes));for(const s of Object.values(x.scores))for(const g of ['promises','ethics','pvp'])assert.ok(s[g].pct===null||(s[g].pct>=0&&s[g].pct<=100));}

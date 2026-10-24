@@ -191386,5 +191386,664 @@
       ]
     }
   ],
-  "bills": []
+  "bills": [],
+  "featured": [
+    {
+      "id": "trump",
+      "office": "president",
+      "chamber": "P",
+      "cand": true,
+      "openSeat": false,
+      "incumbent": null,
+      "district": null,
+      "name": "Donald J. Trump",
+      "short": "Trump",
+      "party": "R",
+      "state": "US",
+      "stateName": "United States",
+      "race": null,
+      "status": "47th President of the United States, in office since January 20, 2025, and the 45th President (2017–2021). Trump is not on the 2026 ballot; the term ends January 20, 2029.",
+      "statusSrc": null,
+      "opponent": "Not on the 2026 ballot",
+      "born": 1946,
+      "since": "President since January 20, 2025 (also 2017–2021)",
+      "roles": "47th President of the United States (2025–); 45th President (2017–2021)",
+      "background": "New York real-estate developer and television personality; Republican presidential nominee in 2016, 2020 and 2024.",
+      "site": "https://www.whitehouse.gov",
+      "fecCand": "P80001571",
+      "fecCmte": "C00828541",
+      "cmteName": "Donald J. Trump for President 2024, Inc.",
+      "bioguide": null,
+      "term": "47th President · term ends January 20, 2029",
+      "seat": "Not on the 2026 ballot",
+      "recordType": "executive",
+      "record": [
+        {
+          "date": "2026-02-20",
+          "title": "Executive Order 14389: Ending Certain Tariff Actions",
+          "detail": "Ended collection of the tariffs imposed under nine earlier emergency orders, including the duties on Canadian goods in Executive Order 14193, while keeping the related national emergencies in place.",
+          "position": "Signed",
+          "area": "Trade",
+          "src": {
+            "t": "GovInfo: Executive Order 14389, Ending Certain Tariff Actions (Feb. 20, 2026)",
+            "u": "https://www.govinfo.gov/content/pkg/DCPD-202600131/html/DCPD-202600131.htm"
+          }
+        },
+        {
+          "date": "2025-07-04",
+          "title": "Signed H.R. 1, the One Big Beautiful Bill Act",
+          "detail": "Signed the reconciliation law (Public Law 119-21) that makes the 2017 individual tax cuts permanent, adds new deductions including for tips and overtime, reduces federal Medicaid spending, ends many clean-energy tax credits early, and provides about $170 billion for border and immigration enforcement.",
+          "position": "Signed into law",
+          "area": "Taxes; Health care; Energy; Immigration",
+          "src": {
+            "t": "Congress.gov: H.R. 1, One Big Beautiful Bill Act (Public Law 119-21)",
+            "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+          },
+          "more": [
+            {
+              "t": "American Hospital Association: Resources on the One Big Beautiful Bill Act, signed into law July 4, 2025",
+              "u": "https://www.aha.org/resources-one-big-beautiful-bill-act-signed-law-july-4-2025"
+            }
+          ]
+        },
+        {
+          "date": "2025-03-27",
+          "title": "Executive Order 14251: Exclusions From Federal Labor-Management Relations Programs",
+          "detail": "Removed collective-bargaining rights from employees of agencies and subdivisions it designated as having national-security functions, by amending Executive Order 12171.",
+          "position": "Signed",
+          "area": "Labor",
+          "src": {
+            "t": "American Presidency Project: Executive Order 14251 (Mar. 27, 2025)",
+            "u": "https://www.presidency.ucsb.edu/documents/executive-order-14251-exclusions-from-federal-labor-management-relations-programs"
+          }
+        },
+        {
+          "date": "2025-03-25",
+          "title": "Executive Order 14248: Preserving and Protecting the Integrity of American Elections",
+          "detail": "Directed the Election Assistance Commission to require documentary proof of U.S. citizenship on the national mail voter registration form. A federal court preliminarily blocked that provision on April 24, 2025.",
+          "position": "Signed",
+          "area": "Elections",
+          "src": {
+            "t": "Federal Register: Executive Order 14248 (published Mar. 28, 2025)",
+            "u": "https://www.federalregister.gov/documents/2025/03/28/2025-05523/preserving-and-protecting-the-integrity-of-american-elections"
+          },
+          "more": [
+            {
+              "t": "League of Women Voters: case summary",
+              "u": "https://www.lwv.org/node/945834"
+            }
+          ]
+        },
+        {
+          "date": "2025-02-07",
+          "title": "Executive Order 14206: Protecting Second Amendment Rights",
+          "detail": "Directed the Attorney General to review federal firearms rules and actions from January 2021 to January 2025 and propose a plan to address what it called infringements of Second Amendment rights.",
+          "position": "Signed",
+          "area": "Guns",
+          "src": {
+            "t": "Federal Register: Executive Order 14206 (published Feb. 12, 2025)",
+            "u": "https://www.federalregister.gov/documents/2025/02/12/2025-02636/protecting-second-amendment-rights"
+          }
+        },
+        {
+          "date": "2025-02-01",
+          "title": "Executive Order 14193: duties on Canadian goods",
+          "detail": "Imposed tariffs on imports from Canada under emergency powers, citing the flow of illicit drugs across the northern border; amended several times, and ended by Executive Order 14389 in February 2026.",
+          "position": "Signed",
+          "area": "Trade",
+          "src": {
+            "t": "GovInfo: Executive Order 14193, Imposing Duties To Address the Flow of Illicit Drugs Across Our Northern Border",
+            "u": "https://www.govinfo.gov/link/cpd/executiveorder/14193"
+          }
+        },
+        {
+          "date": "2025-01-24",
+          "title": "Executive Order 14182: Enforcing the Hyde Amendment",
+          "detail": "Set a policy of ending the use of federal taxpayer money to fund or promote elective abortion, and revoked two earlier executive orders on abortion access.",
+          "position": "Signed",
+          "area": "Abortion",
+          "src": {
+            "t": "Federal Register (GovInfo): Executive Order 14182 (published Jan. 31, 2025)",
+            "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-31/html/2025-02175.htm"
+          }
+        },
+        {
+          "date": "2025-01-20",
+          "title": "Executive Order 14162: Putting America First in International Environmental Agreements",
+          "detail": "Directed the U.S. Ambassador to the United Nations to give formal notice of withdrawal from the Paris climate agreement, and began revoking the International Climate Finance Plan.",
+          "position": "Signed",
+          "area": "Climate and energy",
+          "src": {
+            "t": "Federal Register (GovInfo): Executive Order 14162 (published Jan. 30, 2025)",
+            "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-30/html/2025-02010.htm"
+          }
+        },
+        {
+          "date": "2025-01-20",
+          "title": "Executive Order 14160: Protecting the Meaning and Value of American Citizenship",
+          "detail": "Directed agencies not to recognize U.S. citizenship by birth for children born in the United States to mothers unlawfully or temporarily present unless the father is a citizen or permanent resident. It has been challenged in court.",
+          "position": "Signed",
+          "area": "Immigration and citizenship",
+          "src": {
+            "t": "Federal Register (GovInfo): Executive Order 14160 (published Jan. 29, 2025)",
+            "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-29/html/2025-02007.htm"
+          }
+        },
+        {
+          "date": "2025-01-20",
+          "title": "Proclamation 10887: pardons and commutations for January 6 offenses",
+          "detail": "Granted full pardons to people convicted of offenses related to the January 6, 2021 attack on the Capitol, commuted 14 sentences to time served, and directed the Attorney General to seek dismissal of pending January 6 indictments.",
+          "position": "Signed",
+          "area": "2020 election and Jan. 6",
+          "src": {
+            "t": "Federal Register (GovInfo): Proclamation 10887 (published Jan. 29, 2025)",
+            "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-29/html/2025-01950.htm"
+          }
+        }
+      ],
+      "statements": [],
+      "ethicsSearched": "Checked court records and major news reports through October 2026 for criminal cases, civil judgments, impeachments and other formal proceedings. Complaints or reports that no official body acted on are not listed.",
+      "stateIdeology": null,
+      "bills": [],
+      "sponsoredCount": null,
+      "sponsoredNote": "",
+      "ethics": [
+        {
+          "title": "New York conviction: 34 counts of falsifying business records",
+          "type": "Criminal case",
+          "date": "2024-05-30",
+          "status": "finding",
+          "summary": "A Manhattan jury convicted Trump on 34 felony counts of falsifying business records to conceal a hush-money payment before the 2016 election. On January 10, 2025, Trump was sentenced to an unconditional discharge, which leaves the conviction on the record without jail, probation or a fine. In August 2026 a federal judge again refused to move the case to federal court, and Trump's appeal of the conviction is set for argument in New York's Appellate Division on November 5, 2026.",
+          "outcome": "Convicted; sentenced to an unconditional discharge. Appeal pending.",
+          "sources": [
+            {
+              "t": "PBS NewsHour: Trump loses again in bid to erase his hush money conviction (Aug. 2026)",
+              "u": "https://www.pbs.org/newshour/politics/trump-loses-again-in-bid-to-erase-his-hush-money-conviction"
+            },
+            {
+              "t": "New York Sun: Trump gets his day in court to fight convictions (Oct. 2026)",
+              "u": "https://www.nysun.com/article/trump-gets-his-day-in-court-to-fight-convictions-for-hush-money-payments-to-stormy-daniels"
+            }
+          ]
+        },
+        {
+          "title": "E. Jean Carroll: sexual abuse and defamation verdict ($5 million)",
+          "type": "Civil/legal",
+          "date": "2023-05",
+          "status": "finding",
+          "summary": "A federal jury found Trump liable for sexually abusing and defaming writer E. Jean Carroll and awarded her $5 million. The appeals court upheld the verdict; the Supreme Court declined to hear Trump's appeal in June 2026 and denied rehearing on August 17, 2026, and Carroll has been paid.",
+          "outcome": "Liability final; judgment paid.",
+          "sources": [
+            {
+              "t": "SCOTUSblog: Supreme Court will not consider $5 million verdict against Trump (June 2026)",
+              "u": "https://www.scotusblog.com/2026/06/supreme-court-will-not-consider-5-million-verdict-against-trump/"
+            },
+            {
+              "t": "CNBC: Supreme Court again rejects Trump bid to overturn E. Jean Carroll verdict (Aug. 17, 2026)",
+              "u": "https://www.cnbc.com/2026/08/17/trump-supreme-court-e-jean-carroll.html"
+            }
+          ]
+        },
+        {
+          "title": "E. Jean Carroll: defamation verdict ($83.3 million)",
+          "type": "Civil/legal",
+          "date": "2024-01",
+          "status": "finding",
+          "summary": "A second federal jury ordered Trump to pay Carroll $83.3 million for defaming her. The Second Circuit upheld the judgment; on July 28, 2026, Trump and the Justice Department asked the Supreme Court to overturn it, arguing presidential immunity. The Court has not yet said whether it will hear the case.",
+          "outcome": "Liability upheld on appeal. Supreme Court petition pending.",
+          "sources": [
+            {
+              "t": "SCOTUSblog: Trump asks Supreme Court to hear appeal of $83 million defamation verdict (July 2026)",
+              "u": "https://www.scotusblog.com/2026/07/trump-asks-supreme-court-to-hear-appeal-of-83-million-defamation-verdict-against-him/"
+            },
+            {
+              "t": "CNN: Trump urges Supreme Court to overturn E. Jean Carroll's $83M defamation verdict (July 28, 2026)",
+              "u": "https://www.cnn.com/2026/07/28/politics/trump-supreme-court-e-jean-carroll-83-million-defamation"
+            }
+          ]
+        },
+        {
+          "title": "New York civil fraud case (People v. Trump)",
+          "type": "Civil/legal",
+          "date": "2024-02",
+          "status": "finding",
+          "summary": "A New York judge found that Trump and the Trump Organization fraudulently inflated the value of assets and ordered roughly $454 million in disgorgement. On August 21, 2025, the Appellate Division threw out the monetary penalty as excessive but left the fraud liability and some business restrictions in place; both sides have appealed to the New York Court of Appeals.",
+          "outcome": "Fraud liability stands; the penalty was vacated. Appeal pending.",
+          "sources": [
+            {
+              "t": "CNN: NY appeals court voids the nearly $500 million civil fraud penalty against Trump (Aug. 21, 2025)",
+              "u": "https://www.cnn.com/2025/08/21/politics/trump-civil-trial-trump-organization-appeal"
+            },
+            {
+              "t": "CBS News: New York appeals court throws out penalty in Trump civil fraud case",
+              "u": "https://www.cbsnews.com/news/trump-civil-fraud-case-new-york-appeals/"
+            }
+          ]
+        },
+        {
+          "title": "Trump Foundation: misuse of charitable funds",
+          "type": "Civil/legal",
+          "date": "2019-11-07",
+          "status": "finding",
+          "summary": "After the New York attorney general sued, Trump admitted to misusing funds of the Donald J. Trump Foundation, including for the 2016 Trump campaign, and a New York judge ordered Trump to pay $2 million to other charities. The foundation was dissolved.",
+          "outcome": "Admitted misuse; ordered to pay $2 million; foundation dissolved.",
+          "sources": [
+            {
+              "t": "PBS NewsHour: Judge orders Trump to pay $2 million for misusing his charitable foundation (Nov. 2019)",
+              "u": "https://www.pbs.org/newshour/amp/politics/judge-orders-trump-to-pay-2-million-for-misusing-his-charitable-foundation"
+            },
+            {
+              "t": "KUOW: Judge says Trump must pay $2 million over misuse of foundation funds",
+              "u": "https://www.kuow.org/stories/judge-says-trump-must-pay-2-million-over-misuse-of-foundation-funds"
+            }
+          ]
+        },
+        {
+          "title": "Georgia 2020 election case",
+          "type": "Criminal case",
+          "date": "2025-11-26",
+          "status": "investigation",
+          "stage": "closed",
+          "summary": "A Fulton County grand jury indicted Trump and others in 2023 over efforts to overturn Georgia's 2020 election result. After District Attorney Fani Willis was removed from the case, the replacement prosecutor, Peter Skandalakis, asked to drop it, and Judge Scott McAfee dismissed it in its entirety on November 26, 2025.",
+          "outcome": "Dismissed at the prosecutor's request; no trial.",
+          "sources": [
+            {
+              "t": "KNKX (NPR): The Georgia election interference case against Trump and others has been dropped (Nov. 26, 2025)",
+              "u": "https://www.knkx.org/2025-11-26/the-georgia-election-interference-case-against-trump-and-others-has-been-dropped"
+            },
+            {
+              "t": "ABC7: Georgia prosecutor drops election interference case against Trump, others",
+              "u": "https://abc7news.com/post/georgia-prosecutor-drops-election-interference-case-trump-others/18213322/"
+            }
+          ]
+        },
+        {
+          "title": "Federal 2020 election case (special counsel)",
+          "type": "Criminal case",
+          "date": "2024-11-25",
+          "status": "investigation",
+          "stage": "closed",
+          "summary": "Special counsel Jack Smith charged Trump in 2023 over efforts to overturn the 2020 election. After Trump won the 2024 election, Smith asked to dismiss the case under Justice Department policy against prosecuting a sitting president, saying the outcome \"is not based on the merits or strength of the case,\" and Judge Tanya Chutkan dismissed it without prejudice on November 25, 2024.",
+          "outcome": "Dismissed without prejudice before trial.",
+          "sources": [
+            {
+              "t": "WFAE (NPR): Judge grants dismissal of Jan. 6 case against Trump (Nov. 25, 2024)",
+              "u": "https://www.wfae.org/crime-justice/2024-11-25/judge-grants-dismissal-of-jan-6-case-against-trump"
+            },
+            {
+              "t": "Axios: Trump's 2020 election interference case dismissed following Jack Smith request",
+              "u": "https://www.axios.com/2024/11/25/jack-smith-trump-dc-case-dismissed"
+            }
+          ]
+        },
+        {
+          "title": "Federal classified documents case (special counsel)",
+          "type": "Criminal case",
+          "date": "2024-11-25",
+          "status": "investigation",
+          "stage": "closed",
+          "summary": "Trump was charged in 2023 with retaining classified documents and obstructing their return. Judge Aileen Cannon dismissed the case in July 2024, ruling the special counsel's appointment unlawful; the special counsel dropped the appeal as to Trump on November 25, 2024.",
+          "outcome": "Dismissed before trial; appeal as to Trump withdrawn.",
+          "sources": [
+            {
+              "t": "WFAE (NPR): Judge grants dismissal of Jan. 6 case against Trump (covers the classified documents appeal)",
+              "u": "https://www.wfae.org/crime-justice/2024-11-25/judge-grants-dismissal-of-jan-6-case-against-trump"
+            },
+            {
+              "t": "Signal (Epoch Times): Special counsel drops Trump election case, classified documents appeal",
+              "u": "https://signalscv.com/2024/11/special-counsel-drops-trump-election-case-classified-documents-appeal"
+            }
+          ]
+        },
+        {
+          "title": "Second impeachment: incitement of insurrection",
+          "type": "Impeachment",
+          "date": "2021-02-13",
+          "status": "investigation",
+          "stage": "closed",
+          "summary": "The House impeached Trump on January 13, 2021, on a charge of incitement of insurrection over the January 6 attack. The Senate voted 57–43 to convict on February 13, 2021, short of the two-thirds required, so Trump was acquitted.",
+          "outcome": "Acquitted by the Senate, 57–43 (67 votes were needed to convict).",
+          "sources": [
+            {
+              "t": "U.S. Senate roll call vote 59, 117th Congress (Feb. 13, 2021)",
+              "u": "https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00059.htm"
+            },
+            {
+              "t": "Axios: The Senate acquits Trump (Feb. 13, 2021)",
+              "u": "https://www.axios.com/2021/02/13/the-senate-acquits-trump"
+            }
+          ]
+        },
+        {
+          "title": "First impeachment: abuse of power and obstruction of Congress",
+          "type": "Impeachment",
+          "date": "2020-02-05",
+          "status": "investigation",
+          "stage": "closed",
+          "summary": "The House impeached Trump in December 2019 over Trump's dealings with Ukraine. The Senate acquitted Trump on February 5, 2020: 52–48 on abuse of power and 53–47 on obstruction of Congress.",
+          "outcome": "Acquitted by the Senate on both articles.",
+          "sources": [
+            {
+              "t": "Senate Democrats: Roll call vote on impeachment Article I, abuse of power (Feb. 5, 2020)",
+              "u": "https://www.democrats.senate.gov/2020/02/05/roll-call-vote-on-impeachment-article-i-abuse-of-power"
+            },
+            {
+              "t": "VOA: U.S. Senate acquits Trump on 2 articles of impeachment",
+              "u": "https://www.voanews.com/a/usa_trump-impeachment_us-senate-acquits-trump-2-articles-impeachment/6183775.html"
+            }
+          ]
+        },
+        {
+          "title": "Trump University lawsuits",
+          "type": "Civil/legal",
+          "date": "2018-04",
+          "status": "investigation",
+          "stage": "closed",
+          "summary": "Former students' class actions and a New York attorney general suit alleged that Trump University misled students. Trump settled all three for $25 million without admitting wrongdoing; a federal judge gave final approval in April 2018.",
+          "outcome": "Settled for $25 million without an admission of wrongdoing.",
+          "sources": [
+            {
+              "t": "KPBS: Judge finalizes $25 million Trump University settlement (Apr. 9, 2018)",
+              "u": "https://www.kpbs.org/news/2018/04/09/judge-finalizes-25-million-trump-university"
+            },
+            {
+              "t": "KQED: Judge OKs $25 million settlement of Trump University lawsuit",
+              "u": "https://www.kqed.org/news/11385154/judge-oks-25-million-settlement-of-trump-university-lawsuit"
+            }
+          ]
+        },
+        {
+          "title": "Foreign emoluments lawsuits",
+          "type": "Civil/legal",
+          "date": "2021-01-25",
+          "status": "investigation",
+          "stage": "closed",
+          "summary": "Maryland, the District of Columbia and hotel and restaurant businesses sued, alleging that payments from foreign and state governments to Trump's businesses violated the Constitution's emoluments clauses. After Trump left office, the Supreme Court vacated the lower-court rulings and ordered the suits dismissed as moot on January 25, 2021, without a ruling on the merits.",
+          "outcome": "Dismissed as moot; no ruling on the merits.",
+          "sources": [
+            {
+              "t": "OPB (AP): Supreme Court ends Trump emoluments lawsuits (Jan. 25, 2021)",
+              "u": "https://opb.org/article/2021/01/25/us-supreme-court-trump-emoluments"
+            },
+            {
+              "t": "CREW: CREW v. Donald J. Trump",
+              "u": "https://www.citizensforethics.org/legal-action/lawsuits/crew-v-donald-j-trump/"
+            }
+          ]
+        }
+      ],
+      "fecMissing": true,
+      "fec": {
+        "receipts": null,
+        "indiv": null,
+        "itemized": null,
+        "unitemized": null,
+        "party": null,
+        "pac": null,
+        "transfers": null,
+        "disbursements": null,
+        "cash": null,
+        "debts": null,
+        "candidate": null,
+        "loans": null,
+        "asof": null
+      },
+      "fecNotes": "Not a 2026 candidate. Trump's 2024 principal campaign committee, Donald J. Trump for President 2024, Inc. (C00828541), still files with the FEC; its totals appear under Latest official records once the FEC key is set.",
+      "cycleLabel": "2025–26",
+      "cycleNote": "two-year cycle (2025–26)",
+      "ideo": null,
+      "ideoKind": "none",
+      "ideoNote": null,
+      "ideoSrc": null,
+      "conduit": {
+        "status": "not_measured",
+        "rows": [],
+        "note": "",
+        "noteSrc": null,
+        "aipacDirect": []
+      },
+      "stateLeg": [],
+      "camp": {
+        "receipts": null,
+        "indiv": null,
+        "itemized": null,
+        "unitemized": null,
+        "party": null,
+        "pac": null,
+        "transfers": null,
+        "candidate": null,
+        "loans": null,
+        "disbursements": null,
+        "cash": null,
+        "debts": null,
+        "cmte": "Donald J. Trump for President 2024, Inc.",
+        "cmteId": "C00828541",
+        "start": "2025-01-01",
+        "end": null,
+        "missing": true,
+        "src": "https://www.fec.gov/data/committee/C00828541/?cycle=2026",
+        "note": "Trump is not a 2026 candidate, so no 2025–26 campaign figures are profiled here. The latest FEC totals of the 2024 Trump committee appear under Latest official records on the Money & Influence tab."
+      },
+      "pac": {
+        "window": "none",
+        "filings": [],
+        "rows": [],
+        "subtotal": 0,
+        "retrieved": 0,
+        "coverage": null,
+        "periodTotal": null,
+        "byCat": [],
+        "nPacs": 0
+      },
+      "out": {
+        "start": "2025-01-01",
+        "end": "2026-09-30",
+        "multi": false,
+        "incomplete": [],
+        "for": {
+          "super_pac": 0,
+          "other": 0,
+          "party": 0,
+          "total": 0
+        },
+        "against": {
+          "super_pac": 0,
+          "other": 0,
+          "party": 0,
+          "total": 0
+        },
+        "parts": {},
+        "rivals": [],
+        "others": [],
+        "excludedPre": {
+          "n": 0,
+          "amount": 0
+        },
+        "n": 0,
+        "uncertain": 0,
+        "cms": [],
+        "same": null,
+        "dupRemoved": {
+          "n": 0,
+          "amount": 0
+        },
+        "possibleRepeat": 0,
+        "pinned": 0
+      },
+      "senateVotes": false,
+      "stateRecord": null,
+      "evidence": {
+        "health": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:1",
+            "title": "Signed H.R. 1, the One Big Beautiful Bill Act",
+            "date": "2025-07-04",
+            "pos": "Signed into law",
+            "src": {
+              "t": "Congress.gov: H.R. 1, One Big Beautiful Bill Act (Public Law 119-21)",
+              "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+            },
+            "side": "B",
+            "why": "Signed H.R. 1; CBO estimates its Medicaid provisions reduce federal outlays by $989.7 billion over 2025–2034 (CRS report R48633).",
+            "bill": "119-hr-1"
+          }
+        ],
+        "taxes": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:1",
+            "title": "Signed H.R. 1, the One Big Beautiful Bill Act",
+            "date": "2025-07-04",
+            "pos": "Signed into law",
+            "src": {
+              "t": "Congress.gov: H.R. 1, One Big Beautiful Bill Act (Public Law 119-21)",
+              "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+            },
+            "side": "B",
+            "why": "Signed H.R. 1, which makes the 2017 individual tax-rate cuts permanent (CRS report R48611) while reducing spending on some programs.",
+            "bill": "119-hr-1"
+          }
+        ],
+        "climate": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:1",
+            "title": "Signed H.R. 1, the One Big Beautiful Bill Act",
+            "date": "2025-07-04",
+            "pos": "Signed into law",
+            "src": {
+              "t": "Congress.gov: H.R. 1, One Big Beautiful Bill Act (Public Law 119-21)",
+              "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+            },
+            "side": "B",
+            "why": "Signed H.R. 1, which terminates early many clean-energy tax credits, including those for clean vehicles and clean electricity (CRS report R48611).",
+            "bill": "119-hr-1"
+          },
+          {
+            "type": "official_act",
+            "ref": "trump:rec:7",
+            "title": "Executive Order 14162: Putting America First in International Environmental Agreements",
+            "date": "2025-01-20",
+            "pos": "Signed",
+            "src": {
+              "t": "Federal Register (GovInfo): Executive Order 14162 (published Jan. 30, 2025)",
+              "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-30/html/2025-02010.htm"
+            },
+            "side": "B",
+            "why": "Ordered withdrawal from the Paris climate agreement and began revoking the International Climate Finance Plan."
+          }
+        ],
+        "immigration": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:1",
+            "title": "Signed H.R. 1, the One Big Beautiful Bill Act",
+            "date": "2025-07-04",
+            "pos": "Signed into law",
+            "src": {
+              "t": "Congress.gov: H.R. 1, One Big Beautiful Bill Act (Public Law 119-21)",
+              "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+            },
+            "side": "A",
+            "why": "Signed H.R. 1, which provides about $170 billion for border and immigration enforcement, including detention centers and ICE hiring.",
+            "bill": "119-hr-1"
+          }
+        ],
+        "abortion": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:6",
+            "title": "Executive Order 14182: Enforcing the Hyde Amendment",
+            "date": "2025-01-24",
+            "pos": "Signed",
+            "src": {
+              "t": "Federal Register (GovInfo): Executive Order 14182 (published Jan. 31, 2025)",
+              "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-31/html/2025-02175.htm"
+            },
+            "side": "B",
+            "why": "Set a policy of ending federal funding of elective abortion and revoked earlier orders protecting abortion access."
+          }
+        ],
+        "guns": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:4",
+            "title": "Executive Order 14206: Protecting Second Amendment Rights",
+            "date": "2025-02-07",
+            "pos": "Signed",
+            "src": {
+              "t": "Federal Register: Executive Order 14206 (published Feb. 12, 2025)",
+              "u": "https://www.federalregister.gov/documents/2025/02/12/2025-02636/protecting-second-amendment-rights"
+            },
+            "side": "B",
+            "why": "Ordered a review of federal firearms rules to address what the order called infringements of Second Amendment rights."
+          }
+        ],
+        "tariffs": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:5",
+            "title": "Executive Order 14193: duties on Canadian goods",
+            "date": "2025-02-01",
+            "pos": "Signed",
+            "src": {
+              "t": "GovInfo: Executive Order 14193, Imposing Duties To Address the Flow of Illicit Drugs Across Our Northern Border",
+              "u": "https://www.govinfo.gov/link/cpd/executiveorder/14193"
+            },
+            "side": "A",
+            "why": "Imposed the tariffs on Canadian goods under an emergency declaration (they were ended in February 2026 by Executive Order 14389)."
+          }
+        ],
+        "jan6": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:9",
+            "title": "Proclamation 10887: pardons and commutations for January 6 offenses",
+            "date": "2025-01-20",
+            "pos": "Signed",
+            "src": {
+              "t": "Federal Register (GovInfo): Proclamation 10887 (published Jan. 29, 2025)",
+              "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-29/html/2025-01950.htm"
+            },
+            "side": "B",
+            "why": "Pardoned people convicted of January 6 offenses and ordered pending January 6 cases dismissed."
+          }
+        ],
+        "voting": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:3",
+            "title": "Executive Order 14248: Preserving and Protecting the Integrity of American Elections",
+            "date": "2025-03-25",
+            "pos": "Signed",
+            "src": {
+              "t": "Federal Register: Executive Order 14248 (published Mar. 28, 2025)",
+              "u": "https://www.federalregister.gov/documents/2025/03/28/2025-05523/preserving-and-protecting-the-integrity-of-american-elections"
+            },
+            "side": "A",
+            "why": "Directed that documentary proof of citizenship be required on the national mail voter registration form (provision blocked in court)."
+          }
+        ],
+        "labor": [
+          {
+            "type": "official_act",
+            "ref": "trump:rec:2",
+            "title": "Executive Order 14251: Exclusions From Federal Labor-Management Relations Programs",
+            "date": "2025-03-27",
+            "pos": "Signed",
+            "src": {
+              "t": "American Presidency Project: Executive Order 14251 (Mar. 27, 2025)",
+              "u": "https://www.presidency.ucsb.edu/documents/executive-order-14251-exclusions-from-federal-labor-management-relations-programs"
+            },
+            "side": "B",
+            "why": "Removed collective-bargaining rights from employees of many federal agencies."
+          }
+        ]
+      },
+      "notVoted": {},
+      "assoc": {},
+      "funderPos": []
+    }
+  ]
 }

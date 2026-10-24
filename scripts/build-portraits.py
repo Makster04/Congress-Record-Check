@@ -188,7 +188,7 @@ def main():
     seg = mp.solutions.selfie_segmentation.SelfieSegmentation(model_selection=0)
     det = [mp.solutions.face_detection.FaceDetection(model_selection=m, min_detection_confidence=0.5) for m in (1, 0)]
     only = set(sys.argv[sys.argv.index('--only') + 1].split(',')) if '--only' in sys.argv else None
-    for s in D['members'] + D.get('cands', []):
+    for s in D['members'] + D.get('cands', []) + D.get('featured', []):
         if only is not None and s['id'] not in only:
             if s['id'] in old:
                 people[s['id']] = old[s['id']]

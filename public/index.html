@@ -473,6 +473,12 @@ a.hc-gt{color:inherit;text-decoration:none;cursor:pointer;transition:border-colo
 .hc-ms{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:.68rem;color:var(--muted);margin-top:5px}.hc-ms span:last-child{margin-left:auto}.hc-ms .sw{margin-right:4px;vertical-align:-1px}
 .hc-ln{display:inline-block;width:14px;height:2px;background:var(--ink);vertical-align:3px;margin-right:5px;position:relative}.hc-ln::after{content:"";position:absolute;left:4px;top:-2.5px;width:7px;height:7px;border-radius:50%;background:var(--ink)}
 .hc-ft{display:flex;justify-content:space-between;gap:8px;border-top:1px solid var(--line);padding-top:8px;font-size:.78rem;color:var(--muted)}.hc-vs{color:var(--accent);font-weight:700;text-align:right}
+/* The featured card (the president) beside the title and description; it stacks under them on narrow screens. */
+.hero-feat{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,380px);gap:0 28px;align-items:start}
+.hero-feat .toolbar{grid-column:1/-1}.hero-side{display:grid;gap:14px;min-width:0}
+@media (max-width:860px){.hero-feat{grid-template-columns:minmax(0,1fr)}.hero-side{margin-top:18px}}
+.hc-feat{border-top:3px solid var(--accent)}
+.hc-live{display:flex;flex-direction:column;gap:10px}
 .hc-how{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px}
 .hc-howg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 20px;margin-top:8px}
 .hc-howg h3{font-size:.9rem;margin-bottom:3px}.hc-howg p{font-size:.84rem;color:var(--ink-2);margin:0}

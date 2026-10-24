@@ -43,9 +43,18 @@ export function feedSignature(){
   let h=0;for(const c of FEEDS_VERSION+feedJobs().map(j=>j.id).join('|'))h=(Math.imul(h,31)+c.charCodeAt(0))|0;
   return `${FEEDS_VERSION}:${(h>>>0).toString(36)}`;
 }
+// Each person's campaign, PAC, outside-spending and sponsored-bill jobs. Added again with the feed jobs, so a person
+// added to the config later gets them in an existing database too.
+async function addPerson(db,p,c){
+  if(p.fecCmte)await addFinance(db,p,p.fecCmte,c.cycle);
+  else if(p.fecCand)await addJob(db,`committee:${p.id}`,'committee',p.id,{candidate:p.fecCand,cycle:c.cycle});
+  if(p.fecCand)await addJob(db,`outside:${p.id}`,'outside',p.id,{candidate:p.fecCand,cycle:c.cycle});
+  if(p.bioguide)await addJob(db,`legislation:${p.id}`,'legislation',p.id,{bioguide:p.bioguide,congress:c.congress,cycle:c.cycle});
+}
 async function ensureFeeds(db){
   const v=await statement(db,"SELECT value FROM metadata WHERE key='feeds'").first(),sig=feedSignature();
   if(v?.value===sig)return;
+  for(const p of config.people)await addPerson(db,p,config);
   for(const j of feedJobs())await addJob(db,j.id,j.kind,j.subject,j.args);
   await statement(db,"INSERT OR REPLACE INTO metadata(key,value) VALUES('feeds',?)",sig).run();
 }
@@ -59,12 +68,7 @@ export async function initialize(db,seed=null) {
   const latest=Math.max(0,...house.map(v=>v.number));
   await addJob(db,'house-next','house-next','House',{year:c.year,number:latest+1});
   for(const v of [...c.selectedVotes].reverse())await addJob(db,`vote:${v.chamber}:${v.chamber==='H'?v.year:v.congress+':'+v.session}:${v.number}`,'vote',v.id,v);
-  for(const p of c.people){
-    if(p.fecCmte)await addFinance(db,p,p.fecCmte,c.cycle);
-    else if(p.fecCand)await addJob(db,`committee:${p.id}`,'committee',p.id,{candidate:p.fecCand,cycle:c.cycle});
-    if(p.fecCand)await addJob(db,`outside:${p.id}`,'outside',p.id,{candidate:p.fecCand,cycle:c.cycle});
-    if(p.bioguide)await addJob(db,`legislation:${p.id}`,'legislation',p.id,{bioguide:p.bioguide,congress:c.congress,cycle:c.cycle});
-  }
+  for(const p of c.people)await addPerson(db,p,c);
   if(seed&&await applySeed(db,seed))await statement(db,"INSERT OR REPLACE INTO metadata(key,value) VALUES('seeded',?)",seed.exportedAt).run();
   await ensureFeeds(db);
   await statement(db,"INSERT OR REPLACE INTO metadata(key,value) VALUES('initialized',?)",nowISO()).run();

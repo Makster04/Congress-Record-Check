@@ -1556,6 +1556,32 @@
       "stateLeg": "FL"
     },
     {
+      "id": "trump",
+      "name": "Donald J. Trump",
+      "short": "Trump",
+      "bioguide": null,
+      "lis": null,
+      "fecCand": "P80001571",
+      "fecCmte": "C00828541",
+      "chamber": "P",
+      "state": "US",
+      "race": null,
+      "ids": {
+        "wikidata": "Q22686"
+      },
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null,
+      "federalRegister": {
+        "president": "donald-trump"
+      }
+    },
+    {
       "id": "H2AZ02360",
       "name": "Juan Ciscomani",
       "fecCand": "H2AZ02360",

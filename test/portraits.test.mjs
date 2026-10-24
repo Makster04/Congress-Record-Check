@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 const root=new URL('../public/',import.meta.url);
 const data=JSON.parse(await fs.readFile(new URL('research.json',root),'utf8'));
 const index=JSON.parse(await fs.readFile(new URL('portraits/index.json',root),'utf8'));
-const ids=new Set(data.members.concat(data.cands).map(s=>s.id));
+const ids=new Set(data.members.concat(data.cands,data.featured||[]).map(s=>s.id));
 test('every portrait belongs to a profiled person, exists as a WebP, and says where it came from',async()=>{
   for(const [id,p] of Object.entries(index.people)){
     assert.ok(ids.has(id),id+' is not in research.json');
