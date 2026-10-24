@@ -301,7 +301,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 *Feeds Rule 1 statements, Your match, and the Promise Score. All of these run together; GDELT and the New York Times are merged by link.*
 
-- **Vote Smart API** *(in use)*: candidates' issue positions, votes, and interest-group ratings. It needs a free key and does not allow bulk requests; a 2020 report said access was limited to select organizations, so confirm a key is available **(State and federal)**. [votesmart.org/services_api.php](https://www.votesmart.org/votesmart-api)
+- **Vote Smart API** *(in use)*: candidates' issue positions, votes, and interest-group ratings. It needs a free key and does not allow bulk requests; a 2020 report said access was limited to select organizations, so confirm a key is available **(State and federal)**. [votesmart.org/votesmart-api](https://www.votesmart.org/votesmart-api)
 - **Google Fact Check Tools API** *(in use)*: published fact-checks of politicians' claims, with a free Google key, as leads for statement checks **(State and federal)**. [Docs](https://developers.google.com/fact-check-tools)
 - **GDELT DOC API** and the **New York Times Article Search API** *(in use)*: news coverage of each politician (GDELT with no key, back to 2017; NYT with a free key), as leads for statements and ethics cases **(State and federal)**. [GDELT](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/) · [NYT](https://developer.nytimes.com/)
 - **Bluesky public API** *(in use, for accounts added by hand)*: officials' public posts, with no login or key **(State and federal)**. [Docs](https://docs.bsky.app/docs/category/http-reference)
