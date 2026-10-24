@@ -5,11 +5,12 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import zlib from 'node:zlib';
 import config from '../data/config.json' with {type:'json'};
-import {FEEDS,FEEDS_VERSION,billsInText,committeeCode,isOrg,normalizeHouseApiVote,houseApiURL,namesPerson,namesCampaign} from '../src/feeds.mjs';
+import {FEEDS,billsInText,committeeCode,isOrg,normalizeHouseApiVote,houseApiURL,namesPerson,namesCampaign} from '../src/feeds.mjs';
 import {requestSource,missingKey,cleanURL,unzipFile,HOSTS} from '../src/sources.mjs';
 import {mergeTrades,mergeStateBills,mergeNews,committeeDiff,stateBillKey} from '../src/merge.mjs';
 import {initialize,runRefresh,getProfile,getStatus,statement,addJob} from '../src/refresh.mjs';
 import {openDatabase} from '../scripts/sqlite.mjs';
+import {feedSignature} from '../src/refresh.mjs';
 const migration=await fs.readFile(new URL('../migrations/0001_initial.sql',import.meta.url),'utf8');
 const json=o=>new Response(JSON.stringify(o),{headers:{'content-type':'application/json'}});
 const person=id=>config.people.find(p=>p.id===id);
@@ -177,7 +178,7 @@ test('new sources join an existing database once, wait for their keys, and chain
   await initialize(db);
   const kinds=new Set((await statement(db,'SELECT DISTINCT kind FROM jobs').all()).results.map(r=>r.kind));
   for(const k of ['cosponsored','donors','trades-bargo','courts','news-gdelt','house-fd','crec-index','state-openstates'])assert.ok(kinds.has(k),k);
-  assert.equal((await statement(db,"SELECT value FROM metadata WHERE key='feeds'").first()).value,String(FEEDS_VERSION));
+  assert.equal((await statement(db,"SELECT value FROM metadata WHERE key='feeds'").first()).value,feedSignature());
   const status=await getStatus({DB:db});
   assert.equal(status.jobs.find(j=>j.id==='courts:collins').error,'CourtListener API key needed');
   assert.equal(status.jobs.find(j=>j.id==='trades-bargo:collins').error,null,'Bargo runs without a key');
@@ -192,7 +193,7 @@ test('new sources join an existing database once, wait for their keys, and chain
 const DAYMS=86400000;
 
 test('a profile merges each person\'s records from every source',async()=>{
-  const db=openDatabase(':memory:');db.exec(migration);db.exec(`INSERT INTO metadata VALUES ('initialized','x'),('feeds','${FEEDS_VERSION}')`);
+  const db=openDatabase(':memory:');db.exec(migration);db.exec(`INSERT INTO metadata VALUES ('initialized','x'),('feeds','${feedSignature()}')`);
   const put=async(id,kind,subject,payload)=>{await addJob(db,id,kind,subject,{});await statement(db,'INSERT INTO snapshots(job_id,run_id,payload,updated_at) VALUES(?,?,?,?)',id,'r',JSON.stringify(payload),'2026-10-20T00:00:00Z').run();};
   const t={traded:'2026-01-05',ticker:'NVDA',type:'purchase',low:1001,high:15000,disclosed:'2026-03-02',id:'2026-01-05|NVDA|purchase|1001|15000#1'};
   await put('trades-bargo:perry','trades-bargo','perry',{rows:[{...t,source:'Bargo'}]});

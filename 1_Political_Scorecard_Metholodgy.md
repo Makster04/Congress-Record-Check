@@ -257,21 +257,21 @@ Scores are refreshed once a month, matching the monthly donation data.
 
 ## Data sources and current status
 
-Each data category below lists its free sources and the parts of the scorecard it feeds. The bold label shows whether a source covers federal officials, state officials, or both. Sources marked *in use* are already used by the app. The FEC API, Congress.gov and the House and Senate roll calls refresh automatically; FEC bulk files, Voteview and unitedstates/images are imported once and rebuilt by hand. Sources were checked on October 23, 2026; details marked *(unconfirmed)* come from third-party pages, and [2_API_SOURCES_TO_CONSIDER.md](2_API_SOURCES_TO_CONSIDER.md) has the full list with links.
+Each data category below lists its free sources and the parts of the scorecard it feeds. The bold label shows whether a source covers federal officials, state officials, or both. Sources marked *in use* are used by the app (built October 24, 2026); *by hand* means imported with a script and rebuilt by hand; *not used* gives the reason. Every source with a free key or no key that can run alongside the others refreshes automatically, and every key that is set is used at the same time; FEC bulk files, Voteview, unitedstates/images, congress-legislators and CapitolGains are imported by hand. No live response from the new sources has been checked yet, since that needs your keys. Sources were checked on October 23, 2026; details marked *(unconfirmed)* come from third-party pages, and [2_API_SOURCES_TO_CONSIDER.md](2_API_SOURCES_TO_CONSIDER.md) has the full list with links.
 
 ### Bills and sponsorships
 
 *Feeds Rule 1, Your match, the Promise Score, and People over Profit.*
 
 - **Congress.gov API** *(in use)*: bills each member sponsored in the current Congress **(Federal only)**. [Key](https://api.congress.gov/sign-up/) · [Docs](https://github.com/LibraryOfCongress/api.congress.gov)
-- **Congress.gov cosponsored-legislation endpoint:** the bills each member co-sponsored, which Rule 1 counts. It uses the same Congress.gov key **(Federal only)**.
-- **Congress.gov bill summaries, amendments, committee reports, and CRS Reports:** bill details and background for marking bills People or Profit, with the same key **(Federal only)**.
+- **Congress.gov cosponsored-legislation endpoint** *(in use)*: the bills each member co-sponsored, which Rule 1 counts. It uses the same Congress.gov key **(Federal only)**.
+- **Congress.gov bill summaries, amendments, committee reports, CBO estimates, and CRS Reports** *(in use, for key bills; CRS reports are matched to the bills they cover)*: bill details and background for marking bills People or Profit, with the same key **(Federal only)**.
 
 ### Official acts
 
 *Feeds Rule 1 official acts by officials who don't vote in Congress.*
 
-- **Federal Register API:** executive orders, rules, and other official acts by federal executive officials, with no key **(Federal only)**. [Docs](https://www.federalregister.gov/developers/documentation/api/v1)
+- **Federal Register API** *(in use, for people given a federalRegister setting; none yet)*: executive orders, rules, and other official acts by federal executive officials, with no key **(Federal only)**. [Docs](https://www.federalregister.gov/developers/documentation/api/v1)
 
 ### Votes
 
@@ -279,7 +279,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 - **House Clerk roll calls** *(in use)*: official House votes **(Federal only)**. [clerk.house.gov/Votes](https://clerk.house.gov/Votes)
 - **Senate roll calls** *(in use)*: official Senate votes **(Federal only)**. [senate.gov roll call lists](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm)
-- **Congress.gov House roll-call vote endpoints:** official House votes from 2023 on, with the Congress.gov key; they could replace the House Clerk's files for those years **(Federal only)**.
+- **Congress.gov House roll-call vote endpoints** *(in use)*: official House votes from 2023 on, with the Congress.gov key; the House Clerk's files remain for older votes and as the fallback **(Federal only)**.
 
 ### Ideological position
 
@@ -291,89 +291,89 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 *Feeds Rule 1 statements and the Promise Score.*
 
-- **Congress.gov Congressional Record endpoints:** daily and bound Record, using the Congress.gov key **(Federal only)**. [Endpoint docs](https://github.com/LibraryOfCongress/api.congress.gov/blob/main/Documentation/DailyCongressionalRecordEndpoint.md)
-- **GovInfo API:** the Congressional Record broken into individual speeches, plus hearing transcripts. It uses a free api.data.gov key, so the Congress.gov key may work **(Federal only)**. [Docs](https://api.govinfo.gov/docs) · [Key](https://www.govinfo.gov/api-signup)
-- **crec:** free Python package that turns GovInfo's Record into a table of speeches with dates **(Federal only)**. [crec.readthedocs.io](https://crec.readthedocs.io)
-- **House Document Repository:** committee meeting documents and witness testimony, with no key **(Federal only)**. [docs.house.gov](https://docs.house.gov/committee/Help.aspx)
-- **YouTube Data API:** videos from officials' own channels, with a free Google key; about 100 searches a day on the free quota **(State and federal)**. [Docs](https://developers.google.com/youtube/v3/getting-started)
+- **Congress.gov Congressional Record endpoints** *(not used: GovInfo splits the Record into speeches with each speaker's ID)*: daily and bound Record, using the Congress.gov key **(Federal only)**. [Endpoint docs](https://github.com/LibraryOfCongress/api.congress.gov/blob/main/Documentation/DailyCongressionalRecordEndpoint.md)
+- **GovInfo API** *(in use)*: the Congressional Record broken into individual speeches, plus hearing transcripts. It uses a free api.data.gov key, so the Congress.gov key may work **(Federal only)**. [Docs](https://api.govinfo.gov/docs) · [Key](https://www.govinfo.gov/api-signup)
+- **crec** *(not used: the GovInfo API is read directly)*: free Python package that turns GovInfo's Record into a table of speeches with dates **(Federal only)**. [crec.readthedocs.io](https://crec.readthedocs.io)
+- **House Document Repository** *(in use, through Congress.gov's committee-meeting endpoint, which serves its files with witness data)*: committee meeting documents and witness testimony, with no key **(Federal only)**. [docs.house.gov](https://docs.house.gov/committee/Help.aspx)
+- **YouTube Data API** *(in use)*: videos from officials' own channels, with a free Google key; each channel's uploads list costs 1 of the 10,000 daily quota units **(State and federal)**. [Docs](https://developers.google.com/youtube/v3/getting-started)
 
 ### Statements, issue positions, and campaign promises
 
 *Feeds Rule 1 statements, Your match, and the Promise Score. All of these run together; GDELT and the New York Times are merged by link.*
 
-- **Vote Smart API:** candidates' issue positions, votes, and interest-group ratings. It needs a free key and does not allow bulk requests; a 2020 report said access was limited to select organizations, so confirm a key is available **(State and federal)**. [votesmart.org/services_api.php](http://votesmart.org/services_api.php)
-- **Google Fact Check Tools API:** published fact-checks of politicians' claims, with a free Google key, as leads for statement checks **(State and federal)**. [Docs](https://developers.google.com/fact-check-tools)
-- **GDELT DOC API** and the **New York Times Article Search API:** news coverage of each politician (GDELT with no key, back to 2017; NYT with a free key), as leads for statements and ethics cases **(State and federal)**. [GDELT](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/) · [NYT](https://developer.nytimes.com/)
-- **Bluesky public API:** officials' public posts, with no login or key **(State and federal)**. [Docs](https://docs.bsky.app/docs/category/http-reference)
-- **congress-legislators:** each member's official social media accounts, so you know which feeds to follow **(Federal only)**. [github.com/unitedstates/congress-legislators](https://github.com/unitedstates/congress-legislators)
-- **Wayback Machine:** every archived snapshot of a campaign website, to capture promises before they are edited or deleted. It is free with no key **(State and federal)**. [Docs](https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server) · [Endpoint](https://web.archive.org/cdx/search/cdx)
+- **Vote Smart API** *(in use)*: candidates' issue positions, votes, and interest-group ratings. It needs a free key and does not allow bulk requests; a 2020 report said access was limited to select organizations, so confirm a key is available **(State and federal)**. [votesmart.org/services_api.php](https://votesmart.org/services_api.php)
+- **Google Fact Check Tools API** *(in use)*: published fact-checks of politicians' claims, with a free Google key, as leads for statement checks **(State and federal)**. [Docs](https://developers.google.com/fact-check-tools)
+- **GDELT DOC API** and the **New York Times Article Search API** *(in use)*: news coverage of each politician (GDELT with no key, back to 2017; NYT with a free key), as leads for statements and ethics cases **(State and federal)**. [GDELT](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/) · [NYT](https://developer.nytimes.com/)
+- **Bluesky public API** *(in use, for accounts added by hand)*: officials' public posts, with no login or key **(State and federal)**. [Docs](https://docs.bsky.app/docs/category/http-reference)
+- **congress-legislators** *(by hand)*: each member's official social media accounts, so you know which feeds to follow **(Federal only)**. [github.com/unitedstates/congress-legislators](https://github.com/unitedstates/congress-legislators)
+- **Wayback Machine** *(in use)*: every archived snapshot of a campaign website, to capture promises before they are edited or deleted. It is free with no key **(State and federal)**. [Docs](https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server) · [Endpoint](https://web.archive.org/cdx/search/cdx)
 
 ### State officials' records
 
-*Feeds the State officials rule in Rule 1. Open States and LegiScan run together, merged by state bill number; LegiScan comes mostly from its weekly bulk files.*
+*Feeds the State officials rule in Rule 1. Open States and LegiScan run together, merged by state bill number; LegiScan is checked weekly through its query API, well inside the cap.*
 
-- **Open States API:** state bills, votes, sponsorships, legislators, committees, and governors for all 50 states, DC, and Puerto Rico, with a free key **(State only)**. [Docs](https://v3.openstates.org/docs/) · [Key](https://openstates.org/accounts/signup/)
-- **LegiScan:** legislation in all 50 states and Congress, with a free key and a monthly query cap. Its weekly bulk files do not count against the cap **(State and federal)**. [legiscan.com/legiscan](https://legiscan.com/legiscan)
-- **Open States bulk downloads:** the same data, public domain, for when the API's quota runs out **(State only)**. [Bulk data](https://open.pluralpolicy.com/data/legislator-csv/)
-- **State campaign-finance portals:** donations to state officials, in states that publish them (for example Washington, updated daily, with no commercial use allowed). There's no single national source **(State only)**. [Washington PDC](https://pdc.wa.gov/node/140)
+- **Open States API** *(in use)*: state bills, votes, sponsorships, legislators, committees, and governors for all 50 states, DC, and Puerto Rico, with a free key **(State only)**. [Docs](https://v3.openstates.org/docs/) · [Key](https://openstates.org/accounts/signup/)
+- **LegiScan** *(in use)*: legislation in all 50 states and Congress, with a free key and a monthly query cap. Its weekly bulk files do not count against the cap **(State and federal)**. [legiscan.com/legiscan](https://legiscan.com/legiscan)
+- **Open States bulk downloads** *(not used yet)*: the same data, public domain, for when the API's quota runs out **(State only)**. [Bulk data](https://open.pluralpolicy.com/data/legislator-csv/)
+- **State campaign-finance portals** *(not used yet)*: donations to state officials, in states that publish them (for example Washington, updated daily, with no commercial use allowed). There's no single national source **(State only)**. [Washington PDC](https://pdc.wa.gov/node/140)
 
 ### Committees and member IDs
 
 *Feeds committee-conflict trades in the Ethics Score, and matches records across every source.*
 
-- **congress-legislators:** current committee assignments, plus each member's IDs across systems (Bioguide, FEC, Senate ID, and others) **(Federal only)**. [Project](https://github.com/unitedstates/congress-legislators) · [Current members file](https://unitedstates.github.io/congress-legislators/legislators-current.json)
-- **Senate.gov and House Clerk member files:** the official current committee assignments, with no key **(Federal only)**. [Senate XML](https://www.senate.gov/general/XML.htm) · [House MemberData guide](https://xml.house.gov/MemberData/MemberData_UserGuide.pdf)
-- **Wikidata:** IDs for candidates who never served in Congress, with no key **(State and federal)**. [wikidata.org](https://www.wikidata.org/)
+- **congress-legislators** *(by hand, scripts/build-ids.mjs)*: current committee assignments, plus each member's IDs across systems (Bioguide, FEC, Senate ID, and others) **(Federal only)**. [Project](https://github.com/unitedstates/congress-legislators) · [Current members file](https://unitedstates.github.io/congress-legislators/legislators-current.json)
+- **Senate.gov and House Clerk member files** *(in use, compared daily with the reviewed list)*: the official current committee assignments, with no key **(Federal only)**. [Senate XML](https://www.senate.gov/general/XML.htm) · [House MemberData guide](https://xml.house.gov/MemberData/MemberData_UserGuide.pdf)
+- **Wikidata** *(by hand, matched by FEC candidate ID)*: IDs for candidates who never served in Congress, with no key **(State and federal)**. [wikidata.org](https://www.wikidata.org/)
 
 ### Stock trades and holdings
 
-*Feeds Stock trading in the Ethics Score and the stock flag in the Money & Influence Analysis. Bargo, Eulerpool, and Financial Modeling Prep (if its free plan includes trades) run together. The official House Clerk and Senate eFD filings are the record of truth: duplicate trades are merged, the official filing wins when services disagree, and late filings are counted from the official filing's dates. Capitol API is not needed, since CapitolGains reads the same filings.*
+*Feeds Stock trading in the Ethics Score and the stock flag in the Money & Influence Analysis. Bargo, Eulerpool, and Financial Modeling Prep (if its free plan includes trades) run together. The official filings are the record of truth: duplicate trades are merged, each is matched to the House Clerk's filing index (whose date wins), and late filings are counted from the official filing's date; senators' filings are checked by hand with CapitolGains. Only reviewed trades count. Capitol API is not needed, since CapitolGains reads the same filings.*
 
-- **House Clerk disclosures:** official yearly downloads, with trades as PDFs **(Federal only)**. [disclosures-clerk.house.gov/FinancialDisclosure](https://disclosures-clerk.house.gov/FinancialDisclosure)
-- **Senate eFD:** official search portal, no API; check its terms on automated access before scripting it **(Federal only)**. [efdsearch.senate.gov](https://efdsearch.senate.gov/)
-- **CapitolGains:** free Python package for trades, holdings, and blind trusts from both chambers **(Federal only)**. [pypi.org/project/capitolgains](https://pypi.org/project/capitolgains/)
-- **Capitol API:** open-source and self-hostable; its GitHub repo is crnicholson/capitol-api **(Federal only)**. [Archived copy](https://archive.hackclub.com/archive/8ODyA/mhtml/html)
-- **Bargo Congress Trades API:** free with limits, and includes a late-filing flag. The free tier covers only the last 3 months of trades *(unconfirmed)*, so older trades need the official filings **(Federal only)**. [API](https://www.bargo.ai/free-apis/congress/v1) · [Free key](https://www.bargo.ai/free-apis/dash)
-- **Eulerpool:** free tier of 100,000 requests a month, with party and committee filters **(Federal only)**. [Docs](https://eulerpool.com/financial-data-api/congress-trading-data) · [Free key](https://eulerpool.com/developers/register)
-- **Financial Modeling Prep:** has a free plan, but check whether it includes congressional trades **(Federal only)**. [Senate trading API docs](https://site.financialmodelingprep.com/developer/docs/senate-trading-api)
-- **SEC EDGAR:** each traded company's ticker and industry code, with no key, so trades can be sorted by sector for the committee-conflict rule and the trades-by-sector chart **(Federal only)**. [SEC developer resources](https://www.sec.gov/search-filings/edgar-application-programming-interfaces)
+- **House Clerk disclosures** *(in use: the yearly filing index; the PDFs are read by hand)*: official yearly downloads, with trades as PDFs **(Federal only)**. [disclosures-clerk.house.gov/FinancialDisclosure](https://disclosures-clerk.house.gov/FinancialDisclosure)
+- **Senate eFD** *(by hand, only after you confirm its terms)*: official search portal, no API; it asks visitors to agree that reports won't be used for commercial purposes (other than news media), credit ratings or solicitation **(Federal only)**. [efdsearch.senate.gov](https://efdsearch.senate.gov/)
+- **CapitolGains** *(by hand, scripts/build-holdings.py)*: free Python package for trades, holdings, and blind trusts from both chambers **(Federal only)**. [pypi.org/project/capitolgains](https://pypi.org/project/capitolgains/)
+- **Capitol API** *(not used)*: open-source and self-hostable; its GitHub repo is crnicholson/capitol-api **(Federal only)**. [Archived copy](https://archive.hackclub.com/archive/8ODyA/mhtml/html)
+- **Bargo Congress Trades API** *(in use)*: free with limits, and works without a key at a lower limit. Its published description has no late-filing field, so lateness comes from the dates. The free tier covers only the last 3 months of trades, so older trades need the official filings **(Federal only)**. [API](https://www.bargo.ai/free-apis/congress/v1) · [Free key](https://www.bargo.ai/free-apis/dash)
+- **Eulerpool** *(in use; its path is unconfirmed)*: free tier of 100,000 requests a month, with party and committee filters **(Federal only)**. [Docs](https://eulerpool.com/financial-data-api/congress-trading-data) · [Free key](https://eulerpool.com/developers/register)
+- **Financial Modeling Prep** *(in use when its key is set)*: has a free plan, but check whether it includes congressional trades **(Federal only)**. [Senate trading API docs](https://site.financialmodelingprep.com/developer/docs/senate-trading-api)
+- **SEC EDGAR** *(in use)*: each traded company's ticker and industry code, with no key, so trades can be sorted by sector for the committee-conflict rule and the trades-by-sector chart **(Federal only)**. [SEC developer resources](https://www.sec.gov/search-filings/edgar-application-programming-interfaces)
 
 ### Ethics and legal cases
 
 *Feeds the case table in the Ethics Score. Each item is a lead for review; a case is scored only after its status is confirmed from an official record.*
 
-- **CourtListener API:** court opinions and dockets, with a free account. Since May 2026, free accounts reportedly get about 125 requests a day *(unconfirmed)*; paid memberships get more. Pulling new documents from PACER costs PACER's fees **(State and federal)**. [Docs](https://www.courtlistener.com/help/api/rest/)
-- **FEC enforcement records:** closed enforcement cases (MURs), advisory opinions, and fines, with the existing FEC key **(Federal only)**. [FEC legal search](https://www.fec.gov/legal-resources/how-to-use-fec-legal-search-systems)
-- **DOJ press releases API:** indictments, plea deals, and settlements, with no key **(Federal only)**. [R client documenting it](https://cran.r-universe.dev/usdoj)
-- **Office of Government Ethics:** executive-branch financial disclosures, for candidates who held federal executive posts; no API, so by hand **(Federal only)**. [OGE Form 278e](https://oge.gov/web/278eGuide.nsf/Overview)
+- **CourtListener API** *(in use, weekly)*: court opinions and dockets, with a free account. Since May 2026, free accounts reportedly get about 125 requests a day *(unconfirmed)*; paid memberships get more. Pulling new documents from PACER costs PACER's fees **(State and federal)**. [Docs](https://www.courtlistener.com/help/api/rest/)
+- **FEC enforcement records** *(in use)*: closed enforcement cases (MURs), advisory opinions, and fines, with the existing FEC key **(Federal only)**. [FEC legal search](https://www.fec.gov/legal-resources/how-to-use-fec-legal-search-systems)
+- **DOJ press releases API** *(in use)*: indictments, plea deals, and settlements, with no key **(Federal only)**. [R client documenting it](https://cran.r-universe.dev/usdoj)
+- **Office of Government Ethics** *(not used yet)*: executive-branch financial disclosures, for candidates who held federal executive posts; no API, so by hand **(Federal only)**. [OGE Form 278e](https://oge.gov/web/278eGuide.nsf/Overview)
 
 ### Donations and outside spending
 
 *Feeds the Money & Influence Analysis and its charts.*
 
-- **FEC API and bulk files** *(in use)*: campaign totals (including the total from individual donors), PAC contributions, and outside spending; the bulk files feed the funder timelines. Individual donors' names and employers, which the top-donor tracking above needs, are not collected yet **(Federal only)**. [api.open.fec.gov/developers](https://api.open.fec.gov/developers/)
-- **ProPublica Nonprofit Explorer API:** tax filings of nonprofits that spend in races ("dark money" groups), with no key **(Federal only)**. [Announcement](https://www.propublica.org/nerds/announcing-the-nonprofit-explorer-api)
-- **IRS political organization (527) data:** groups that report to the IRS instead of the FEC, as weekly bulk downloads with no key **(Federal only)**. [IRS political organizations](https://www.irs.gov/node/471)
+- **FEC API and bulk files** *(in use)*: campaign totals (including the total from individual donors), PAC contributions, and outside spending; the bulk files feed the funder timelines. Individual contributions are now also totaled by the donor's employer for the top-donor tracking; donors' names are never kept **(Federal only)**. [api.open.fec.gov/developers](https://api.open.fec.gov/developers/)
+- **ProPublica Nonprofit Explorer API** *(in use)*: tax filings of nonprofits that spend in races ("dark money" groups), with no key **(Federal only)**. [Announcement](https://www.propublica.org/nerds/announcing-the-nonprofit-explorer-api)
+- **IRS political organization (527) data** *(not refreshed: bulk downloads only, so 527 spenders link to the IRS search)*: groups that report to the IRS instead of the FEC, as weekly bulk downloads with no key **(Federal only)**. [IRS political organizations](https://www.irs.gov/node/471)
 
 ### Lobbying
 
 *Feeds the Money & Influence Analysis.*
 
-- **LDA.gov:** official lobbying registrations, quarterly activity reports, and lobbyist contribution reports, with an API. A free key raises the limit from 15 to 120 requests a minute **(Federal only)**. [lda.gov](https://lda.gov/)
-- **FARA API:** registrations of people lobbying for foreign governments and companies, with no key *(rate limit unconfirmed)* **(Federal only)**. [efile.fara.gov/api](https://efile.fara.gov/api)
-- **Regulations.gov API:** donor companies' public comments on federal rules, with a free api.data.gov key **(Federal only)**. [Docs](https://open.gsa.gov/api/regulationsgov/)
+- **LDA.gov** *(in use, for top donor organizations; lobbyist contribution reports not yet)*: official lobbying registrations, quarterly activity reports, and lobbyist contribution reports, with an API. A free key raises the limit from 15 to 120 requests a minute **(Federal only)**. [lda.gov](https://lda.gov/)
+- **FARA API** *(in use)*: registrations of people lobbying for foreign governments and companies, with no key *(rate limit unconfirmed)* **(Federal only)**. [efile.fara.gov/api](https://efile.fara.gov/api)
+- **Regulations.gov API** *(in use)*: donor companies' public comments on federal rules, with a free api.data.gov key **(Federal only)**. [Docs](https://open.gsa.gov/api/regulationsgov/)
 
 ### Federal contracts
 
 *Optional context for the Money & Influence Analysis: federal contracts and grants to donor companies.*
 
-- **USAspending API:** federal contracts and grants by company, with no key or quota **(Federal only)**. [api.usaspending.gov](https://api.usaspending.gov/)
-- **SAM.gov Entity API:** companies' federal IDs (UEI) and industry codes, with a free key, to match donor companies to their contracts **(Federal only)**. [Docs](https://open.gsa.gov/api/entity-api)
+- **USAspending API** *(in use)*: federal contracts and grants by company, with no key or quota **(Federal only)**. [api.usaspending.gov](https://api.usaspending.gov/)
+- **SAM.gov Entity API** *(in use)*: companies' federal IDs (UEI) and industry codes, with a free key, to match donor companies to their contracts **(Federal only)**. [Docs](https://open.gsa.gov/api/entity-api)
 
 ### Profile photos
 
 - **unitedstates/images** *(in use)*: official public-domain congressional portraits; candidates who never served in Congress use photos supplied for the site **(Federal only)**. [github.com/unitedstates/images](https://github.com/unitedstates/images)
-- **Wikimedia Commons:** freely licensed photos for candidates without an official portrait; check each photo's license and credit **(State and federal)**. [commons.wikimedia.org](https://commons.wikimedia.org/)
+- **Wikimedia Commons** *(in use)*: freely licensed photos for candidates without an official portrait; check each photo's license and credit **(State and federal)**. [commons.wikimedia.org](https://commons.wikimedia.org/)
 
 ### Other sources
 
@@ -407,14 +407,16 @@ Some links were built from paths the sites list rather than opened directly (vot
 - [ ] Fact-check the original research file
 - [ ] Add People over Profit bills with cited analyses
 - [ ] Tag true campaign promises separately from other stated positions
+- [ ] Review the committee-sector list (`public/committee-sectors.json`) and the outside-spender sectors assigned from names
+- [ ] Enter the API keys and check each new source's first live refresh on the Updates screen
 
 ## Open decisions
 
 These values are placeholders or interpretations of the original notes. Confirm or adjust each one.
 
 - [ ] **Ethics deductions:** the original notes used −10 / −5 / −3; the app uses −20 / −15 / −5, which this doc follows. Confirm which set to keep.
-- [ ] **Statement-only issues in Your match:** this doc counts them at half importance (Rule 1); the app currently counts them at full importance. Update `grades.js` or this doc.
-- [ ] **People over Profit scope:** this doc scores votes and sponsorships with Rule 1 weights; the app currently scores votes only.
+- [x] **Statement-only issues in Your match:** counted at half importance (Rule 1), in this doc and in the app.
+- [x] **People over Profit scope:** votes, sponsorships and cosponsorships with Rule 1 weights, in this doc and in the app.
 - [ ] **Weights:** statements at 0.5; votes, sponsorships, and official acts at 1.0. Should sponsoring a bill count more than voting for it?
 - [ ] **Half credit in the Promise Score:** partly supported and changed position both earn ½. Raise partial credit (for example to 0.75) if a compromise should count closer to a kept promise.
 - [ ] **Finding severity:** every confirmed finding costs 20 points regardless of how serious it is. Consider tiers.
@@ -428,6 +430,6 @@ These values are placeholders or interpretations of the original notes. Confirm 
 - [ ] **State records in People over Profit:** the CBO and JCT analyze federal bills only, so decide which sources (such as state legislative fiscal offices) can mark state bills. Voteview's DW-NOMINATE also covers Congress only, so the ideological position indicator is blank for state-only officials unless a state-level measure is added.
 - [ ] **Trading deductions:** −2 per late report and −1 per committee-conflict trade (each capped at −10) and the 30-day timing window are placeholders. Check each aggregator's terms before republishing its trading data.
 - [ ] **Overlapping sources:** where several sources cover the same thing (stock trades, state bills, news), they are merged and the official record wins. Confirm this rule, and who reviews the disagreements.
-- [ ] **Trading history:** Bargo's free tier covers only the last 3 months. Decide whether to import older trades from the official House and Senate filings, which a term-long late-filing count needs, and confirm that Senate eFD allows automated access.
+- [ ] **Trading history:** Bargo's free tier covers only the last 3 months, so older trades are imported from the official filings with `scripts/build-holdings.py`, for review. Confirm that your use fits Senate eFD's terms before including senators.
 - [ ] **Court records:** CourtListener's free account allows only about 125 requests a day. Decide whether checking the profiled politicians weekly fits that, or whether a membership is needed.
 - [ ] **Ethics leads:** court records, FEC enforcement records, DOJ press releases, and news only point to possible cases. Decide who confirms a case's status from an official record before it is scored.

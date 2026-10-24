@@ -36,12 +36,18 @@ async function applySeed(db,seed) {
   }
   return seed.jobs.length;
 }
-// Adds the jobs for sources introduced after a database was created, without touching existing ones.
+// The jobs the configured sources call for, and a signature of them: when a source, a person or a key bill is added,
+// the signature changes and the missing jobs are added, without touching existing ones.
+const feedJobs=()=>FEED_KINDS.flatMap(kind=>FEEDS[kind].jobs(config).map(j=>({...j,kind})));
+export function feedSignature(){
+  let h=0;for(const c of FEEDS_VERSION+feedJobs().map(j=>j.id).join('|'))h=(Math.imul(h,31)+c.charCodeAt(0))|0;
+  return `${FEEDS_VERSION}:${(h>>>0).toString(36)}`;
+}
 async function ensureFeeds(db){
-  const v=await statement(db,"SELECT value FROM metadata WHERE key='feeds'").first();
-  if(Number(v?.value)===FEEDS_VERSION)return;
-  for(const kind of FEED_KINDS)for(const j of FEEDS[kind].jobs(config))await addJob(db,j.id,kind,j.subject,j.args);
-  await statement(db,"INSERT OR REPLACE INTO metadata(key,value) VALUES('feeds',?)",String(FEEDS_VERSION)).run();
+  const v=await statement(db,"SELECT value FROM metadata WHERE key='feeds'").first(),sig=feedSignature();
+  if(v?.value===sig)return;
+  for(const j of feedJobs())await addJob(db,j.id,j.kind,j.subject,j.args);
+  await statement(db,"INSERT OR REPLACE INTO metadata(key,value) VALUES('feeds',?)",sig).run();
 }
 export async function initialize(db,seed=null) {
   // INSERT OR IGNORE preserves checkpoints and dates between restarts/deployments.

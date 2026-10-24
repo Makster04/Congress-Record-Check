@@ -6,13 +6,13 @@ import {fecNext,normalizeCampaign,normalizeTransaction,normalizeVote,requestSour
 import {addJob,initialize,runRefresh,seedScope,statement,getProfile,getStatus} from '../src/refresh.mjs';
 import worker from '../src/worker.mjs';
 import {openDatabase} from '../scripts/sqlite.mjs';
-import {FEEDS_VERSION} from '../src/feeds.mjs';
+import {feedSignature} from '../src/refresh.mjs';
 const migration=await fs.readFile(new URL('../migrations/0001_initial.sql',import.meta.url),'utf8');
 const args={committee:'C00314575',candidate:'S6ME00159',cycle:2026};
 const campaign=(receipts=1000)=>({committee_id:args.committee,cycle:2026,coverage_start_date:'2025-01-01',coverage_end_date:'2026-06-30',receipts,last_cash_on_hand_end_period:200,last_debts_owed_by_committee:0,disbursements:800});
 const pac=(id,amount=100)=>({sub_id:id,committee_id:args.committee,transaction_id:'T'+id,contribution_receipt_amount:amount,contribution_receipt_date:'2026-02-01',contributor_name:'Example PAC',file_number:1234});
 const response=obj=>new Response(JSON.stringify(obj),{headers:{'content-type':'application/json'}});
-function database(){const db=openDatabase(':memory:');db.exec(migration);db.exec(`INSERT INTO metadata VALUES ('initialized','test fixture'),('feeds','${FEEDS_VERSION}')`);return db;}
+function database(){const db=openDatabase(':memory:');db.exec(migration);db.exec(`INSERT INTO metadata VALUES ('initialized','test fixture'),('feeds','${feedSignature()}')`);return db;}
 
 test('FEC seek pagination preserves exact cursor values and rejects a repeated cursor',()=>{
   const url='https://api.open.fec.gov/v1/schedules/schedule_a/?per_page=100';
