@@ -6,12 +6,13 @@ import {fecNext,normalizeCampaign,normalizeTransaction,normalizeVote,requestSour
 import {addJob,initialize,runRefresh,seedScope,statement,getProfile,getStatus} from '../src/refresh.mjs';
 import worker from '../src/worker.mjs';
 import {openDatabase} from '../scripts/sqlite.mjs';
+import {feedSignature} from '../src/refresh.mjs';
 const migration=await fs.readFile(new URL('../migrations/0001_initial.sql',import.meta.url),'utf8');
 const args={committee:'C00314575',candidate:'S6ME00159',cycle:2026};
 const campaign=(receipts=1000)=>({committee_id:args.committee,cycle:2026,coverage_start_date:'2025-01-01',coverage_end_date:'2026-06-30',receipts,last_cash_on_hand_end_period:200,last_debts_owed_by_committee:0,disbursements:800});
 const pac=(id,amount=100)=>({sub_id:id,committee_id:args.committee,transaction_id:'T'+id,contribution_receipt_amount:amount,contribution_receipt_date:'2026-02-01',contributor_name:'Example PAC',file_number:1234});
 const response=obj=>new Response(JSON.stringify(obj),{headers:{'content-type':'application/json'}});
-function database(){const db=openDatabase(':memory:');db.exec(migration);db.exec("INSERT INTO metadata VALUES ('initialized','test fixture')");return db;}
+function database(){const db=openDatabase(':memory:');db.exec(migration);db.exec(`INSERT INTO metadata VALUES ('initialized','test fixture'),('feeds','${feedSignature()}')`);return db;}
 
 test('FEC seek pagination preserves exact cursor values and rejects a repeated cursor',()=>{
   const url='https://api.open.fec.gov/v1/schedules/schedule_a/?per_page=100';
@@ -89,11 +90,12 @@ test('manual refresh cannot be triggered cross-origin or on the hosted worker',a
   assert.equal((await worker.fetch(request,{LOCAL_MODE:true},{})).status,403);
   assert.equal((await worker.fetch(request,{LOCAL_MODE:false},{})).status,403);
 });
-test('House vote mapping uses Bioguide IDs; Senate uses an exact name/state match',()=>{
+test('House vote mapping uses Bioguide IDs; Senate uses LIS member IDs, never names',()=>{
   const parser=new XMLParser({ignoreAttributes:false,parseTagValue:false});
-  const senate=parser.parse('<roll_call_vote><congress>119</congress><session>2</session><vote_number>1</vote_number><vote_date>January 6, 2026, 12:00 PM</vote_date><vote_title>Example vote</vote_title><members><member><last_name>Collins</last_name><state>ME</state><vote_cast>Nay</vote_cast></member><member><last_name>Collins</last_name><state>GA</state><vote_cast>Yea</vote_cast></member></members></roll_call_vote>');
-  const people=[{id:'collins',name:'Susan M. Collins',bioguide:'C001035',state:'ME',chamber:'S'}];
+  const senate=parser.parse('<roll_call_vote><congress>119</congress><session>2</session><vote_number>1</vote_number><vote_date>January 6, 2026, 12:00 PM</vote_date><vote_title>Example vote</vote_title><members><member><last_name>Collins</last_name><state>ME</state><lis_member_id>S252</lis_member_id><vote_cast>Nay</vote_cast></member><member><last_name>Collins</last_name><state>GA</state><lis_member_id>S999</lis_member_id><vote_cast>Yea</vote_cast></member><member><last_name>King</last_name><state>ME</state><lis_member_id>S363</lis_member_id><vote_cast>Yea</vote_cast></member></members></roll_call_vote>');
+  const people=[{id:'collins',name:'Susan M. Collins',bioguide:'C001035',lis:'S252',state:'ME',chamber:'S'},{id:'king',name:'Angus S. King',bioguide:'K000383',lis:null,state:'ME',chamber:'S'}];
   const v=normalizeVote(senate,{chamber:'S',congress:119,session:2,number:1},people);assert.equal(v.positions.collins,'Nay');
+  assert.equal(v.positions.king,undefined,'no LIS ID, so no inferred vote even though the surname and state match');
   assert.throws(()=>normalizeVote(senate,{chamber:'S',congress:119,session:2,number:2},people),/identity/);
   const house=parser.parse('<rollcall-vote><vote-metadata><rollcall-num>1</rollcall-num><action-date>6-Jan-2026</action-date><vote-question>Passage</vote-question></vote-metadata><vote-data><recorded-vote><legislator name-id="C001035">Another name</legislator><vote>Yea</vote></recorded-vote></vote-data></rollcall-vote>');
   assert.equal(normalizeVote(house,{chamber:'H',year:2026,number:1},people).positions.collins,'Yea');

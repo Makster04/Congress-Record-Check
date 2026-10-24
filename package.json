@@ -11,6 +11,7 @@
     "test": "node --test test/*.test.mjs",
     "check": "node scripts/check.mjs",
     "seed:export": "node --env-file-if-exists=.dev.vars scripts/export-seed.mjs",
+    "scores:monthly": "node scripts/scores-monthly.mjs",
     "cloudflare:preview": "wrangler dev",
     "cloudflare:deploy": "wrangler deploy",
     "db:migrate": "wrangler d1 migrations apply congress-record-check --remote"

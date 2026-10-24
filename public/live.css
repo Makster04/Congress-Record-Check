@@ -29,3 +29,4 @@
 .live-log{max-height:360px;overflow:auto}.live-log p{font-size:14px;padding:8px 0;border-bottom:1px solid var(--line)}
 .live-setup summary{cursor:pointer;font-weight:700}.live-setup li{margin:10px 0}.live-setup code{font-size:13px;overflow-wrap:anywhere}
 @media(max-width:600px){.live-card{padding:14px}.live-stats{grid-template-columns:1fr 1fr}.refresh-banner{justify-content:flex-start;padding:10px 16px}.live-head{padding-top:18px}}
+.live-card h4{margin:16px 0 6px;font-size:.95rem}

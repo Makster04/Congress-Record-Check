@@ -1,10 +1,17 @@
 import config from '../data/config.json' with {type:'json'};
-import {fetchPage,summarize,SourceError} from './sources.mjs';
+import COMMITTEES from '../public/committees.json' with {type:'json'};
+import {fetchPage,summarize,SourceError,requestSource,missingKey,HOSTS} from './sources.mjs';
+import {FEEDS,FEED_KINDS,FEEDS_VERSION,normalizeHouseApiVote,houseApiURL} from './feeds.mjs';
+import {mergeTrades,mergeStateBills,mergeNews,committeeDiff} from './merge.mjs';
 
 const DAY=86400000;
 // A recorded roll call does not change, so a published vote is never fetched again.
 const NEVER=Number.MAX_SAFE_INTEGER;
-const nextRefresh=(kind,from=Date.now())=>kind==='vote'?NEVER:from+(kind==='committee'?7*DAY:DAY);
+const nextRefresh=(kind,from=Date.now())=>{const every=FEEDS[kind]?.every??(kind==='vote'?NEVER:kind==='committee'?7*DAY:DAY);return every===NEVER?NEVER:from+every;};
+// The host each job kind calls, which decides the key it needs and which jobs share a rate limit.
+const LEGACY_HOST={campaign:'api.open.fec.gov',committee:'api.open.fec.gov',pac:'api.open.fec.gov',outside:'api.open.fec.gov',legislation:'api.congress.gov','senate-index':'www.senate.gov','house-next':'clerk.house.gov',vote:'clerk.house.gov'};
+const hostOf=kind=>FEEDS[kind]?.host||LEGACY_HOST[kind];
+export const ALL_KINDS=[...Object.keys(LEGACY_HOST),...FEED_KINDS];
 const nowISO=()=>new Date().toISOString();
 export const statement=(db,sql,...args)=>db.prepare(sql).bind(...args);
 export async function addJob(db,id,kind,subject,args,due=0) {
@@ -29,10 +36,23 @@ async function applySeed(db,seed) {
   }
   return seed.jobs.length;
 }
+// The jobs the configured sources call for, and a signature of them: when a source, a person or a key bill is added,
+// the signature changes and the missing jobs are added, without touching existing ones.
+const feedJobs=()=>FEED_KINDS.flatMap(kind=>FEEDS[kind].jobs(config).map(j=>({...j,kind})));
+export function feedSignature(){
+  let h=0;for(const c of FEEDS_VERSION+feedJobs().map(j=>j.id).join('|'))h=(Math.imul(h,31)+c.charCodeAt(0))|0;
+  return `${FEEDS_VERSION}:${(h>>>0).toString(36)}`;
+}
+async function ensureFeeds(db){
+  const v=await statement(db,"SELECT value FROM metadata WHERE key='feeds'").first(),sig=feedSignature();
+  if(v?.value===sig)return;
+  for(const j of feedJobs())await addJob(db,j.id,j.kind,j.subject,j.args);
+  await statement(db,"INSERT OR REPLACE INTO metadata(key,value) VALUES('feeds',?)",sig).run();
+}
 export async function initialize(db,seed=null) {
   // INSERT OR IGNORE preserves checkpoints and dates between restarts/deployments.
   const initialized=await statement(db,"SELECT value FROM metadata WHERE key='initialized'").first();
-  if(initialized) return;
+  if(initialized) return ensureFeeds(db);
   const c=config;
   await addJob(db,'senate-index','senate-index','Senate',{congress:c.congress,session:c.session});
   const house=c.selectedVotes.filter(v=>v.chamber==='H'&&v.year===c.year);
@@ -46,9 +66,36 @@ export async function initialize(db,seed=null) {
     if(p.bioguide)await addJob(db,`legislation:${p.id}`,'legislation',p.id,{bioguide:p.bioguide,congress:c.congress,cycle:c.cycle});
   }
   if(seed&&await applySeed(db,seed))await statement(db,"INSERT OR REPLACE INTO metadata(key,value) VALUES('seeded',?)",seed.exportedAt).run();
+  await ensureFeeds(db);
   await statement(db,"INSERT OR REPLACE INTO metadata(key,value) VALUES('initialized',?)",nowISO()).run();
 }
-function needsKey(kind,env){return ['campaign','committee','pac','outside'].includes(kind)&&!env.FEC_API_KEY?'FEC':kind==='legislation'&&!env.CONGRESS_API_KEY?'Congress.gov':null;}
+function needsKey(kind,env){const h=hostOf(kind);return h?missingKey(h,env):null;}
+const keyMessage=m=>m==='SEC contact line'?'SEC contact line needed (SEC_USER_AGENT)':`${m} API key needed`;
+// Jobs whose args are filled in when another job finishes (a person's top donor organizations, their outside spenders).
+const chainContext=db=>({
+  addJob:(id,kind,subject,args)=>addJob(db,id,kind,subject,args),
+  async setArgs(id,patch){
+    const job=await statement(db,'SELECT args FROM jobs WHERE id=?',id).first();if(!job)return;
+    const args={...JSON.parse(job.args),...patch};if(JSON.stringify(args)===job.args)return;
+    await statement(db,"UPDATE jobs SET args=?,next_due=0,status=CASE WHEN status='blocked' THEN status ELSE 'pending' END WHERE id=?",JSON.stringify(args),id).run();
+  }
+});
+const AFTER={outside:async(snapshot,job,ctx)=>{
+  const by=new Map();for(const r of snapshot.rows||[])by.set(r.name,(by.get(r.name)||0)+Math.abs(r.amount||0));
+  await ctx.setArgs(`outside-groups:${job.subject}`,{groups:[...by].sort((a,b)=>b[1]-a[1]).slice(0,10).map(x=>x[0]).filter(Boolean)});
+}};
+// House roll calls from 2023 on come from Congress.gov's House vote endpoint when its key is set; otherwise, and for
+// votes it does not cover yet, from the House Clerk.
+async function fetchJob(job,env){
+  const a=JSON.parse(job.args);
+  if(FEEDS[job.kind])return FEEDS[job.kind].page(job,a,env,config);
+  if(job.kind==='vote'&&a.chamber==='H'&&a.year>=2023&&env.CONGRESS_API_KEY){
+    const d=await requestSource(houseApiURL(a),env,{allow404:true});
+    if(d)return {rows:[{...normalizeHouseApiVote(d,a,config.people),source:`https://clerk.house.gov/Votes/${a.year}${a.number}`}],next:null};
+  }
+  return fetchPage(job,env,config);
+}
+const summarizeJob=(job,rows)=>FEEDS[job.kind]?(()=>{const s=FEEDS[job.kind].summarize(rows,JSON.parse(job.args),job,config);s.through=s.through||job.started_at.slice(0,10);return s;})():summarize(job,rows);
 export async function runRefresh(env,{steps=8}={}) {
   const db=env.DB;await initialize(db);
   const owner=crypto.randomUUID(),now=Date.now();
@@ -57,10 +104,11 @@ export async function runRefresh(env,{steps=8}={}) {
   let processed=0;
   try {
     // Missing keys are a setup state. Do not consume the work budget retrying them.
-    await statement(db,"UPDATE jobs SET status='blocked',error='FEC API key needed' WHERE kind IN ('campaign','committee','pac','outside') AND status!='blocked' AND ?=0",env.FEC_API_KEY?1:0).run();
-    await statement(db,"UPDATE jobs SET status='blocked',error='Congress.gov API key needed' WHERE kind='legislation' AND status!='blocked' AND ?=0",env.CONGRESS_API_KEY?1:0).run();
-    if(env.FEC_API_KEY)await statement(db,"UPDATE jobs SET status='pending',error=NULL,next_due=0 WHERE status='blocked' AND kind IN ('campaign','committee','pac','outside')").run();
-    if(env.CONGRESS_API_KEY)await statement(db,"UPDATE jobs SET status='pending',error=NULL,next_due=0 WHERE status='blocked' AND kind='legislation'").run();
+    for(const kind of ALL_KINDS){
+      const missing=needsKey(kind,env);
+      if(missing)await statement(db,"UPDATE jobs SET status='blocked',error=? WHERE kind=? AND status!='blocked'",keyMessage(missing),kind).run();
+      else await statement(db,"UPDATE jobs SET status='pending',error=NULL,next_due=0 WHERE status='blocked' AND kind=?",kind).run();
+    }
     for(let step=0;step<Math.min(steps,8);step++) {
       const job=await statement(db,"SELECT * FROM jobs WHERE status!='blocked' AND next_due<=? ORDER BY next_due, CASE kind WHEN 'senate-index' THEN 0 WHEN 'house-next' THEN 1 WHEN 'campaign' THEN 2 WHEN 'vote' THEN 3 ELSE 4 END, id LIMIT 1",Date.now()).first();
       if(!job)break;
@@ -70,7 +118,7 @@ export async function runRefresh(env,{steps=8}={}) {
         if(!job.run_id){job.run_id=crypto.randomUUID();job.started_at=nowISO();job.page=0;job.cursor=null;}
         await statement(db,"UPDATE jobs SET status='running',run_id=?,started_at=?,last_attempt=? WHERE id=?",job.run_id,job.started_at,nowISO(),job.id).run();
         if(job.page>=2000)throw new SourceError('Page limit exceeded; previous published data retained');
-        const result=await fetchPage(job,env,config);
+        const result=await fetchJob(job,env);
         const writes=result.rows.map(r=>statement(db,'INSERT OR REPLACE INTO records (run_id,id,payload) VALUES (?,?,?)',job.run_id,String(r.id),JSON.stringify(r)));
         for(let offset=0;offset<writes.length;offset+=80)await db.batch(writes.slice(offset,offset+80));
         if(result.next) {
@@ -80,7 +128,7 @@ export async function runRefresh(env,{steps=8}={}) {
           continue;
         }
         const records=(await statement(db,'SELECT payload FROM records WHERE run_id=?',job.run_id).all()).results.map(r=>JSON.parse(r.payload));
-        let snapshot=summarize(job,records);
+        let snapshot=summarizeJob(job,records);
         const completed=nowISO(),oldRun=job.published_run;
         const through=snapshot.end||snapshot.through||snapshot.date||null;
         // Snapshot publication and success stamp are atomic; unfinished pages are never served.
@@ -92,6 +140,7 @@ export async function runRefresh(env,{steps=8}={}) {
         if(oldRun&&oldRun!==job.run_id)await statement(db,'DELETE FROM records WHERE run_id=?',oldRun).run();
         if(job.kind==='committee'){const p=config.people.find(p=>p.id===job.subject);await addFinance(db,p,snapshot.committee,config.cycle);}
         if(job.kind==='senate-index')for(const v of snapshot.rows){const a=JSON.parse(job.args);await addJob(db,`vote:S:${a.congress}:${a.session}:${v.number}`,'vote',`s-${a.congress}-${a.session}-${v.number}`,{chamber:'S',...a,number:v.number});}
+        const after=FEEDS[job.kind]?.after||AFTER[job.kind];if(after)await after(snapshot,job,chainContext(db));
         if(job.kind==='house-next'&&result.nextProbe)await statement(db,'UPDATE jobs SET args=? WHERE id=?',JSON.stringify({...JSON.parse(job.args),number:result.nextProbe}),job.id).run();
       }catch(error){
         // Never save upstream URLs or response bodies: they may contain API credentials.
@@ -103,8 +152,9 @@ export async function runRefresh(env,{steps=8}={}) {
         ]);
         if(error.statusCode===429){
           const until=Date.now()+Math.max(delay,error.retryAfter||60*60_000);
-          if(['campaign','committee','pac','outside'].includes(job.kind))await statement(db,"UPDATE jobs SET next_due=MAX(next_due,?) WHERE kind IN ('campaign','committee','pac','outside')",until).run();
-          else if(job.kind==='legislation')await statement(db,"UPDATE jobs SET next_due=MAX(next_due,?) WHERE kind='legislation'",until).run();
+          // A rate limit applies to the whole host, so every job on that host waits.
+          const host=hostOf(job.kind),kinds=ALL_KINDS.filter(k=>hostOf(k)===host);
+          await statement(db,`UPDATE jobs SET next_due=MAX(next_due,?) WHERE kind IN (${kinds.map(()=>'?').join(',')})`,until,...kinds).run();
         }
         if(job.run_id){const published=await statement(db,'SELECT published_run FROM jobs WHERE id=?',job.id).first();if(published?.published_run!==job.run_id)await statement(db,'DELETE FROM records WHERE run_id=?',job.run_id).run();}
       }
@@ -118,18 +168,50 @@ async function registerHouse(db,vote,year) {await addJob(db,`vote:H:${year}:${vo
 export async function getStatus(env) {
   await initialize(env.DB);
   const jobs=(await statement(env.DB,'SELECT id,kind,subject,status,last_attempt,last_success,checked_through,error,failures,page FROM jobs ORDER BY kind,subject').all()).results;
-  for(const j of jobs){const missing=needsKey(j.kind,env);if(missing){j.status='blocked';j.error=`${missing} API key needed`;}
-    j.stale=j.kind==='vote'?!j.last_success:!j.last_success||Date.now()-Date.parse(j.last_success)>36*60*60_000;
-    j.name=config.people.find(p=>p.id===j.subject)?.name||j.subject;
+  for(const j of jobs){const missing=needsKey(j.kind,env);if(missing){j.status='blocked';j.error=keyMessage(missing);}
+    const every=FEEDS[j.kind]?.every??DAY;
+    j.stale=j.kind==='vote'||every===NEVER?!j.last_success:!j.last_success||Date.now()-Date.parse(j.last_success)>every*1.5;
+    j.label=FEEDS[j.kind]?.label||null;j.tab=FEEDS[j.kind]?.tab||null;
+    const who=config.people.find(p=>p.id===j.subject);j.name=who?.name||j.subject;j.person=!!who;
   }
-  return {generatedAt:nowISO(),local:env.LOCAL_MODE===true,reviewedAt:config.reviewedAt,cycle:config.cycle,keys:{fec:!!env.FEC_API_KEY,congress:!!env.CONGRESS_API_KEY},jobs,
+  const keyNames=[...new Set(Object.values(HOSTS).flatMap(h=>[...(h.keys||[]),...(h.agent?[h.agent]:[])]))];
+  return {generatedAt:nowISO(),local:env.LOCAL_MODE===true,reviewedAt:config.reviewedAt,cycle:config.cycle,keys:{fec:!!env.FEC_API_KEY,congress:!!env.CONGRESS_API_KEY,...Object.fromEntries(keyNames.map(k=>[k,!!env[k]]))},jobs,
     history:(await statement(env.DB,'SELECT job_id,status,at,message,row_count FROM refresh_history ORDER BY id DESC LIMIT 60').all()).results};
 }
+const GLOBAL_KINDS=FEED_KINDS.filter(k=>FEEDS[k].scope==='global');
 export async function getProfile(env,id) {
   const person=config.people.find(p=>p.id===id);if(!person)return null;
-  const rows=(await statement(env.DB,'SELECT s.job_id,s.payload,s.updated_at,j.kind,j.subject FROM snapshots s JOIN jobs j ON j.id=s.job_id WHERE j.subject=? OR j.kind=\'vote\'',id).all()).results;
-  const sections={},votes=[];
-  for(const row of rows){const data=JSON.parse(row.payload);if(row.kind==='vote'){if(data.positions[id])votes.push({...data,position:data.positions[id],checkedAt:row.updated_at});}else sections[row.kind]={...data,checkedAt:row.updated_at};}
+  const kinds=['vote',...GLOBAL_KINDS];
+  const rows=(await statement(env.DB,`SELECT s.job_id,s.payload,s.updated_at,j.kind,j.subject FROM snapshots s JOIN jobs j ON j.id=s.job_id WHERE j.subject=? OR j.kind IN (${kinds.map(()=>'?').join(',')})`,id,...kinds).all()).results;
+  const sections={},votes=[],global={};
+  for(const row of rows){
+    const data=JSON.parse(row.payload);
+    if(row.kind==='vote'){if(data.positions[id])votes.push({...data,position:data.positions[id],checkedAt:row.updated_at});continue;}
+    if(GLOBAL_KINDS.includes(row.kind)){
+      (global[row.kind]||=[]).push(data);
+      // Global sources list each person's records separately; several jobs of one kind (daily Record issues) add up.
+      if(data.byPerson?.[id]){const s=sections[row.kind]||={rows:[],checkedAt:row.updated_at};s.rows.push(...data.byPerson[id]);if(row.updated_at>s.checkedAt)s.checkedAt=row.updated_at;}
+      continue;
+    }
+    if(row.subject===id)sections[row.kind]={...data,checkedAt:row.updated_at};
+  }
+  for(const s of Object.values(sections))if(Array.isArray(s.rows)&&s.rows.every(r=>r&&r.date!==undefined))s.rows.sort((a,b)=>String(b.date||'').localeCompare(String(a.date||'')));
   votes.sort((a,b)=>b.date.localeCompare(a.date)||b.number-a.number);
-  return {person,sections,votes:votes.slice(0,60),voteScope:'Selected historical votes and the latest discovered roll calls. New votes do not change reviewed alignment scores.'};
+  // Merged views: one row per trade, state bill and article, whichever sources reported it.
+  const tradeLists=['trades-bargo','trades-eulerpool','trades-fmp'].map(k=>sections[k]?.rows).filter(Boolean);
+  const merged={};
+  if(tradeLists.length)merged.trades=mergeTrades(tradeLists,sections['house-fd']?.rows||[],global['sec-sic']?.[0]?.byTicker||{}).slice(0,200);
+  if(sections['state-openstates']||sections['state-legiscan'])merged.stateBills=mergeStateBills(sections['state-openstates']?.rows,sections['state-legiscan']?.rows).slice(0,150);
+  if(sections['news-gdelt']||sections['news-nyt'])merged.news=mergeNews(sections['news-gdelt']?.rows,sections['news-nyt']?.rows).slice(0,60);
+  const official=sections['senate-committees']||sections['house-committees'];
+  if(official)merged.committees={rows:official.rows,checkedAt:official.checkedAt,...committeeDiff(official.rows,COMMITTEES.people[id]||[])};
+  // Bills this person sponsored or cosponsored this Congress, and CRS reports on them or on the key bills.
+  const theirBills=new Set([...(sections.legislation?.rows||[]),...(sections.cosponsored?.rows||[])].map(r=>r.bill||String(r.id).toLowerCase()));
+  merged.crs=(global.crs||[]).flatMap(c=>Object.entries(c.byBill||{}).filter(([b])=>theirBills.has(b)).flatMap(([b,list])=>list.map(r=>({...r,bill:b})))).slice(0,30);
+  // Foreign-agent registrants whose name matches one of this person's top donor organizations.
+  const norm=v=>String(v||'').toLowerCase().replace(/[^a-z0-9]/g,'').replace(/(inc|llc|corp|corporation|co|company|lp|llp)$/,'');
+  const orgs=new Set((sections.donors?.orgs||[]).slice(0,20).map(o=>norm(o.employer)));
+  merged.fara=(global.fara?.[0]?.rows||[]).filter(r=>orgs.has(norm(r.name))||orgs.has(norm(r.business)));
+  const bills=Object.fromEntries((await statement(env.DB,"SELECT j.subject,s.payload FROM snapshots s JOIN jobs j ON j.id=s.job_id WHERE j.kind='bill'").all()).results.map(r=>[r.subject,JSON.parse(r.payload)]));
+  return {person,sections,merged,bills,votes:votes.slice(0,60),voteScope:'Selected historical votes and the latest discovered roll calls. New votes do not change reviewed alignment scores.'};
 }

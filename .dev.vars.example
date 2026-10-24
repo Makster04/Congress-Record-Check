@@ -1,8 +1,58 @@
 # Save a copy as .dev.vars. Keep this file on your computer; never commit actual keys.
-# FEC: https://api.open.fec.gov/developers/
+# Leave a key blank to skip its sources; the app still runs on the reviewed research.
+
+# FEC: campaign totals, donors by employer, PAC contributions, outside spending, enforcement records
+# https://api.open.fec.gov/developers/
 FEC_API_KEY=
-# Congress.gov: https://api.congress.gov/sign-up/
+# Congress.gov: sponsored and cosponsored bills, House roll calls, bill details, CRS reports, committee meetings
+# https://api.congress.gov/sign-up/
 CONGRESS_API_KEY=
+# GovInfo: floor speeches and hearing transcripts. Leave blank to use the Congress.gov key.
+# https://www.govinfo.gov/api-signup
+GOVINFO_API_KEY=
+# Vote Smart: issue positions and interest-group ratings
+# https://votesmart.org/services_api.php
+VOTESMART_API_KEY=
+# Open States: state legislators' bills, votes and sponsorships
+# https://openstates.org/accounts/signup/
+OPENSTATES_API_KEY=
+# LegiScan: state bills, cross-checked against Open States
+# https://legiscan.com/legiscan
+LEGISCAN_API_KEY=
+# Optional. LDA.gov: lobbying filings (works without a key at a lower rate limit)
+# https://lda.gov/
+LDA_API_KEY=
+# Stock trades: all three services run together, checked against the official House filings.
+# Optional. Bargo: last 3 months (works without a key at a lower limit). https://www.bargo.ai/free-apis/dash
+BARGO_API_KEY=
+# Eulerpool: 100,000 requests a month free. https://eulerpool.com/developers/register
+EULERPOOL_API_KEY=
+# Optional. Financial Modeling Prep, if its free plan includes congressional trades.
+# https://site.financialmodelingprep.com/developer/docs/senate-trading-api
+FMP_API_KEY=
+# CourtListener: court opinions and dockets (free account, about 125 requests a day)
+# https://www.courtlistener.com/help/api/rest/
+COURTLISTENER_API_TOKEN=
+# Google: published fact-checks and officials' YouTube videos
+# (turn on the Fact Check Tools API and the YouTube Data API for this key)
+# https://developers.google.com/fact-check-tools
+GOOGLE_API_KEY=
+# New York Times: articles naming each politician
+# https://developer.nytimes.com/
+NYT_API_KEY=
+# Regulations.gov: comments on federal rules. Leave blank to use the Congress.gov key.
+# https://open.gsa.gov/api/regulationsgov/
+REGULATIONS_API_KEY=
+# SAM.gov: companies' federal IDs, for matching donors to federal contracts
+# https://open.gsa.gov/api/entity-api
+SAM_API_KEY=
+# SEC EDGAR asks every request to name you: "Your Name you@example.com" (not a key)
+SEC_USER_AGENT=
+
+# No key needed: Senate and House roll calls, Senate and House committee lists, the House
+# disclosure index, Federal Register, Bluesky, Wayback Machine, GDELT, DOJ press releases,
+# ProPublica Nonprofit Explorer, FARA, USAspending.
+
 # Local refresh runs automatically while npm start is running.
 LOCAL_AUTORUN=true
 # Optional: change the local port.
