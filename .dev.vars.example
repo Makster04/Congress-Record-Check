@@ -11,7 +11,7 @@ CONGRESS_API_KEY=
 # https://www.govinfo.gov/api-signup
 GOVINFO_API_KEY=
 # Vote Smart: issue positions and interest-group ratings
-# https://votesmart.org/services_api.php
+# https://www.votesmart.org/votesmart-api
 VOTESMART_API_KEY=
 # Open States: state legislators' bills, votes and sponsorships
 # https://openstates.org/accounts/signup/
