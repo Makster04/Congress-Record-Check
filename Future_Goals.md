@@ -2,6 +2,20 @@
 - **API keys:** Finish setting up and testing the remaining API keys.
 - **Simpler layout:** Reorganize the information, tabs and charts so they're easy to read for a non-technical audience, with less small text on each page.
 
+**Simpler descriptions**
+- **Plain language:** Under every title and heading on the site, rewrite the description in short, simple sentences.
+- **Bold labels:** Make bold any label that comes before a colon (for example, **Outside money:**).
+- **Bullet points:** Break longer descriptions into bullet points wherever that makes them easier to scan.
+
+**Donor hover details**
+When someone hovers over a donor, PAC or organization, show three bullet points:
+- **Sector:** The field it works in (for example, Environment, Unions, Social Justice, Business or Health Care).
+- **What they do:** A one-line summary of the organization's main work.
+- **Political stance:** Whether it's generally considered liberal, conservative or nonpartisan.
+
+If you want something to remember for later, you could add one more line under the hover item:
+- **Stance sources:** Base each stance label on a cited source, such as the group's own scorecards or the candidates it funds, so the site stays nonpartisan.
+
 # Major Roles needed
 - **Coverage leads:** People assigned to specific politicians, parts of the project or data sources (API keys).
 - **NLP specialists:** People with natural language processing experience. They'll become more important as we analyze speeches, videos and long quotes, and connect what politicians say to their donor groups.
@@ -16,16 +30,3 @@
 One thing to keep in mind for Galileo: your Vote Smart application says their data won't be used with AI. If Galileo gets built, keep Vote Smart data out of it, or ask Vote Smart first.
 Here are both, rewritten:
 
-**Simpler descriptions**
-- **Plain language:** Under every title and heading on the site, rewrite the description in short, simple sentences.
-- **Bold labels:** Make bold any label that comes before a colon (for example, **Outside money:**).
-- **Bullet points:** Break longer descriptions into bullet points wherever that makes them easier to scan.
-
-**Donor hover details**
-When someone hovers over a donor, PAC or organization, show three bullet points:
-- **Sector:** The field it works in (for example, Environment, Unions, Social Justice, Business or Health Care).
-- **What they do:** A one-line summary of the organization's main work.
-- **Political stance:** Whether it's generally considered liberal, conservative or nonpartisan.
-
-If you want something to remember for later, you could add one more line under the hover item:
-- **Stance sources:** Base each stance label on a cited source, such as the group's own scorecards or the candidates it funds, so the site stays nonpartisan.
