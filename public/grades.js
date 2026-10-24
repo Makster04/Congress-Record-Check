@@ -58,13 +58,19 @@ export function matchScore(choices,evidence){
 // 0 if contradicted (including a promise left unacted at the end of the term, recorded as a contradiction with `unacted`).
 // Left out: ambiguous and outcome checks, promises with no related bill yet ("pending"), and vague goals (`vague: true`).
 const COUNTED=new Set(['consistent','partial','changed','contradiction']);
-export function promiseScore(statements){
+// trackers: published promise-tracker tallies (PolitiFact's Trump-O-Meter and MAGA-Meter, for a president), counted like
+// checked statements: Promise Kept 1, Compromise ½, Promise Broken 0. Stalled and In the Works wait, like a promise with
+// no related bill yet. [{counts:{kept, compromise, broken, stalled, inTheWorks}}]
+export function promiseScore(statements,trackers){
   const list=(statements||[]).filter(x=>!x.vague), c={};
   for(const x of list)c[x.assessment]=(c[x.assessment]||0)+1;
-  const kept=c.consistent||0, half=(c.partial||0)+(c.changed||0), broken=c.contradiction||0, clear=kept+half+broken;
-  return {pct:clear>=MIN_CHECKS?Math.round((kept+half/2)/clear*100):null,kept,half,broken,clear,total:list.length,
-    notCounted:list.filter(x=>!COUNTED.has(x.assessment)).length,vague:(statements||[]).length-list.length,
-    unacted:list.filter(x=>x.assessment==='contradiction'&&x.unacted).length,promises:list.filter(x=>x.promise).length};
+  let kept=c.consistent||0, half=(c.partial||0)+(c.changed||0), broken=c.contradiction||0, waiting=0, rated=0;
+  for(const t of trackers||[]){const n=t.counts||{};kept+=n.kept||0;half+=n.compromise||0;broken+=n.broken||0;
+    const w=(n.stalled||0)+(n.inTheWorks||0);waiting+=w;rated+=(n.kept||0)+(n.compromise||0)+(n.broken||0)+w;}
+  const clear=kept+half+broken;
+  return {pct:clear>=MIN_CHECKS?Math.round((kept+half/2)/clear*100):null,kept,half,broken,clear,total:list.length+rated,
+    notCounted:list.filter(x=>!COUNTED.has(x.assessment)).length+waiting,vague:(statements||[]).length-list.length,
+    unacted:list.filter(x=>x.assessment==='contradiction'&&x.unacted).length,promises:list.filter(x=>x.promise).length+rated};
 }
 
 // Stock trading: which reviewed trades were disclosed late (or not at all) and which were individual stocks in a sector
@@ -108,6 +114,8 @@ export function pvpScore(actions){
   for(const a of oneCreditPerBill((actions||[]).filter(a=>a.mark==='people'||a.mark==='profit'))){
     let took;
     if(a.kind==='vote'){if(a.pos!=='Yea'&&a.pos!=='Nay')continue;took=a.pos==='Yea'?a.mark:(a.mark==='people'?'profit':'people');}
+    // A president's veto takes the other side of the bill, like a Nay; signing a bill or issuing an order takes its side.
+    else if(a.kind==='vetoed')took=a.mark==='people'?'profit':'people';
     else took=a.mark;
     if(took==='people')people+=WEIGHT.action;else profit+=WEIGHT.action;
     scored.push(Object.assign({},a,{took}));
@@ -115,7 +123,8 @@ export function pvpScore(actions){
   const n=scored.length;
   return {pct:n>=MIN_PVP_ACTIONS?Math.round(people/(people+profit)*100):null,people,profit,n,scored};
 }
-// The actions one person took on marked bills: their recorded votes, and the bills they sponsored or cosponsored.
+// The actions one person took on marked bills: their recorded votes, and the bills they sponsored or cosponsored (or, for
+// a president, signed or vetoed, and executive orders, keyed "eo-14251").
 // marks: Map billKey -> {pvp}; votes: [{bill, pos}]; sponsorships: [{bill, kind}].
 export function pvpActions(marks,votes,sponsorships){
   const out=[];
