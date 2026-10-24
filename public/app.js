@@ -1,10 +1,31 @@
 import {KV_MIN,leanOfVote,whyNotMarked,sideTaken,keyVoteRows,keyVoteScore} from './lean.js';
-import {MIN_CHECKS,MIN_PVP_VOTES,ETHICS_COST,letter,promiseScore,ethicsScore,pvpScore,moneyRatio} from './grades.js';
+import {MIN_CHECKS,MIN_PVP_ACTIONS,ETHICS_COST,TRADE_COST,LATE_DAYS,WEIGHT,ACTION_TYPES,letter,billKey,billKeyFromText,matchScore,promiseScore,tradeChecks,ethicsScore,pvpScore,pvpActions,moneyRatio} from './grades.js';
 (function(){
 const $=s=>document.querySelector(s);
 const app=$('#app'), tip=$('#tip');
 const MEM=DATA.members, CANDS=DATA.cands||[], ALL=MEM.concat(CANDS);
 const byId=Object.fromEntries(ALL.map(s=>[s.id,s]));
+// One ID per bill ("117-hr-1319"), so a vote and a sponsorship on the same bill count once.
+const VOTE_BY_ID=new Map(DATA.votes.concat(DATA.hvotes).map(v=>[v.id,v]));
+const voteBill=v=>billKeyFromText((v.bill||{}).measure);
+for(const s of ALL)for(const ev of Object.values(s.evidence||{}))for(const e of ev){
+  if(e.bill)continue;
+  const v=VOTE_BY_ID.get(e.ref);if(v){e.bill=voteBill(v);continue;}
+  const m=/:bill:(\d+)$/.exec(e.ref||''), b=m&&(s.bills||[])[+m[1]];if(b)e.bill=billKey(b.congress,b.num);
+}
+// People over profit: bills marked People or Profit (research.json "bills"), and each person's votes and sponsorships on them.
+const PVP_MARKS=new Map((DATA.bills||[]).filter(b=>b.pvp==='people'||b.pvp==='profit').map(b=>[b.id,b]));
+function personPvp(s){
+  const votes=DATA.votes.concat(DATA.hvotes).filter(v=>v.pos&&s.id in v.pos).map(v=>({bill:voteBill(v),pos:v.pos[s.id],ref:v.id}));
+  const spons=(s.bills||[]).map((b,i)=>({bill:billKey(b.congress,b.num),kind:'sponsored',ref:`${s.id}:bill:${i}`}))
+    .concat((s.cosponsored||[]).map(b=>({bill:b.bill||billKey(b.congress,b.num),kind:'cosponsored'})));
+  return pvpScore(pvpActions(PVP_MARKS,votes,spons));
+}
+// Ethics: reviewed stock trades (research.json "trades" on a person) checked for late disclosure and committee conflicts.
+const COMMITTEE_SECTORS=window.COMMITTEE_SECTORS||{};
+const overseenSectors=s=>[...new Set((s.committees||[]).flatMap(c=>(COMMITTEE_SECTORS[c.id]||{}).sectors||[]))];
+const personTrading=s=>tradeChecks(s.trades,overseenSectors(s));
+const personEthics=s=>ethicsScore(s.ethics,personTrading(s));
 const icH=s=>s.ideoKind==='house'?'H':s.chamber;
 const chipCh=s=>s.senInc?'Senate':s.cand?(s.openSeat?'Senate candidate':(s.chamber==='S'?'Senate challenger':'House challenger')):CH[s.chamber].name;
 const CH={S:{name:'Senate',noun:'senator',nouns:'senators',votes:DATA.votes,member:'Senate'},H:{name:'House',noun:'representative',nouns:'representatives',votes:DATA.hvotes,member:'House'}};
@@ -12,9 +33,9 @@ const fmt$=n=>{if(n==null)return'—';const a=Math.abs(n);if(a>=1e6)return'$'+(n
 const fmtFull=n=>n==null?'—':'$'+Math.round(n).toLocaleString('en-US');
 const pct=(a,b)=>b?Math.round(a/b*1000)/10:0;
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const ASSESS={consistent:['good','Consistent'],contradiction:['crit','Direct contradiction'],partial:['warn','Partly consistent'],unclear:['neutral','Ambiguous or incomplete evidence'],changed:['serious','Changed position'],outcome:['neutral','Outcome check']};
+const ASSESS={pending:['neutral','No related bill yet'],consistent:['good','Consistent'],contradiction:['crit','Direct contradiction'],partial:['warn','Partly consistent'],unclear:['neutral','Ambiguous or incomplete evidence'],changed:['serious','Changed position'],outcome:['neutral','Outcome check']};
 const ICON={good:'✓',crit:'✕',warn:'◐',serious:'↻',neutral:'◇'};
-const AICON={consistent:'✓',contradiction:'✕',partial:'◐',unclear:'?',changed:'↻',outcome:'◇'};
+const AICON={pending:'…',consistent:'✓',contradiction:'✕',partial:'◐',unclear:'?',changed:'↻',outcome:'◇'};
 const posClass=p=>{p=(p||'').toLowerCase();if(p==='yea'||p==='guilty')return'yea';if(p==='nay'||p==='not guilty')return'nay';return'nv'};
 const voteUrl=v=>v.roll!=null?`https://clerk.house.gov/Votes/${v.year}${v.roll}`:`https://www.senate.gov/legislative/LIS/roll_call_votes/vote${v.congress}${v.session}/vote_${v.congress}_${v.session}_${String(v.number).padStart(5,'0')}.htm`;
 const partyName=p=>p==='R'?'Republican':p==='D'?'Democrat':'Independent';
@@ -329,10 +350,10 @@ window.addEventListener('hashchange',route);
 
 // ---------- home cards: who they are, four A-F grades, campaign and outside money, outside money by month ----------
 const GRADE_TIP={
-  match:'How their documented record compares with the positions you chose in My alignment. Needs evidence on at least 3 of your issues.',
-  prom:`Checked statements: 1 if the record supports it, ½ if partly supported or changed, 0 if contradicted; ambiguous and outcome checks are left out. Needs ${MIN_CHECKS} clear checks.`,
-  eth:`Starts at 100: −${ETHICS_COST.finding} per confirmed finding, −${ETHICS_COST.open} per open investigation, −${ETHICS_COST.closed} per investigation closed without a finding. Allegations are listed but not scored.`,
-  pvp:`Higher means their votes delivered more for working people; lower means more for the wealthy and corporations. Counts votes on bills that a cited nonpartisan analysis shows mostly help lower- and middle-income households, or mostly the wealthy and corporations. Needs ${MIN_PVP_VOTES} such votes.`
+  match:'How their documented record compares with the positions you chose in My alignment. Votes, sponsorships and official acts count fully; an issue backed only by statements counts at half its importance. Needs evidence on at least 3 of your issues.',
+  prom:`Checked promises and stated positions: 1 if the record supports it, ½ if partly supported or the position changed, 0 if contradicted, including a promise never acted on by the end of the term. Ambiguous checks, outcome checks, promises with no related bill yet and vague goals are left out. Needs ${MIN_CHECKS} counted checks.`,
+  eth:`Starts at 100: −${ETHICS_COST.finding} per confirmed finding, −${ETHICS_COST.open} per open investigation, −${ETHICS_COST.closed} per investigation closed without a finding. Stock trading: −${TRADE_COST.late} per late or missing disclosure and −${TRADE_COST.conflict} per trade in a sector their committees oversee, each capped at ${TRADE_COST.lateCap}. Allegations are listed but not scored.`,
+  pvp:`Higher means their record delivered more for working people; lower means more for the wealthy and corporations. Counts votes and sponsorships on bills that a cited nonpartisan analysis shows mostly help lower- and middle-income households, or mostly the wealthy and corporations. A Yea or a sponsorship takes the bill's side and a Nay the other, one credit per bill. Needs ${MIN_PVP_ACTIONS} scored actions.`
 };
 const initials=n=>{const w=n.replace(/\b(Jr|Sr|III|II)\b\.?/g,'').split(/\s+/).filter(x=>/^[A-Z][a-z'-]/.test(x));return ((w[0]||'?')[0]+(w.length>1?w[w.length-1][0]:'')).toUpperCase()};
 // Portrait: a cut-out photo standing in a party-colored circle, head rising above its top edge (public/portraits/,
@@ -353,12 +374,12 @@ function gradeTile(label,pct,detail,tip,extra='',href=''){
 }
 // With links, each tile opens that grade's tab on the profile (not on the home cards, which are links themselves).
 function reportCard(s,links){
-  const m=scoreFor(s), pr=promiseScore(s.statements), e=ethicsScore(s.ethics), v=pvpScore(DATA.votes.concat(DATA.hvotes),s.id), h=k=>links?`#${s.id}-${k}`:'';
+  const m=scoreFor(s), pr=promiseScore(s.statements), e=personEthics(s), v=personPvp(s), h=k=>links?`#${s.id}-${k}`:'';
   const md=!m.nChosen?'Choose issues in My alignment':m.score==null?`evidence on ${m.nCov} of ${m.nChosen} issues`:`${m.nCov} of your ${m.nChosen} issues`;
   const bar=pr.pct!=null?`<div class="hc-seg" aria-hidden="true">${pr.kept?`<i style="flex:${pr.kept};background:var(--good)"></i>`:''}${pr.half?`<i style="flex:${pr.half};background:var(--warn)"></i>`:''}${pr.broken?`<i style="flex:${pr.broken};background:var(--crit)"></i>`:''}</div>`:'';
   const pd=pr.pct!=null?`${pr.kept} of ${pr.clear} kept`:pr.total?`${pr.clear} of ${MIN_CHECKS} clear checks`:'no checks yet';
-  const ed=[e.finding&&`${e.finding} finding${e.finding>1?'s':''}`,e.open&&`${e.open} open inquir${e.open>1?'ies':'y'}`,e.closed&&`${e.closed} closed inquir${e.closed>1?'ies':'y'}`,e.allegation&&`${e.allegation} allegation${e.allegation>1?'s':''}`].filter(Boolean).join(' · ')||'none located';
-  const vd=v.pct!=null?`${v.people} of ${v.n} votes for working people`:v.n?`${v.n} of ${MIN_PVP_VOTES} scored bills`:'no bills scored yet';
+  const ed=[e.finding&&`${e.finding} finding${e.finding>1?'s':''}`,e.open&&`${e.open} open inquir${e.open>1?'ies':'y'}`,e.closed&&`${e.closed} closed inquir${e.closed>1?'ies':'y'}`,e.allegation&&`${e.allegation} allegation${e.allegation>1?'s':''}`,e.late&&`${e.late} late report${e.late>1?'s':''}`,e.conflict&&`${e.conflict} conflict trade${e.conflict>1?'s':''}`].filter(Boolean).join(' · ')||'none located';
+  const vd=v.pct!=null?`${v.people} of ${v.n} actions for working people`:v.n?`${v.n} of ${MIN_PVP_ACTIONS} scored actions`:PVP_MARKS.size?'no scored actions yet':'no bills scored yet';
   return `<div class="hc-rc">${gradeTile('Your match',m.score,md,GRADE_TIP.match,'',h('match'))}${gradeTile('Promises delivered',pr.pct,pd,GRADE_TIP.prom,bar,h('promises'))}${gradeTile('Ethics',e.pct,ed,GRADE_TIP.eth,'',h('ethics'))}${gradeTile('People over profit',v.pct,vd,GRADE_TIP.pvp,'',h('pvp'))}</div>`;
 }
 // The top of each grade tab: the letter and percentage, what it is based on, and the rule.
@@ -375,13 +396,13 @@ function miniOutside(s,bare){
   for(const r of IE.rows[s.race]||[]){const mo=r[0].slice(0,7);if(!M[mo])continue;const role=ieRole(s,r);if(role==='for')M[mo].f+=r[4];else if(role==='against')M[mo].a+=r[4];}
   const fw=s.out.multi?'supporting':'for', aw=s.out.multi?'opposing':'against';
   const max=Math.max(0,...months.map(m=>Math.max(M[m].f,M[m].a)));
-  const F=months.reduce((t,m)=>t+M[m].f,0), A=months.reduce((t,m)=>t+M[m].a,0), q=moneyRatio(F,A,fw,aw);
-  const badge=q?`<span class="hc-ratio" title="${esc(`For-to-against ratio of outside money in the months charted: ${fmtFull(F)} ${fw} ${s.short}, ${fmtFull(A)} ${aw}.`)}">For-to-against <b class="${q.side}">${q.text}</b></span>`:'';
+  const F=months.reduce((t,m)=>t+M[m].f,0), A=months.reduce((t,m)=>t+M[m].a,0), q=moneyRatio(F,A);
+  const badge=q?`<span class="hc-ratio" title="${esc(`For-to-against ratio of outside money in the months charted: ${fmtFull(F)} ${fw} ${s.short}, ${fmtFull(A)} ${aw}.`)}">${q.oneSided?`<b class="${q.side}">${q.text[0].toUpperCase()+q.text.slice(1)}</b>`:`For-to-against <b class="${q.side}">${q.text}</b>`}</span>`:'';
   const head=`<div class="hc-mh"><span>${bare?'':'Outside money by month'}${badge}</span><span>${MON[+months[0].slice(5,7)-1]} – <b>${fmtDate(DATA.ie_asof)}</b></span></div>`;
   if(!max)return `<div class="hc-mini">${head}<p class="small muted" style="margin:4px 0 0">No outside spending reported in these months.</p></div>`;
   const W=280,top=6,base=96,gw=W/7,bw=14,y=sh=>top+(1-sh)*(base-top);
   let svg=RATIO_TICKS.slice(1,4).map(([sh])=>`<line class="${sh===.5?'hc-g1':'hc-g'}" x1="0" x2="${W}" y1="${y(sh)}" y2="${y(sh)}"></line>`).join('');
-  const pts=months.map((m,i)=>{const {f,a}=M[m], x0=i*gw+(gw-2*bw-2)/2, r=moneyRatio(f,a,fw,aw);
+  const pts=months.map((m,i)=>{const {f,a}=M[m], x0=i*gw+(gw-2*bw-2)/2, r=moneyRatio(f,a);
     if(f>0){const h=Math.max(1.5,f/max*(base-top));svg+=`<rect class="hc-f" x="${x0.toFixed(1)}" y="${(base-h).toFixed(1)}" width="${bw}" height="${h.toFixed(1)}"></rect>`;}
     if(a>0){const h=Math.max(1.5,a/max*(base-top));svg+=`<rect class="hc-a" x="${(x0+bw+2).toFixed(1)}" y="${(base-h).toFixed(1)}" width="${bw}" height="${h.toFixed(1)}"></rect>`;}
     return r&&{x:(i*gw+gw/2).toFixed(1),y:y(r.share).toFixed(1),m,r};});
@@ -390,7 +411,7 @@ function miniOutside(s,bare){
   const d=pts.map((p,i)=>p?`${pts[i-1]?'L':'M'}${p.x} ${p.y}`:'').join('');
   if(d)svg+=`<path class="hc-rl-h" d="${d}"></path><path class="hc-rl" d="${d}"></path>`;
   svg+=pts.filter(Boolean).map(p=>`<path class="hc-rd" d="M${p.x} ${p.y}h0"></path>`).join('');
-  svg+=months.map((m,i)=>{const {f,a}=M[m],r=pts[i];return `<rect class="hc-hit" x="${(i*gw).toFixed(1)}" y="0" width="${gw.toFixed(1)}" height="100"><title>${esc(`${monLabel(m)}: ${fmt$(f)} ${fw}, ${fmt$(a)} ${aw}${!r?'':r.r.text.startsWith('all')?` · ${r.r.text}`:` · for-to-against ${r.r.text}`}`)}</title></rect>`}).join('');
+  svg+=months.map((m,i)=>{const {f,a}=M[m],r=pts[i];return `<rect class="hc-hit" x="${(i*gw).toFixed(1)}" y="0" width="${gw.toFixed(1)}" height="100"><title>${esc(`${monLabel(m)}: ${fmt$(f)} ${fw}, ${fmt$(a)} ${aw}${!r?'':r.r.oneSided?` · ${r.r.text}`:` · for-to-against ${r.r.text}`}`)}</title></rect>`}).join('');
   const label=months.map((m,i)=>`${monLabel(m)}: ${fmt$(M[m].f)} ${fw}, ${fmt$(M[m].a)} ${aw}${pts[i]?`, ratio ${pts[i].r.text}`:''}`).join('; ');
   const rax=RATIO_TICKS.map(([sh,t])=>`<span style="top:${y(sh)}%">${t}</span>`).join('');
   return `<div class="hc-mini">${head}<div class="hc-plot"><svg viewBox="0 0 ${W} 100" preserveAspectRatio="none" role="img" aria-label="${esc(`Outside spending by month, with the for-to-against ratio. ${label}`)}">${svg}</svg><div class="hc-rax" aria-hidden="true">${rax}</div></div>
@@ -834,7 +855,7 @@ function recordKicker(s){
 }
 // ---------- voter alignment (stage 7): a comparison with the viewer's own choices, never a quality rating ----------
 const ISS=DATA.issues, ISSBY=Object.fromEntries(ISS.map(i=>[i.id,i]));
-const RECT=new Set(['senate_vote','house_vote','vote','state_vote','sponsored','official_act']);
+const RECT=ACTION_TYPES;
 const TYPEL=DATA.typeLabel;
 const WLAB={1:'Low',2:'Medium',3:'High'};
 const ALKEY='crc-align-v1';
@@ -848,18 +869,10 @@ const EXAMPLES=[
   {name:'Ukraine aid, war-powers limits, ending Canada tariffs',set:{ukraine:['A',3],warpowers:['A',2],tariffs:['B',2],jan6:['A',1],infra:['A',1]}},
 ];
 function scoreFor(s){
-  const ch=chosenIssues();let totW=0,covW=0,num=0,nCov=0;const rows=[];
-  for(const i of ch){
-    const pr=PROF.issues[i.id],w=pr.w;totW+=w;
-    const ev=(s.evidence||{})[i.id]||[], rec=ev.filter(e=>RECT.has(e.type)), st=ev.filter(e=>e.type==='stated');
-    const basis=rec.length?rec:st;
-    if(!basis.length){rows.push({i,pr,status:'none',rec,st});continue}
-    const match=basis.filter(e=>e.side===pr.side).length, agree=match/basis.length;
-    covW+=w;nCov++;num+=w*agree;
-    rows.push({i,pr,status:rec.length?'record':'stated',match,n:basis.length,agree,rec,st,stMatch:st.filter(e=>e.side===pr.side).length});
-  }
-  const need=Math.min(3,ch.length), enough=ch.length>0&&nCov>=need&&totW>0&&covW/totW>=0.5;
-  return {score:enough?Math.round(num/covW*100):null,covW,totW,nCov,nChosen:ch.length,need,rows,num};
+  const ch=chosenIssues();
+  const r=matchScore(ch.map(i=>({id:i.id,side:PROF.issues[i.id].side,w:PROF.issues[i.id].w})),s.evidence);
+  r.rows.forEach((x,k)=>{x.i=ch[k];x.pr=PROF.issues[ch[k].id];});
+  return r;
 }
 function scoreBadge(r){
   if(!r.nChosen)return '<span class="muted">Set your priorities</span>';
@@ -867,7 +880,7 @@ function scoreBadge(r){
   return `<span class="alscore"><b>${r.score}%</b> match</span>`;
 }
 function evidenceMix(s){
-  const c={};Object.values(s.evidence||{}).flat().forEach(e=>{const k=RECT.has(e.type)?(e.type==='senate_vote'||e.type==='house_vote'||e.type==='vote'?'votes':e.type==='state_vote'?'state votes':e.type==='sponsored'?'bills sponsored':'official actions'):'statements';c[k]=(c[k]||0)+1});
+  const c={};Object.values(s.evidence||{}).flat().forEach(e=>{const k=RECT.has(e.type)?(e.type==='senate_vote'||e.type==='house_vote'||e.type==='vote'?'votes':e.type==='state_vote'?'state votes':e.type==='sponsored'?'bills sponsored':e.type==='cosponsored'?'bills cosponsored':'official actions'):'statements';c[k]=(c[k]||0)+1});
   return Object.entries(c).map(([k,n])=>`${n} ${k}`).join(', ')||'no coded evidence';
 }
 function sideLabel(i,side){return side==='A'?ISSBY[i].A:ISSBY[i].B}
@@ -1022,12 +1035,12 @@ function alignInto(s,host){
     <p class="intro">How ${esc(s.short)}'s documented record compares with the positions you choose below. ${esc(evidenceOf(s).label)}.</p>
     ${ALNOTE}
     <div class="chart"><div class="kicker">How the match is calculated</div>
-      ${r.nChosen?`<p class="small" style="margin:6px 0 0">${r.score==null?`Evidence covers ${r.nCov} of your ${r.nChosen} issues (${Math.round(r.covW/r.totW*100)||0}% of your total importance). A score needs at least ${r.need} issue${r.need===1?'':'s'} with evidence and at least half of your total importance.`:`For each of your issues with evidence, the share of ${esc(s.short)}'s items that match your side, weighted by importance: ${r.rows.filter(x=>x.status!=='none').map(x=>`${esc(x.i.label)} ${x.match}/${x.n} × ${x.pr.w}`).join(' + ')} = ${(r.num).toFixed(2)}, divided by the covered importance ${r.covW} = <b>${r.score}%</b>. Issues without evidence (${r.nChosen-r.nCov}) are left out rather than scored as zero.`}</p>`:`<p class="small" style="margin:6px 0 0">Choose positions below, or on the <a href="#align">My alignment</a> page.</p>`}
+      ${r.nChosen?`<p class="small" style="margin:6px 0 0">${r.score==null?`Evidence covers ${r.nCov} of your ${r.nChosen} issues (${Math.round(r.covW/r.totW*100)||0}% of your total importance). A score needs at least ${r.need} issue${r.need===1?'':'s'} with evidence and at least half of your total importance.`:`For each of your issues with evidence, the share of ${esc(s.short)}'s items that match your side, weighted by importance (an issue backed only by statements counts at half its importance): ${r.rows.filter(x=>x.status!=='none').map(x=>`${esc(x.i.label)} ${x.match}/${x.n} × ${+x.iw.toFixed(2)}${x.status==='stated'?' (statements only)':''}`).join(' + ')} = ${(r.num).toFixed(2)}, divided by the importance counted ${+r.effW.toFixed(2)} = <b>${r.score}%</b>. A sponsorship and a vote on the same bill count once. Issues without evidence (${r.nChosen-r.nCov}) are left out rather than scored as zero.`}</p>`:`<p class="small" style="margin:6px 0 0">Choose positions below, or on the <a href="#align">My alignment</a> page.</p>`}
     </div>
     ${r.nChosen?`<h3 style="margin-top:18px">Issue by issue</h3>${r.rows.map(x=>`<div class="alissue">
       <div class="row" style="justify-content:space-between"><div><b>${esc(x.i.label)}</b> <span class="small muted">· you: ${esc(sideLabel(x.i.id,x.pr.side))} · importance ${WLAB[x.pr.w]}</span></div>
       <div>${x.status==='none'?'<span class="chip ghost">Insufficient data</span>':`<span class="chip ${x.agree>=.5?'dfor':'dag'}">${x.match} of ${x.n} ${x.status==='record'?'recorded actions':'statements'} match</span>`}</div></div>
-      ${x.status==='stated'?'<p class="small" style="margin:4px 0 0;color:var(--warn)">Based on stated positions only: no recorded vote, bill or official action on this issue.</p>':''}
+      ${x.status==='stated'?'<p class="small" style="margin:4px 0 0;color:var(--warn)">Based on stated positions only: no recorded vote, bill or official action on this issue, so it counts at half its importance.</p>':''}
       ${x.status==='record'&&x.st.length?`<p class="small muted" style="margin:4px 0 0">Stated positions on this issue (shown, not scored because recorded actions exist): ${x.stMatch} of ${x.st.length} match.</p>`:''}
       ${(x.rec.concat(x.st)).length?`<ul class="evl">${x.rec.concat(x.st).map(e=>evRow(Object.assign({issue:x.i.id},e),x.pr.side)).join('')}</ul>`:`<p class="small muted" style="margin:4px 0 0">No documented vote, bill, official action or statement on this issue was found for ${esc(s.short)}.${(s.notVoted||{})[x.i.id]?' Did not vote on: '+s.notVoted[x.i.id].map(n=>esc(n.title)).join('; ')+'.':''}</p>`}
     </div>`).join('')}`:''}
@@ -1199,27 +1212,39 @@ function ethicsHTML(s){
   ${list.map(e=>`<article class="eth"><div class="head">${ethTag(e)}<span class="chip ghost">${esc(e.type)}</span><span class="mono muted">${esc(e.date)}</span></div><h3>${esc(e.title)}</h3><p style="margin-top:8px">${esc(e.summary)}</p><div class="outcome"><b>Outcome:</b> ${esc(e.outcome)}</div><ul class="srcs">${e.sources.map(x=>`<li><a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)} ↗</a></li>`).join('')}</ul></article>`).join('')}
   ${s.ethicsSearched&&s.ethics.some(e=>e.outcome!=='None found')?`<p class="small muted" style="margin-top:12px"><b>Also checked:</b> ${esc(s.ethicsSearched)}</p>`:''}</section>`;
 }
+// Stock trading: reviewed trades, each checked for a late or missing disclosure and for a committee conflict.
+const TRADE_OWNER={self:'Self',spouse:'Spouse',child:'Dependent child',joint:'Joint'};
+function tradingHTML(s){
+  const t=personTrading(s), sec=overseenSectors(s);
+  const head=`<section class="recsec" id="eth-trades"><div class="kicker">Stock trading</div><h3 style="margin-top:4px">Stock trades</h3>`;
+  if(!s.bioguide)return head+`<p class="small muted" style="margin:4px 0 0">No trading data: these disclosures cover members of Congress only, and state disclosure rules vary.</p></section>`;
+  if(!t.rows.length)return head+`<p class="small muted" style="margin:4px 0 0">No reviewed stock-trade records for ${esc(s.short)} yet. Trades from the official disclosures appear under Latest official records below and count toward the grade only once reviewed.</p></section>`;
+  return head+`<p class="small muted" style="margin:4px 0 8px">Periodic Transaction Reports are due no later than ${LATE_DAYS} days after a trade. ${sec.length?`${esc(s.short)}'s committees oversee: ${esc(sec.join(', '))}.`:'Committee sectors are not recorded yet, so no trade is counted as a conflict.'} Spouse and dependent-child trades are included and labeled. Returns are not scored.</p>
+  <div class="tablewrap"><table><thead><tr><th>Traded</th><th>Filed</th><th>Company</th><th>Type</th><th class="r">Amount</th><th>Owner</th><th>Checks</th></tr></thead><tbody>${t.rows.map(r=>`<tr><td class="mono">${esc(r.traded||'')}</td><td class="mono">${r.missing?'<b style="color:var(--crit)">not filed</b>':esc(r.filed||'')}${r.days!=null?`<div class="small muted">${r.days} days</div>`:''}</td><td>${esc(r.company||'')}${r.ticker?` <span class="mono muted">${esc(r.ticker)}</span>`:''}${r.sector?`<div class="small muted">${esc(r.sector)}</div>`:''}</td><td>${esc(r.type||'')}</td><td class="r">${esc(r.amount||'')}</td><td>${esc(TRADE_OWNER[r.owner]||r.owner||'')}</td><td>${r.late?`<span class="chip crit">Late −${TRADE_COST.late}</span> `:''}${r.conflict?`<span class="chip warn">Committee conflict −${TRADE_COST.conflict}</span>`:''}${r.flag?` <span class="chip ghost" title="${esc(r.flag)}">Flagged, not scored</span>`:''}${r.src?` <a class="small" href="${esc(r.src.u)}" target="_blank" rel="noopener">filing ↗</a>`:''}</td></tr>`).join('')}</tbody></table></div></section>`;
+}
 function paneEthics(s,pane){
-  const e=ethicsScore(s.ethics);
+  const e=personEthics(s);
   const terms=[[e.finding,ETHICS_COST.finding,'confirmed finding'],[e.open,ETHICS_COST.open,'open investigation'],[e.closed,ETHICS_COST.closed,'investigation closed without a finding']].filter(t=>t[0]);
-  const raw=100-terms.reduce((a,t)=>a+t[0]*t[1],0);
-  const detail=terms.length?terms.map(([n,,l])=>`${n} ${l}${n>1?'s':''}`).join(' · ')+(e.allegation?` · ${e.allegation} allegation${e.allegation>1?'s':''} (not scored)`:''):`No confirmed findings or investigations in the sources checked${e.allegation?`; ${e.allegation} allegation${e.allegation>1?'s are':' is'} listed but not scored`:''}.`;
-  const math=terms.length?`<p class="small gh-m"><b>How it was calculated:</b> 100 − ${terms.map(([n,c])=>`${c} × ${n}`).join(' − ')} = ${raw<0?`${raw}, shown as <b>0%</b>`:`<b>${e.pct}%</b>`}.</p>`:'';
-  pane.innerHTML=`${gradeHead('Ethics',e.pct,detail,GRADE_TIP.eth,math)}${ethicsHTML(s)}`;
+  const trade=[e.late&&`${e.late} late or missing disclosure${e.late>1?'s':''}`,e.conflict&&`${e.conflict} committee-conflict trade${e.conflict>1?'s':''}`].filter(Boolean);
+  const detail=(terms.length||trade.length)?terms.map(([n,,l])=>`${n} ${l}${n>1?'s':''}`).concat(trade).join(' · ')+(e.allegation?` · ${e.allegation} allegation${e.allegation>1?'s':''} (not scored)`:''):`No confirmed findings, investigations or trading problems in the sources checked${e.allegation?`; ${e.allegation} allegation${e.allegation>1?'s are':' is'} listed but not scored`:''}.`;
+  const parts=terms.map(([n,c])=>`${c} × ${n}`).concat(e.late?[`${e.lateCost} for late disclosures${e.late*TRADE_COST.late>e.lateCost?` (capped at ${TRADE_COST.lateCap})`:''}`]:[]).concat(e.conflict?[`${e.conflictCost} for conflict trades${e.conflict*TRADE_COST.conflict>e.conflictCost?` (capped at ${TRADE_COST.conflictCap})`:''}`]:[]);
+  const math=parts.length?`<p class="small gh-m"><b>How it was calculated:</b> 100 − ${parts.join(' − ')} = ${e.raw<0?`${e.raw}, shown as <b>0%</b>`:`<b>${e.pct}%</b>`}.</p>`:'';
+  pane.innerHTML=`${gradeHead('Ethics',e.pct,detail,GRADE_TIP.eth,math)}${ethicsHTML(s)}${tradingHTML(s)}`;
 }
 
 // ---------- People Over Profit tab: votes on scored bills, then who funds them and how those funders wanted them to vote ----------
 const PVP_SIDE={people:'Working people',profit:'The wealthy and corporations'};
+const billUrl=k=>{const m=/^(\d+)-([a-z]+)-(\d+)$/.exec(k||'');if(!m)return null;const T={hr:'house-bill',s:'senate-bill',hjres:'house-joint-resolution',sjres:'senate-joint-resolution',hconres:'house-concurrent-resolution',sconres:'senate-concurrent-resolution',hres:'house-resolution',sres:'senate-resolution'};return `https://www.congress.gov/bill/${m[1]}th-congress/${T[m[2]]}/${m[3]}`;};
+const billLabel=k=>{const m=/^(\d+)-([a-z]+)-(\d+)$/.exec(k||'');if(!m)return k;const L={hr:'H.R.',s:'S.',hjres:'H.J.Res.',sjres:'S.J.Res.',hconres:'H.Con.Res.',sconres:'S.Con.Res.',hres:'H.Res.',sres:'S.Res.'};return `${L[m[2]]} ${m[3]} (${m[1]}th Congress)`;};
+const PVP_DID={vote:p=>`Voted ${p}`,sponsored:()=>'Sponsored',cosponsored:()=>'Cosponsored'};
 function panePvp(s,pane){
-  const V=DATA.votes.concat(DATA.hvotes), v=pvpScore(V,s.id), marked=V.filter(x=>x.pvp);
-  const cast=marked.filter(x=>['Yea','Nay'].includes((x.pos||{})[s.id]));
-  const anyVotes=realVotes(s,DATA.votes).length+realVotes(s,DATA.hvotes).length>0;
-  const detail=v.pct!=null?`${v.people} of ${v.n} scored votes delivered more for working people; ${v.n-v.people} more for the wealthy and corporations.`:!marked.length?'No bills have been scored yet, so no one has this grade.':!anyVotes?`${esc(s.short)} has no recorded votes in Congress among the key votes, so this grade cannot apply yet.`:`${v.n} of the ${MIN_PVP_VOTES} scored votes a grade needs.`;
-  const took=x=>{const p=x.pos[s.id];return p==='Yea'?x.pvp.yea:(x.pvp.yea==='people'?'profit':'people')};
-  const table=cast.length?`<div class="tablewrap"><table><thead><tr><th>Vote</th><th>${esc(s.short)} voted</th><th>Delivered more for</th><th>Who gains, per</th></tr></thead><tbody>${cast.map(x=>`<tr><td><a href="${voteUrl(x)}" target="_blank" rel="noopener">${esc(x.short)}</a><div class="small muted">${fmtDate(x.date)}</div></td><td><span class="chip ${posClass(x.pos[s.id])}">${esc(x.pos[s.id])}</span></td><td><b class="${took(x)==='people'?'gr-A':'gr-F'}">${PVP_SIDE[took(x)]}</b></td><td class="small">${esc(x.pvp.why||'')} <a href="${esc(x.pvp.src.u)}" target="_blank" rel="noopener">${esc(x.pvp.src.t)} ↗</a></td></tr>`).join('')}</tbody></table></div>`
-    :`<div class="note">${marked.length?`${esc(s.short)} did not cast a Yea or Nay on any of the ${marked.length} scored bill${marked.length===1?'':'s'}.`:`<b>No bills are scored yet.</b> A bill counts once a nonpartisan analysis of who gains from it (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) is cited. Each scored vote will be listed here with the side it took and the analysis behind it.`}</div>`;
-  pane.innerHTML=`${gradeHead('People Over Profit',v.pct,detail,GRADE_TIP.pvp)}
-  <h3 style="margin:18px 0 8px">Scored votes</h3>${table}
+  const v=personPvp(s);
+  const detail=v.pct!=null?`${v.people} of ${v.n} scored actions delivered more for working people; ${v.profit} more for the wealthy and corporations.`:!PVP_MARKS.size?'No bills have been scored yet, so no one has this grade.':v.n?`${v.n} of the ${MIN_PVP_ACTIONS} scored actions a grade needs.`:`None of ${esc(s.short)}'s recorded votes or sponsorships is on a scored bill yet.`;
+  const math=v.pct!=null?`<p class="small gh-m"><b>How it was calculated:</b> ${v.people} People-leaning ÷ (${v.people} People + ${v.profit} Profit) = <b>${v.pct}%</b>. Each vote or sponsorship counts 1, and a bill counts once.</p>`:'';
+  const table=v.scored.length?`<div class="tablewrap"><table><thead><tr><th>Bill</th><th>${esc(s.short)}</th><th>Delivered more for</th><th>Who gains, per</th></tr></thead><tbody>${v.scored.map(a=>{const mk=PVP_MARKS.get(a.bill)||{},u=billUrl(a.bill);return `<tr><td>${u?`<a href="${u}" target="_blank" rel="noopener">${esc(mk.title||billLabel(a.bill))}</a>`:esc(mk.title||a.bill)}<div class="small muted">${esc(billLabel(a.bill))}</div></td><td>${esc(PVP_DID[a.kind](a.pos))}</td><td><b class="${a.took==='people'?'gr-A':'gr-F'}">${PVP_SIDE[a.took]}</b></td><td class="small">${esc(mk.why||'')} ${mk.src?`<a href="${esc(mk.src.u)}" target="_blank" rel="noopener">${esc(mk.src.t)} ↗</a>`:''}</td></tr>`}).join('')}</tbody></table></div>`
+    :`<div class="note">${PVP_MARKS.size?`${esc(s.short)} has no recorded vote or sponsorship on any of the ${PVP_MARKS.size} scored bill${PVP_MARKS.size===1?'':'s'}.`:`<b>No bills are scored yet.</b> A bill counts once a nonpartisan analysis of who gains from it (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) is cited. Each scored vote and sponsorship will be listed here with the side it took and the analysis behind it.`}</div>`;
+  pane.innerHTML=`${gradeHead('People Over Profit',v.pct,detail,GRADE_TIP.pvp,math)}
+  <h3 style="margin:18px 0 8px">Scored votes and sponsorships</h3>${table}
   <h2 style="margin-top:30px">Their funders and their votes</h2>
   <p class="intro">Who pays for ${esc(s.short)}'s campaign and spends on the race, and how those groups wanted ${esc(s.short)} to vote. Shown together so you can look for patterns yourself; a match shows agreement, not that money changed a vote.</p>
   ${fundersBlock(s)}
@@ -1261,7 +1286,7 @@ function recordInto(s,host){
 
 // ---------- Promises Delivered tab: the grade, then every statement check behind it ----------
 function panePromises(s,pane){
-  const pr=promiseScore(s.statements), out=pr.total-pr.clear;
+  const pr=promiseScore(s.statements), out=pr.notCounted;
   const detail=pr.pct!=null?`${pr.kept} of ${pr.clear} clear checks kept${pr.half?`, ${pr.half} partly kept or changed over time`:''}${pr.broken?`, ${pr.broken} contradicted by the record`:''}.`:pr.total?`${pr.clear} clear check${pr.clear===1?'':'s'} so far; a grade needs ${MIN_CHECKS}.`:'No statements checked yet.';
   const bar=pr.pct!=null?`<div class="hc-seg gh-bar" aria-hidden="true">${pr.kept?`<i style="flex:${pr.kept};background:var(--good)"></i>`:''}${pr.half?`<i style="flex:${pr.half};background:var(--warn)"></i>`:''}${pr.broken?`<i style="flex:${pr.broken};background:var(--crit)"></i>`:''}</div>`:'';
   const math=pr.pct!=null?`<p class="small gh-m"><b>How it was calculated:</b> (${pr.kept} kept${pr.half?` + ${pr.half} × ½ partly kept or changed`:''}) ÷ ${pr.clear} clear checks = <b>${pr.pct}%</b>.${out?` ${out} ambiguous or outcome check${out===1?' is':'s are'} listed below but not counted.`:''}</p>`:'';
@@ -1275,15 +1300,18 @@ function panePromises(s,pane){
     <div><dt><span class="chip neutral">? Ambiguous or incomplete evidence</span></dt><dd>Statement and action point in different directions, but whether they conflict depends on interpretation, or the evidence is incomplete.</dd></div>
     <div><dt><span class="chip serious">↻ Changed position</span></dt><dd>An acknowledged or evident reversal over time.</dd></div>
     <div><dt><span class="chip neutral">◇ Outcome check</span></dt><dd>The action matched the stated reasoning at the time, but later events bear on it.</dd></div>
+    <div><dt><span class="chip neutral">… No related bill yet</span></dt><dd>A promise that nothing has come up to act on yet. Not counted until there is.</dd></div>
   </dl>
+  <p class="small muted" style="margin:0 0 10px">Counted: consistent 1, partly consistent or changed ½, contradicted 0. A promise ${esc(s.short)} could have acted on but didn't by the end of the term is closed as contradicted. Vague goals, such as "fight for families," are listed but never scored.${pr.vague?` ${pr.vague} vague goal${pr.vague>1?'s are':' is'} listed below.`:''}</p>
   ${s.statements.map(x=>{const [cls,lab]=ASSESS[x.assessment];return `
   <article class="stmt ${x.assessment}">
-    <h3>${esc(x.topic)}</h3>
+    <h3>${esc(x.topic)}${x.promise?' <span class="chip ghost">Promise</span>':''}${x.vague?' <span class="chip ghost">Vague goal · not scored</span>':''}</h3>
     <div class="sd">
       <div><div class="k">What was said</div><div>${esc(x.said.text)}</div><div class="src">${esc(x.said.date)} · <a href="${esc(x.said.src.u)}" target="_blank" rel="noopener">${esc(x.said.src.t)} ↗</a></div></div>
       <div><div class="k">What the record shows</div><div>${esc(x.did.text)}</div><div class="src">${esc(x.did.date)} · <a href="${esc(x.did.src.u)}" target="_blank" rel="noopener">${esc(x.did.src.t)} ↗</a></div></div>
     </div>
     ${x.record?`<div class="small" style="margin-top:10px;color:var(--ink-2)"><b>Context:</b> ${esc(x.record)} ${x.recordSrc?`<a href="${esc(x.recordSrc.u)}" target="_blank" rel="noopener">${esc(x.recordSrc.t)} ↗</a>`:''}</div>`:''}
+    ${x.unacted?`<div class="small" style="margin-top:10px;color:var(--ink-2)"><b>Not acted on by the end of the term</b>${x.unacted.date?` (${esc(x.unacted.date)})`:''}: ${esc(x.unacted.reason||'')}</div>`:''}
     <div class="verdict"><span class="chip ${cls}">${AICON[x.assessment]} ${lab}</span><div class="note">${esc(x.note)}</div></div>
   </article>`}).join('')}`;
 }
@@ -1453,14 +1481,15 @@ function renderMethod(){
       <li><b>Money &amp; Influence:</b> where the campaign's money comes from, outside money for and against (also by month, with the for-to-against ratio), campaign funds raised, cash on hand, every PAC contribution, money routed through PACs on donors' behalf, every outside-spending group and item, the combined view, and the latest official filings.</li>
     </ul>
     <h2 id="m-grades">Grades on the home page</h2>
-    <p>Each home-page card grades four things from A to F, with the percentage beside it: A is 90–100, B 80–89, C 70–79, D 60–69 and F below 60. A grade appears only with enough evidence; otherwise the card says "Not graded", which is never a zero. The rules live in one file (<span class="mono">public/grades.js</span>), and the inputs are the same records shown on each profile.</p>
+    <p>Each home-page card grades four things from A to F, with the percentage beside it: A is 90–100, B 80–89, C 70–79, D 60–69 and F below 60, after rounding to a whole percentage. A grade appears only with enough evidence; otherwise the card says "Not graded", which is never a zero. The rules live in one file (<span class="mono">public/grades.js</span>), and the inputs are the same records shown on each profile. The full methodology, with worked examples and the values still open for decision, is in <span class="mono">1_Political_Scorecard_Metholodgy.md</span>.</p>
+    <p><b>Rule 1: actions count more than words.</b> Sponsoring or cosponsoring a bill, voting on it, and an official act (for officials who don't vote in Congress) each weigh ${WEIGHT.action}. A speech or statement weighs ${WEIGHT.statement} and is used only on an issue with no recorded action. Sponsoring a bill and then voting on it counts once, and if the two differ, the vote is the one counted. A Yea or a sponsorship takes the bill's marked side and a Nay the other; missed votes are not counted. A person who never held federal office but held a state office is scored on that state record.</p>
     <ul class="list">
-      <li><b>Your match:</b> the Voter alignment score for the positions you chose in My alignment (see Voter alignment below). It needs evidence on at least 3 of your issues and half of your total importance, and uses only your own choices, saved in your browser.</li>
-      <li><b>Promises delivered:</b> from the statement checks on each profile's Promises Delivered tab. A check counts 1 if the record supports what was said, ½ if partly supported or changed over time, and 0 if contradicted; ambiguous checks and outcome checks are left out. It needs ${MIN_CHECKS} such checks. The checks cover stated positions as well as campaign pledges; checks that are specifically promises are not yet tagged separately.</li>
-      <li><b>Ethics:</b> starts at 100 and subtracts ${ETHICS_COST.finding} for each confirmed finding, ${ETHICS_COST.open} for each open investigation, and ${ETHICS_COST.closed} for each investigation that ended without a finding against the person (an acquittal, dismissal, decision not to charge, ruling in their favor, or settlement without admission). "Open" includes investigations with no public resolution in the sources. Allegations, meaning complaints no official body acted on, are listed but cost nothing. The tags come from the Ethics section of each profile; every confirmed finding currently costs the same, whatever its size.</li>
-      <li><b>People over profit:</b> whether their votes delivered more for working people or for the wealthy and corporations. It is the share of votes cast for the side of a bill that a cited nonpartisan distributional analysis (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) shows mostly helps lower- and middle-income households, rather than the wealthy and corporations. A Yea takes the marked side and a Nay the other. An A means nearly all of those votes delivered for working people; the lower the grade, the larger the share that delivered for the wealthy and corporations, and below 50% means most of them did. It needs ${MIN_PVP_VOTES} such votes. <b>No bills are marked yet</b>, so no one is graded: each bill needs its analysis cited before it counts.</li>
+      <li><b>Your match:</b> the Voter alignment score for the positions you chose in My alignment (see Voter alignment below). For each of your issues with evidence, the share of the record that matches your side, weighted by the importance you gave the issue; an issue backed only by statements counts at half its importance, and issues with no evidence are left out. It needs evidence on at least 3 of your issues and half of your total importance, and uses only your own choices, saved in your browser.</li>
+      <li><b>Promises delivered:</b> from the checks on each profile's Promises Delivered tab, each pairing a specific commitment or stated position with what the record shows. A check counts 1 if the record supports it, ½ if partly supported or the position changed, and 0 if contradicted. A promise the person could have acted on but didn't by the end of the term is closed as contradicted. Ambiguous checks, outcome checks, promises with no related bill yet, and vague goals such as "fight for families" are left out. It needs ${MIN_CHECKS} counted checks. Checks that are true campaign promises are labeled "Promise".</li>
+      <li><b>Ethics:</b> starts at 100. Each case counts once, at its current status: ${ETHICS_COST.finding} points for a confirmed finding, ${ETHICS_COST.open} for an open investigation (including one with no public resolution), and ${ETHICS_COST.closed} for an investigation that ended without a finding against the person (an acquittal, dismissal, decision not to charge, ruling in their favor, or settlement without admission). Allegations, meaning complaints no official body acted on, are listed but cost nothing. Stock trading adds ${TRADE_COST.late} points per late or missing disclosure (Periodic Transaction Reports are due within ${LATE_DAYS} days of a trade) and ${TRADE_COST.conflict} per individual stock trade in a sector the person's committees oversee, each capped at ${TRADE_COST.lateCap}; a trade near a related vote is flagged but not scored, and returns are never scored. The score never goes below 0. Spouse and dependent-child trades count and are labeled; state-only officials show "No trading data". Only reviewed trades count: new disclosures are listed for review first.</li>
+      <li><b>People over profit:</b> whether their record delivered more for working people or for the wealthy and corporations. Bills are marked People or Profit only when a nonpartisan analysis of who gains (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) is cited, with a short reason; a bill with no clear winner is left out. Each vote or sponsorship on a marked bill counts 1 for the side it took, one credit per bill, and the score is People points ÷ (People + Profit points). It needs ${MIN_PVP_ACTIONS} scored actions. ${PVP_MARKS.size?`${PVP_MARKS.size} bill${PVP_MARKS.size===1?' is':'s are'} marked so far.`:'<b>No bills are marked yet</b>, so no one is graded.'}</li>
     </ul>
-    <p>Below the grades, each card charts outside money by month for the last seven months: spending for the candidate (green) and against them (orange), side by side. The line is each month's <b>for-to-against ratio</b>, read on the scale at the right, which runs from "all for" at the top through 1 : 1 in the middle to "all against" at the bottom. The ratio is always written for-to-against, with the larger side given as a number and the other as 1: "2.1 : 1" means $2.10 was spent for the candidate for every $1 spent against, and "1 : 2.1" the reverse. The line is placed by the share of the month's outside money spent for the candidate (so 3 : 1 is 75%, 1 : 3 is 25%), which keeps "all for" and "all against" on the scale; it breaks over a month with no outside money. The badge beside the chart's title gives the same ratio for all seven months together, in green when more was spent for the candidate, orange when more was spent against, and uncolored at 1 : 1. Hover over a month, or the badge, for the dollar amounts. In races with more than two candidates the chart says "supporting" and "opposing". It covers independent expenditures reported for the general election, not money given to the campaign.</p>
+    <p>Below the grades, each card charts outside money by month for the last seven months: spending for the candidate (green) and against them (orange), side by side. The line is each month's <b>for-to-against ratio</b>, read on the scale at the right, which runs from "all for" at the top through 1 : 1 in the middle to "all against" at the bottom. The ratio is always written for-to-against, with the larger side given as a number and the other as 1: "2.1 : 1" means $2.10 was spent for the candidate for every $1 spent against, and "1 : 2.1" the reverse. The line is placed by the share of the month's outside money spent for the candidate (so 3 : 1 is 75%, 1 : 3 is 25%), which keeps "all for" and "all against" on the scale; it breaks over a month with no outside money. The badge beside the chart's title gives the same ratio for all seven months together, in green when more was spent for the candidate, orange when more was spent against, and uncolored at 1 : 1. When nothing was spent against them it reads "No opposing spending" (or "No supporting spending" for the reverse). Hover over a month, or the badge, for the dollar amounts. In races with more than two candidates the chart says "supporting" and "opposing". It covers independent expenditures reported for the general election, not money given to the campaign.</p>
     <h2>Key votes marked liberal or conservative</h2>
     <p>Each key vote is checked against the issues it is coded to. Where an issue is a clear liberal-versus-conservative policy question in current U.S. politics, one side is marked liberal and the other conservative, as listed below. A bill is marked only if every issue it is coded to points the same way. Bills on unmarked issues, bipartisan deals, nominations and stopgap funding bills are left unmarked, and each unmarked bill shows its reason on the Your match tab. The marking is a judgment, kept in one place (<span class="mono">liberalSide</span> on each issue in <span class="mono">research.json</span>) so it can be reviewed and changed.</p>
     <ul class="list">${ISS.map(i=>i.liberalSide?`<li><b>${esc(i.label)}:</b> liberal side = "${esc(i[i.liberalSide])}"; conservative side = "${esc(i[i.liberalSide==='A'?'B':'A'])}".</li>`:`<li><b>${esc(i.label)}:</b> not marked. ${esc(i.leanNote)}</li>`).join('')}</ul>

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import {letter,promiseScore,ethicsScore,pvpScore,moneyRatio,MIN_CHECKS,ETHICS_COST} from '../public/grades.js';
+import {letter,promiseScore,ethicsScore,pvpScore,pvpActions,moneyRatio,matchScore,tradeChecks,billKey,billKeyFromText,oneCreditPerBill,MIN_CHECKS,ETHICS_COST,TRADE_COST} from '../public/grades.js';
 const data=JSON.parse(await fs.readFile(new URL('../public/research.json',import.meta.url),'utf8'));
 const people=data.members.concat(data.cands);
 const st=(...a)=>a.map(assessment=>({assessment}));
@@ -24,17 +24,21 @@ test('ethics: findings, open and closed investigations cost points; allegations 
   assert.equal(ethicsScore([e('investigation','closed')]).pct,100-ETHICS_COST.closed);
   assert.equal(ethicsScore(Array(9).fill(e('finding'))).pct,0);
 });
-test('people over profit: a Yea takes the marked side, a Nay the other, absences count for nothing; needs 3 votes',()=>{
-  const v=(yea,pos)=>({pvp:{yea},pos:{p:pos}});
-  assert.deepEqual(pvpScore([v('people','Yea'),v('profit','Nay'),v('profit','Yea')],'p'),{pct:67,people:2,n:3});
-  assert.equal(pvpScore([v('people','Yea'),v('people','Not Voting')],'p').pct,null);
-  assert.equal(pvpScore([{pos:{p:'Yea'}}],'p').n,0);
+test('people over profit: a Yea or sponsorship takes the bill side, a Nay the other, missed votes count nothing, one credit per bill; needs 3 actions',()=>{
+  const marks=new Map([['119-hr-1',{pvp:'profit'}],['119-s-5',{pvp:'people'}],['119-hr-7',{pvp:'people'}],['119-hr-9',{pvp:'profit'}]]);
+  const acts=pvpActions(marks,[{bill:'119-hr-1',pos:'Nay'},{bill:'119-s-5',pos:'Yea'},{bill:'119-hr-9',pos:'Not Voting'},{bill:'119-hr-2',pos:'Yea'}],[{bill:'119-hr-7',kind:'sponsored'},{bill:'119-s-5',kind:'cosponsored'}]);
+  const r=pvpScore(acts);
+  assert.equal(r.n,3);assert.equal(r.people,3);assert.equal(r.profit,0);assert.equal(r.pct,100);
+  assert.equal(r.scored.find(a=>a.bill==='119-s-5').kind,'vote');
+  assert.equal(pvpScore(pvpActions(marks,[{bill:'119-hr-1',pos:'Yea'},{bill:'119-s-5',pos:'Nay'}],[])).pct,null);
+  assert.equal(pvpScore(pvpActions(marks,[{bill:'119-hr-1',pos:'Yea'},{bill:'119-s-5',pos:'Yea'}],[{bill:'119-hr-7'}])).pct,67);
 });
 test('every displayed investigation says whether it is open or closed',()=>{
   for(const s of people)for(const e of s.ethics)if(e.status==='investigation')assert.ok(['open','closed'].includes(e.stage),`${s.id}: ${e.title}`);
 });
-test('any bill marked for people over profit cites its source',()=>{
-  for(const v of data.votes.concat(data.hvotes))if(v.pvp){assert.ok(['people','profit'].includes(v.pvp.yea),v.id);assert.ok(v.pvp.src&&/^https:\/\//.test(v.pvp.src.u),v.id+' needs a source link');}
+test('any bill marked for people over profit has a valid ID, a side, a reason and a source',()=>{
+  for(const v of data.votes.concat(data.hvotes))assert.ok(!v.pvp,v.id+': People/Profit marks belong in the bills list, once per bill');
+  for(const b of data.bills||[]){assert.ok(/^\d+-[a-z]+-\d+$/.test(b.id),b.id);assert.ok(['people','profit'].includes(b.pvp),b.id);assert.ok(b.why,b.id+' needs a reason');assert.ok(b.src&&/^https:\/\//.test(b.src.u),b.id+' needs a source link');}
 });
 test('My alignment: every issue has a statement to agree or disagree with, and a known category',()=>{
   const groups=new Set(['econ','rights','imm','foreign','env']);
@@ -52,13 +56,44 @@ test('outside money ratio is always for-to-against: larger side gets the number,
   assert.equal(r(100,104),'1 : 1');
   assert.equal(r(2100,100),'21 : 1');
   assert.equal(r(9.97,1),'10 : 1');
-  assert.equal(r(500,0),'all for');
-  assert.equal(r(0,500),'all against');
-  assert.equal(moneyRatio(0,500,'supporting','opposing').text,'all opposing');
+  assert.equal(r(500,0),'no opposing spending');
+  assert.equal(r(0,500),'no supporting spending');
+  assert.equal(moneyRatio(500,0).oneSided,true);
   assert.deepEqual([[210,100],[100,340],[500,0],[0,500],[104,100],[100,100]].map(([f,a])=>moneyRatio(f,a).side),['for','against','for','against','even','even']);
   assert.equal(moneyRatio(0,0),null);
   assert.equal(moneyRatio(-5,0),null);
   assert.equal(moneyRatio(300,100).share,.75);
   assert.equal(moneyRatio(100,100).share,.5);
   assert.equal(moneyRatio(0,9).share,0);
+});
+test('bill IDs: one form for every way a bill is written',()=>{
+  assert.equal(billKeyFromText('H.R. 1319 (117th Congress)'),'117-hr-1319');
+  assert.equal(billKeyFromText('S.J.Res. 77 (119th Congress)'),'119-sjres-77');
+  assert.equal(billKeyFromText('H.Con.Res. 64 (119th Congress)'),'119-hconres-64');
+  assert.equal(billKeyFromText('H.Res. 24 (117th Congress)'),'117-hres-24');
+  assert.equal(billKeyFromText('Nomination PN11-7 (119th Congress)'),null);
+  assert.equal(billKey(119,'S. 3267'),'119-s-3267');
+  assert.equal(billKey(119,'H.J.Res. 72'),'119-hjres-72');
+  for(const v of data.votes.concat(data.hvotes)){const m=(v.bill||{}).measure||'';if(/^(H|S)\.(R\.|J\.Res\.|Con\.Res\.|Res\.)?\s?\d/.test(m))assert.ok(billKeyFromText(m),v.id+' '+m);}
+});
+test('one credit per bill: a vote replaces a sponsorship of the same bill',()=>{
+  const r=oneCreditPerBill([{bill:'b1',type:'sponsored',side:'A'},{bill:'b1',type:'senate_vote',side:'B'},{bill:'b2',type:'sponsored'},{type:'stated'}]);
+  assert.equal(r.length,3);assert.equal(r[0].type,'senate_vote');
+});
+test('your match: weighted by importance, statement-only issues at half importance, no-evidence issues left out',()=>{
+  const ev={a:[{type:'senate_vote',side:'A'},{type:'senate_vote',side:'B'}],b:[{type:'stated',side:'A'}],c:[{type:'house_vote',side:'B'}],d:[]};
+  const r=matchScore([{id:'a',side:'A',w:2},{id:'b',side:'A',w:2},{id:'c',side:'A',w:3},{id:'d',side:'A',w:1}],ev);
+  // a: 1/2 x 2 = 1; b: 1/1 x (2 x 0.5) = 1; c: 0/1 x 3 = 0 -> 2 / (2 + 1 + 3) = 33%
+  assert.equal(r.score,33);assert.equal(r.nCov,3);assert.equal(r.effW,6);
+  assert.equal(matchScore([{id:'a',side:'A',w:3},{id:'d',side:'A',w:3}],ev).score,null);
+});
+test('promises: vague goals and not-yet-actionable promises are left out; an unacted promise counts as contradicted',()=>{
+  const r=promiseScore([{assessment:'consistent'},{assessment:'consistent'},{assessment:'contradiction',unacted:{reason:'x'}},{assessment:'pending'},{assessment:'consistent',vague:true}]);
+  assert.equal(r.pct,67);assert.equal(r.vague,1);assert.equal(r.notCounted,1);assert.equal(r.unacted,1);
+});
+test('ethics: late disclosures and committee-conflict trades cost points, each capped; funds and other sectors do not',()=>{
+  const t=tradeChecks([{traded:'2026-01-01',filed:'2026-03-01',sector:'Energy'},{traded:'2026-01-01',filed:'2026-01-20',sector:'Energy',asset:'fund'},{traded:'2026-01-01',filed:'2026-01-10',sector:'Retail'},{missing:true,traded:'2026-02-01'}],['Energy']);
+  assert.equal(t.late,2);assert.equal(t.conflict,1);
+  assert.equal(ethicsScore([],t).pct,100-2*TRADE_COST.late-TRADE_COST.conflict);
+  assert.equal(ethicsScore([],{late:9,conflict:30}).pct,100-TRADE_COST.lateCap-TRADE_COST.conflictCap);
 });
