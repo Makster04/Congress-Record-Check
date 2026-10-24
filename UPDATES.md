@@ -1,0 +1,201 @@
+These all score 0–100, and a higher number always means more of what the name says. They're grouped by the tab each one would go on.
+
+**How the math works for all of them**
+- **Turning a part into 0–100:** a share is multiplied by 100, so 30% becomes 30. Anything else is compared with a ceiling. At or above the ceiling counts as 100, and below it scales down. For example, with a ceiling of 20%, a share of 8% scores 40.
+- **The index:** the weighted average of its parts.
+- **Missing data:** a missing part drops out and the other parts are re-weighted. If a part marked *required* is missing, the index shows "Not enough data".
+- **Party comparison:** every index also shows how the person compares with the average for their party and chamber, for example "+12 vs. party."
+- **Reviewed data only:** refreshed records stay as leads until they're reviewed.
+- **One calculation per index:** each index is calculated once, on its home tab. If another tab shows it, it's the same number with a link back.
+
+---
+
+## Ethics tab
+
+### Insider Trading Index
+**Measures:** stock trades that overlap with the person's power, donors or votes.
+
+- **Committee conflicts (40%, required):** the dollar value of trades in single companies' stock, in sectors their committees oversee, ÷ the dollar value of all their single-company trades. Each trade's dollar value is the middle of its disclosed range. For example, "$1,001–$15,000" counts as $8,000.
+- **Trades near related votes (25%):** the share of trades made within 30 days before or after a vote or bill action of theirs that affects that company's sector.
+- **Trades in donors (20%):** the share of trades in a company whose PAC or employees gave to them, or that lobbied on a bill they acted on.
+- **Single-stock activity (15%):** single-company trades per year, with a ceiling of 50 trades a year. Funds, ETFs and bonds don't count.
+
+**Rules:**
+- Spouse and dependent-child trades count and are labeled.
+- Fewer than 5 reviewed trades means "Not enough data", with the raw flags still listed.
+- No trades at all scores 0, shown as "No trades".
+- People not in Congress show "No trading data".
+- Trades that made unusually good returns are shown as leads only, never scored.
+
+**Also shown on:** the Money & Influence tab, beside the trade list. It's the same number, not a second score.
+
+**Example:** conflicts 30, near votes 20, donors 10, activity 24 gives (0.4×30) + (0.25×20) + (0.2×10) + (0.15×24) = **23**.
+
+### Stock Disclosure Dodger Index
+**Measures:** stock and holdings reports that were filed late or never filed.
+
+- **Late or missing trade reports (70%, required):** the share of trades reported after the 45-day deadline, or never reported.
+- **Late annual financial disclosures (30%):** the share of the last 3 years' annual reports filed after the deadline, extensions included. These are the yearly reports that list holdings, including stocks. They come from the House disclosure index.
+
+**Rules:**
+- **Minimum:** at least 3 required filings.
+- **People not in Congress:** "No trading data."
+- **Late FEC campaign reports:** not part of this index, because they're campaign money, not stock. An FEC fine for late reports already shows up as an Ethics case once it's reviewed.
+
+> Late trade reports are counted here, not in the Insider Trading Index, so nothing is counted twice.
+
+### New Ethics grade formula
+**Ethics** = 100 − case points − (Insider Trading Index × 0.10) − (Stock Disclosure Dodger Index × 0.10). It never goes below 0.
+
+The most trading can cost is still 20 points, the same as today. The difference is that the deduction now reflects how serious the trading is, not just how many bad trades there were.
+
+The two stock indexes don't overlap:
+- **Insider Trading Index:** what they traded, and whether it overlaps with their committees, votes or donors.
+- **Stock Disclosure Dodger Index:** whether they reported it on time.
+
+---
+
+## Workers > Profit tab
+
+### Corporation Compromised Index
+**Measures:** how much of their money comes from corporations, and how often they side with those funders.
+
+- **Corporate PAC share (35%, required):** money from corporate and industry-group PACs ÷ campaign funds raised, over the same reports. The ceiling is 20%.
+- **Corporate employees' giving (10%):** giving from employees of the companies among their top 20 donor organizations ÷ campaign funds raised. The ceiling is 10%.
+- **Voting with business funders (35%):** on key votes where a business funder took a public side, how often they voted that way, minus their party's average on the same votes. Being at or below the party average scores 0, and the ceiling is 25 points above it. Business funders include the Chamber of Commerce, NFIB, Americans for Prosperity and Club for Growth.
+- **Profit side on lobbied bills (20%):** on Workers > Profit bills that a top donor organization lobbied on, the share where they took the Profit side. This part needs at least 3 such bills.
+
+Outside spending is left out, because candidates legally can't control it.
+
+**Example:** PAC share 8% scores 40, employees 3% scores 30, +10 vs. party scores 40, and 2 of 4 lobbied bills scores 50. That gives (0.35×40) + (0.10×30) + (0.35×40) + (0.20×50) = **41**.
+
+### Union Backed Index
+The same formula with unions:
+- union PAC share;
+- union members' giving;
+- voting with union funders such as the AFL-CIO, SEIU and AFSCME, compared with their party's average;
+- the People side on bills that unions lobbied on.
+
+It's shown next to the Corporation Compromised Index, so both sides are measured the same way.
+
+### Grassroots Index
+**Measures:** the share of campaign funds from donors who gave $200 or less, × 100. A score of 42 means 42% came from small donors.
+
+**Minimum:** an FEC report.
+
+### New Workers > Profit grade formula
+**Workers > Profit** = 75% from today's score (actions on marked bills) + 25% from (100 − Corporation Compromised Index).
+
+- The grade still needs today's minimum number of scored actions on marked bills. Without them, it stays "Not graded", and the index is shown on its own.
+- The Union Backed and Grassroots indexes sit beside the grade, not inside it.
+
+---
+
+## Money & Influence tab
+These stay beside the grades and carry the **Correlation, not cause** label.
+
+### Stock trades (from the Ethics tab)
+Not a separate index:
+- **What's shown:** the Insider Trading Index number from the Ethics tab, beside the existing "Stock holdings and trades" list and the "Stock in donors" stat.
+- **Breakdown:** a link to the Ethics tab, which has the parts and the math.
+- **Nothing calculated here:** the trade list and its donor flags stay context only. They feed the "Trades in donors" part of the Insider Trading Index, so the two tabs always agree.
+
+### Donor Loyalty Index
+**Measures:** how much more they vote with their funders than members of their own party do.
+
+1. For each funder that took public positions, take the person's rate of voting its way minus their party's average on those same votes.
+2. Weight each funder by the money it gave or spent for them.
+3. Only the amount above the party average counts. The ceiling is 25 points above.
+
+**Minimum:** 5 compared votes.
+
+### Super PAC Dependence Index
+**Measures:** super PAC spending for them ÷ (campaign funds raised + all outside spending for them), × 100.
+
+- **Dates:** Jan. 1, 2025 – Sept. 30, 2026. The Q3 reports are in, so both sides now cover the same dates.
+- **Covers:** general-election spending only.
+- **Not shown:** for three-way races or races marked incomplete.
+
+This replaces the withdrawn super PAC share.
+
+### Lobbyist Overlap Index
+**Measures:** bills they sponsored, cosponsored or voted on that a top 20 donor organization lobbied on ÷ all bills they acted on in the same period.
+
+- **Ceiling:** 20%.
+- **Exposure only:** lobbying reports don't say which side the lobbyist wanted.
+
+### Contracts for Donors Index
+**Measures:** the number of their top 20 donor organizations that got federal contracts from agencies their committees oversee, ÷ 20, × 100. The total contract dollars are shown beside it.
+
+**Needs:** a small new table matching agencies to the committees that oversee them.
+
+### Foreign Agent Flag
+A flag, not an index:
+- **Yes or no:** whether any top donor organization, or a lobbyist working for one, is registered as a foreign agent (FARA).
+- **Details:** each registration is listed.
+
+---
+
+## Promises Delivered tab
+
+### Flip-Flop Index
+**Measures:** reversals over time.
+
+- **Record switches (70%, required):** of the issues where they have recorded actions spread over at least 2 years, the share where later actions took the opposite side from earlier ones.
+- **Changed-position checks (30%):** statement checks rated "Changed position" ÷ all counted checks.
+
+**Minimum:** 5 issues with 2 or more actions each.
+
+### Pants on Fire Index
+**Measures:** the average falseness of their fact-checked claims from the last 6 years.
+
+- **Scoring each rating:** True 0, Mostly True 20, Half True 50, Mostly False 80, False 100, Pants on Fire 100.
+- **Minimum:** 10 ratings.
+
+It stays beside the Promises grade, because fact-checkers choose which claims to check.
+
+---
+
+## Your match tab, record section
+None of these go into a grade. Your match depends on each visitor's own choices.
+
+### Party Rebel Index
+**Measures:** 100 − their party unity score (Voteview, 119th Congress).
+
+- **Ceiling:** 20.
+- **Also shown:** the number of key votes where they went against their party's majority.
+
+### Across the Aisle Index
+**Measures:** how much they work with the other party, in the current Congress.
+
+- **Other-party cosponsors on their bills (50%):** the share of cosponsors on their bills who are from the other party.
+- **Other-party bills they cosponsor (50%):** the share of the bills they cosponsored that were sponsored by the other party.
+
+- **Ceiling:** 50% for each part.
+- **Minimum:** 5 of their own bills with cosponsors.
+
+### Get It Done Index
+**Measures:** how far their substantive bills get. Ceremonial and naming resolutions don't count.
+
+- **Points per bill, by the furthest stage reached:**
+  - committee action: 1
+  - passed committee: 2
+  - passed one chamber: 4
+  - passed both chambers: 6
+  - became law: 10
+- **Ceiling:** 30 points per Congress.
+
+### No-Show Index
+**Measures:** missed roll calls ÷ the roll calls they were eligible for in the current Congress.
+
+- **Ceiling:** 20% missed.
+- **Medical leave:** labeled where it's public.
+
+---
+
+## Optional: a fifth grade
+**Gets Things Done** = Get It Done Index 50% + (100 − No-Show Index) 30% + Across the Aisle Index 20%.
+
+It would measure how well they do the job, separate from what they vote for.
+
+**What I'd build first:** the Insider Trading and Stock Disclosure Dodger indexes, since the data is ready and the Ethics grade is already set up for them. After that, Donor Loyalty, which the Corporation Compromised Index depends on.
