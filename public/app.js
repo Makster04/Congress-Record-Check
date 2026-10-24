@@ -1,5 +1,7 @@
 import {KV_MIN,leanOfVote,whyNotMarked,sideTaken,keyVoteRows,keyVoteScore} from './lean.js';
 import {MIN_CHECKS,MIN_PVP_ACTIONS,ETHICS_COST,TRADE_COST,LATE_DAYS,WEIGHT,ACTION_TYPES,letter,billKey,billKeyFromText,matchScore,promiseScore,tradeChecks,ethicsScore,pvpScore,pvpActions,moneyRatio} from './grades.js';
+import {ALIGN_COLOR,hoverTips,tableView,legend,rankBars,stackRows,divergingRows,categoryBars,drawScatter,drawDelay,drawTradeTimeline,drawCaseTimeline,drawTreemap,drawMonthly,sectorSpendBars,money} from './charts.js';
+import {ALIGN_LABEL,SECTOR_LABEL_EXTRA,TOP_DONORS,WINDOW_MONTHS,SWING,categoryAlign,outsideBySector,topDonors,voteDonorAlignment,timingFlags,positionChangeFlags,stockFlags,addMonths} from './influence.js';
 (function(){
 const $=s=>document.querySelector(s);
 const app=$('#app'), tip=$('#tip');
@@ -344,6 +346,7 @@ function route(){
   else if(m[1]==='races'){renderRaces();}
   else if(m[1]==='compare'){if(m[2])cmpCh=m[2]==='house'?'H':'S';renderCompare();}
   else if(m[1]==='method'){renderMethod();}
+  else if(m[1]==='scores'){renderScores(m[2]||'match');}
   else if(m[1]==='align'){renderAlign();}
   else if(byId[m[1]]){const [tb,foc]=TAB_ALIAS[m[2]]||[m[2]||'overview'];renderProfile(byId[m[1]],tb,foc||null);}
   else if(m[2]==='latest'){window.RecordLive.standalone(app,m[1]);}
@@ -762,8 +765,9 @@ function paneFinance(s,pane){
   pane.innerHTML=`
   <h2>Money &amp; Influence</h2>
   <p class="intro">Two different kinds of money, kept apart. <b>Campaign funds</b> are what ${esc(s.short)}'s own committee raised and reported to the FEC. <b>Outside spending</b> is money other groups spent on the race on their own, which the campaign never receives. Every figure shows its period.</p>
-  <nav class="jump small"><a href="#f-glance">At a glance</a><a href="#f-sum">Summary</a><a href="#f-camp">Campaign funds</a><a href="#f-pac">PAC contributions</a><a href="#f-out">Outside spending</a><a href="#f-items">Every item</a><a href="#f-comb">Combined view</a><a href="#live-records">Latest filings</a></nav>
-  <div class="ov-grid" id="f-glance">${ovMoney(s,true)}${ovOutside(s,true)}${ovCard('Outside money','Outside money by month',`For and against ${esc(s.short)}, the last seven months`,miniOutside(s,true),`The badge is the for-to-against ratio for these months. <a href="#method">How it is figured</a>`)}</div>
+  <nav class="jump small"><a href="#f-analysis">Money &amp; Influence Analysis</a><a href="#f-glance">At a glance</a><a href="#f-sum">Summary</a><a href="#f-camp">Campaign funds</a><a href="#f-pac">PAC contributions</a><a href="#f-out">Outside spending</a><a href="#f-items">Every item</a><a href="#f-comb">Combined view</a><a href="#live-records">Latest filings</a></nav>
+  ${analysisBlock(s)}
+  <div class="ov-grid" id="f-glance" style="margin-top:22px">${ovMoney(s,true)}${ovOutside(s,true)}${ovCard('Outside money','Outside money by month',`For and against ${esc(s.short)}, the last seven months`,miniOutside(s,true),`The badge is the for-to-against ratio for these months. <a href="#method">How it is figured</a>`)}</div>
   <div id="f-sum" style="margin-top:14px">${fundingPanels(s)}</div>
   ${scaleChart(s,false)}
   ${shareBlock(s)}
@@ -792,6 +796,7 @@ function paneFinance(s,pane){
   ${o.others.length?`<div class="note" style="margin-bottom:10px"><b>Spending on other candidates in this race</b> is listed separately and not counted for or against ${esc(s.short)}: ${o.others.map(x=>`${esc(candName(x.cand))} (${x.O?fmtFull(x.O)+' opposing':''}${x.O&&x.S?', ':''}${x.S?fmtFull(x.S)+' supporting':''})`).join('; ')}.</div>`:''}
   ${o.multi&&o.rivals.length?`<div class="note" style="margin-bottom:10px"><b>Aimed at ${esc(s.short)}'s rivals</b> (not credited to ${esc(s.short)}): ${o.rivals.map(x=>`${esc(candName(x.cand))}: ${fmtFull(x.S)} supporting, ${fmtFull(x.O)} opposing`).join('; ')}.</div>`:''}
   <p class="small" style="margin:0 0 8px"><a href="#${s.id}-funders">How these groups' own published positions compare with ${esc(s.short)}'s votes →</a></p>
+  ${outsideSectorBlock(s)}
   <h3 style="margin:14px 0 8px">By committee</h3>
   ${ieCommitteeTable(s)}
   <h3 id="f-items" style="margin:22px 0 8px">Every item</h3>
@@ -801,6 +806,7 @@ function paneFinance(s,pane){
   <section id="live-records" style="margin-top:28px"></section>`;
   pacTable(s,$('#pachost'));
   ieItems(s,$('#iehost'));
+  mountAnalysis(s);hoverTips(pane);
   window.RecordLive.profile(s,$('#live-records'),['campaign','pac','outside','donors','lobbying','fara','regulations','sam','contracts','outside-groups']);
   pane.querySelectorAll('.jump a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const t=document.getElementById(a.getAttribute('href').slice(1));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}));
   bindTips(pane);
@@ -1224,6 +1230,7 @@ function tradingHTML(s){
   if(!s.bioguide)return head+`<p class="small muted" style="margin:4px 0 0">No trading data: these disclosures cover members of Congress only, and state disclosure rules vary.</p></section>`;
   if(!t.rows.length)return head+`<p class="small muted" style="margin:4px 0 0">No reviewed stock-trade records for ${esc(s.short)} yet. Trades from the official disclosures appear under Latest official records below and count toward the grade only once reviewed.</p></section>`;
   return head+`<p class="small muted" style="margin:4px 0 8px">Periodic Transaction Reports are due no later than ${LATE_DAYS} days after a trade. ${sec.length?`${esc(s.short)}'s committees oversee: ${esc(sec.join(', '))}.`:'Committee sectors are not recorded yet, so no trade is counted as a conflict.'} Spouse and dependent-child trades are included and labeled. Returns are not scored.</p>
+  ${tradeChartsBlock(t.rows,sec,'eth-tr')}
   <div class="tablewrap"><table><thead><tr><th>Traded</th><th>Filed</th><th>Company</th><th>Type</th><th class="r">Amount</th><th>Owner</th><th>Checks</th></tr></thead><tbody>${t.rows.map(r=>`<tr><td class="mono">${esc(r.traded||'')}</td><td class="mono">${r.missing?'<b style="color:var(--crit)">not filed</b>':esc(r.filed||'')}${r.days!=null?`<div class="small muted">${r.days} days</div>`:''}</td><td>${esc(r.company||'')}${r.ticker?` <span class="mono muted">${esc(r.ticker)}</span>`:''}${r.sector?`<div class="small muted">${esc(r.sector)}</div>`:''}</td><td>${esc(r.type||'')}</td><td class="r">${esc(r.amount||'')}</td><td>${esc(TRADE_OWNER[r.owner]||r.owner||'')}</td><td>${r.late?`<span class="chip crit">Late −${TRADE_COST.late}</span> `:''}${r.conflict?`<span class="chip warn">Committee conflict −${TRADE_COST.conflict}</span>`:''}${r.flag?` <span class="chip ghost" title="${esc(r.flag)}">Flagged, not scored</span>`:''}${r.src?` <a class="small" href="${esc(r.src.u)}" target="_blank" rel="noopener">filing ↗</a>`:''}</td></tr>`).join('')}</tbody></table></div></section>`;
 }
 function paneEthics(s,pane){
@@ -1233,7 +1240,8 @@ function paneEthics(s,pane){
   const detail=(terms.length||trade.length)?terms.map(([n,,l])=>`${n} ${l}${n>1?'s':''}`).concat(trade).join(' · ')+(e.allegation?` · ${e.allegation} allegation${e.allegation>1?'s':''} (not scored)`:''):`No confirmed findings, investigations or trading problems in the sources checked${e.allegation?`; ${e.allegation} allegation${e.allegation>1?'s are':' is'} listed but not scored`:''}.`;
   const parts=terms.map(([n,c])=>`${c} × ${n}`).concat(e.late?[`${e.lateCost} for late disclosures${e.late*TRADE_COST.late>e.lateCost?` (capped at ${TRADE_COST.lateCap})`:''}`]:[]).concat(e.conflict?[`${e.conflictCost} for conflict trades${e.conflict*TRADE_COST.conflict>e.conflictCost?` (capped at ${TRADE_COST.conflictCap})`:''}`]:[]);
   const math=parts.length?`<p class="small gh-m"><b>How it was calculated:</b> 100 − ${parts.join(' − ')} = ${e.raw<0?`${e.raw}, shown as <b>0%</b>`:`<b>${e.pct}%</b>`}.</p>`:'';
-  pane.innerHTML=`${gradeHead('Ethics',e.pct,detail,GRADE_TIP.eth,math)}${ethicsHTML(s)}${tradingHTML(s)}<section id="live-records" style="margin-top:28px"></section>`;
+  pane.innerHTML=`${gradeHead('Ethics',e.pct,detail,GRADE_TIP.eth,math)}${ethicsHTML(s)}${caseTimelineBlock(s)}${tradingHTML(s)}<section id="live-records" style="margin-top:28px"></section>`;
+  mountCaseTimeline(s);mountTradeCharts(s,personTrading(s).rows,'eth-tr');hoverTips(pane);
   window.RecordLive.profile(s,pane.querySelector('#live-records'),['trades','courts','fec-legal','doj']);
 }
 
@@ -1249,12 +1257,15 @@ function panePvp(s,pane){
   const table=v.scored.length?`<div class="tablewrap"><table><thead><tr><th>Bill</th><th>${esc(s.short)}</th><th>Delivered more for</th><th>Who gains, per</th></tr></thead><tbody>${v.scored.map(a=>{const mk=PVP_MARKS.get(a.bill)||{},u=billUrl(a.bill);return `<tr><td>${u?`<a href="${u}" target="_blank" rel="noopener">${esc(mk.title||billLabel(a.bill))}</a>`:esc(mk.title||a.bill)}<div class="small muted">${esc(billLabel(a.bill))}</div></td><td>${esc(PVP_DID[a.kind](a.pos))}</td><td><b class="${a.took==='people'?'gr-A':'gr-F'}">${PVP_SIDE[a.took]}</b></td><td class="small">${esc(mk.why||'')} ${mk.src?`<a href="${esc(mk.src.u)}" target="_blank" rel="noopener">${esc(mk.src.t)} ↗</a>`:''}</td></tr>`}).join('')}</tbody></table></div>`
     :`<div class="note">${PVP_MARKS.size?`${esc(s.short)} has no recorded vote or sponsorship on any of the ${PVP_MARKS.size} scored bill${PVP_MARKS.size===1?'':'s'}.`:`<b>No bills are scored yet.</b> A bill counts once a nonpartisan analysis of who gains from it (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) is cited. Each scored vote and sponsorship will be listed here with the side it took and the analysis behind it.`}</div>`;
   pane.innerHTML=`${gradeHead('People Over Profit',v.pct,detail,GRADE_TIP.pvp,math)}
+  <div class="chart"><h3>Who the record delivered more for</h3><div class="sub">Centered at 50%: People-leaning records to the right, wealthy-and-corporate-leaning to the left. <a href="#scores-pvp">Everyone on one chart</a></div>
+    ${divergingRows([{label:s.name,sub:`${v.people} for working people · ${v.profit} for the wealthy and corporations`,value:v.pct,cls:v.pct==null?'':'gr-'+letter(v.pct),note:v.pct==null?`${v.n} of ${MIN_PVP_ACTIONS} scored actions`:`${v.n} scored actions`}])}</div>
   <h3 style="margin:18px 0 8px">Scored votes and sponsorships</h3>${table}
+  ${donorTreemapBlock(s)}
   <h2 style="margin-top:30px">Their funders and their votes</h2>
   <p class="intro">Who pays for ${esc(s.short)}'s campaign and spends on the race, and how those groups wanted ${esc(s.short)} to vote. Shown together so you can look for patterns yourself; a match shows agreement, not that money changed a vote.</p>
   ${fundersBlock(s)}
   ${moneyVotesBlock(s)}`;
-  mountFundTL(pane);
+  mountFundTL(pane);mountTreemap(s);hoverTips(pane);
   bindTips(pane);
 }
 
@@ -1452,6 +1463,215 @@ function renderCompare(){
 }
 
 // ---------- methodology ----------
+// ---------- profile charts: Ethics case timeline and trading, People Over Profit donors, Money & Influence Analysis ----------
+const CASE_COLOR={finding:'var(--s1)',open:'var(--s2)',closed:'var(--s3)',allegation:'var(--cx-other)'};
+const CASE_LABEL={finding:'Confirmed finding',open:'Open investigation',closed:'Investigation closed without a finding',allegation:'Allegation'};
+function caseRows(s){
+  return (s.ethics||[]).filter(e=>e.outcome!=='None found'&&['finding','investigation','allegation'].includes(e.status)).map(e=>{
+    const y=(String(e.date||'').match(/\b(?:19|20)\d{2}\b/g)||[]).map(Number),k=e.status==='investigation'?(e.stage==='open'?'open':'closed'):e.status;
+    return {label:e.title,from:y[0]||null,to:y.length>1?y.at(-1):null,status:k,statusLabel:CASE_LABEL[k],when:e.date};
+  });
+}
+function caseTimelineBlock(s){
+  const rows=caseRows(s).filter(r=>r.from);if(!rows.length)return '';
+  return `<div class="chart" id="eth-timeline"><h3>Case timeline</h3><div class="sub">Each entry over the years it covers, colored by its current status. When a case changes, its status is updated rather than a new entry added, so each counts once.</div>
+    <div class="cx-plot" id="eth-tl"></div>${legend(Object.keys(CASE_LABEL).filter(k=>rows.some(r=>r.status===k)).map(k=>[CASE_COLOR[k],CASE_LABEL[k]]))}
+    ${tableView(['Entry','Status','Dates'],rows.map(r=>[esc(r.label),esc(r.statusLabel),esc(r.when)]))}</div>`;
+}
+// Trading charts, for reviewed trades (and, on the latest-records card, for trades not reviewed yet).
+function tradeChartsBlock(rows,sectors,id){
+  if(!rows.length)return '';
+  const by={};for(const r of rows)if(r.sector)by[r.sector]=(by[r.sector]||0)+1;
+  const cats=Object.entries(by).map(([label,value])=>({label,value,hi:sectors.includes(label)})).sort((a,b)=>b.value-a.value);
+  return `<div class="chart"><h3>Days from trade to disclosure</h3><div class="sub">One dot per trade. Reports are due within ${LATE_DAYS} days; dots past the line were late.</div><div class="cx-plot" id="${id}-delay"></div>${legend([['var(--crit)','Late or never disclosed'],['var(--cx-other)','On time']])}</div>
+    ${cats.length?`<div class="chart"><h3>Trades by sector</h3><div class="sub">Sectors their committees oversee are highlighted; an individual stock trade in one of them counts as a committee conflict.</div>${categoryBars(cats,{highlightLabel:'Overseen by their committees',otherLabel:'Other sectors'})}</div>`:''}
+    <div class="chart"><h3>Trades and votes</h3><div class="sub">Buys above the line, sells below, and their recorded key votes as ticks on the line. A ringed dot is a trade flagged for review (for example, near a related vote); flags are not scored.</div><div class="cx-plot" id="${id}-tl"></div>${legend([['var(--s3)','Buy'],['var(--s2)','Sell'],['var(--ink-2)','Recorded vote']])}</div>`;
+}
+function personVotes(s){return DATA.votes.concat(DATA.hvotes).filter(v=>v.pos&&/^(Yea|Nay|Aye|No)$/i.test(v.pos[s.id]||'')).map(v=>({date:v.date,label:`${v.short}: voted ${v.pos[s.id]}`}));}
+function mountTradeCharts(s,rows,id){
+  if(!rows.length||!document.getElementById(id+'-delay'))return;
+  const tr=rows.map(r=>({...r,company:r.company||r.asset}));
+  const span=tr.map(r=>r.traded).filter(Boolean).sort(),from=addMonths(span[0].slice(0,7),-3),to=addMonths(span.at(-1).slice(0,7),3);
+  const ev=personVotes(s).filter(v=>v.date.slice(0,7)>=from&&v.date.slice(0,7)<=to);
+  const f=()=>{drawDelay(document.getElementById(id+'-delay'),tr,LATE_DAYS);drawTradeTimeline(document.getElementById(id+'-tl'),tr,ev);};f();resizers.push(f);
+}
+function mountCaseTimeline(s){const el=document.getElementById('eth-tl');if(!el)return;const rows=caseRows(s).filter(r=>r.from);const f=()=>drawCaseTimeline(document.getElementById('eth-tl'),rows,CASE_COLOR);f();resizers.push(f);}
+
+// People Over Profit: the person's own diverging bar, and the tree map of their top donors.
+const catLabel=c=>c==='small'?'Small-dollar donors':DATA.categories[c]||SECTOR_LABEL_EXTRA[c]||c;
+function donorTreemapBlock(s){
+  const p=s.pac||{},t=topDonors(p.rows,DATA.pacNames,s.camp&&!s.camp.missing?s.camp.unitemized:0);
+  if(!t.tiles.length)return `<div class="chart"><h3>Top donors</h3><p class="small muted">No PAC contributions or small-dollar totals are on file for ${esc(s.short)}'s campaign.</p></div>`;
+  const tiles=t.tiles.map(x=>({...x,alignLabel:ALIGN_LABEL[x.align],catLabel:catLabel(x.cat)}));
+  const sum=k=>tiles.filter(x=>x.align===k).reduce((n,x)=>n+x.value,0);
+  return `<div class="chart" id="pvp-donors"><h3>Top ${tiles.length} donors</h3><div class="sub">Tile size is the amount given${p.window?` (PAC contributions ${esc(p.window)}; small-dollar donors ${s.camp?period(s.camp.start,s.camp.end):''})`:''}. People-aligned: unions and small-dollar donors, as one tile. Profit-aligned: corporate PACs and industry groups. Other: leadership, party and ideological committees. Sectors are assigned by this app from each committee's name.${t.rest?` ${t.rest} smaller PACs (${fmtFull(t.restAmount)}) are not shown.`:''}</div>
+    <div class="cx-plot" id="pvp-tm"></div>${legend([['var(--s1)',`People-aligned ${fmt$(sum('people'))}`],['var(--s5)',`Profit-aligned ${fmt$(sum('profit'))}`],['var(--cx-other)',`Other ${fmt$(sum('other'))}`]])}
+    ${tableView(['Donor','Amount','Alignment','Sector'],tiles.map(x=>[esc(x.label),fmtFull(x.value),x.alignLabel,esc(x.catLabel)]))}
+    <p class="small" style="margin:8px 0 0"><a href="#${s.id}-finance">Outside spending by sector, for and against, on the Money &amp; Influence tab →</a></p></div>`;
+}
+function mountTreemap(s){const el=document.getElementById('pvp-tm');if(!el)return;const p=s.pac||{},t=topDonors(p.rows,DATA.pacNames,s.camp&&!s.camp.missing?s.camp.unitemized:0);
+  const tiles=t.tiles.map(x=>({...x,alignLabel:ALIGN_LABEL[x.align],catLabel:catLabel(x.cat)}));const f=()=>drawTreemap(document.getElementById('pvp-tm'),tiles);f();resizers.push(f);}
+
+// Money & Influence Analysis: alignment and timing, from the reviewed research now, and from the daily FEC and LDA.gov
+// refresh as it fills in. Never part of a grade.
+function influenceData(s){
+  const H=window.FUNDHIST,funders=s.funderPos||[],through=H?H.contribThrough.slice(0,7):null;
+  const rows=[];
+  // Every group whose positions are collected and whose PACs gave to this person, with the votes it took a position on.
+  for(const [key,h] of Object.entries(H?.people[s.id]||{})){
+    const g=funders.find(f=>f.key===key)||{key,org:(GPBY[key]||{}).org||key,compared:[]};
+    const series={};for(const [m,v] of h.c||[])series[m]=(series[m]||0)+v;
+    const total=Object.values(series).reduce((t,v)=>t+v,0);if(!total)continue;
+    const decisions=(g.compared||[]).map(c=>({date:c.date,match:c.match,label:`${c.short}: ${g.org} wanted ${c.wanted}, ${s.short} voted ${c.cast}`}));
+    const flags=timingFlags(g.org,series,decisions,through);
+    rows.push({key,label:g.org,series,total,flags,markers:decisions.filter(d=>d.match!==null).map(d=>({date:d.date,kind:d.match?'same':'opp',label:d.label}))});
+  }
+  rows.sort((a,b)=>b.total-a.total);
+  const trades=personTrading(s).rows,stock=stockFlags(trades,funders.map(g=>({org:g.org,positions:(g.compared||[]).length})));
+  const months=[];if(H)for(let m=H.start.slice(0,7);m<=through;m=addMonths(m,1))months.push(m);
+  return {rows:rows.slice(0,8),allFlags:rows.flatMap(r=>r.flags).concat(stock),months,vda:voteDonorAlignment(funders),through};
+}
+const H0=()=>window.FUNDHIST?monLabel(window.FUNDHIST.start.slice(0,7)):'2019';
+const FLAG_TEXT={rose:'Donations rose',dropped:'Donations dropped',changed:'Position changed after a donation shift',stock:'Held or traded stock in a donor'};
+function analysisBlock(s){
+  const d=influenceData(s),v=d.vda;
+  const flagRows=d.allFlags.map(f=>f.kind==='stock'?`<li><b>${FLAG_TEXT.stock}:</b> ${esc(f.org)} · ${esc(f.decision.label)} on ${fmtDate(f.decision.date)}</li>`
+    :`<li><b>${FLAG_TEXT[f.kind]}</b> ${f.kind==='rose'?'after a vote it wanted':f.kind==='dropped'?'after a vote it opposed':''}: ${esc(f.org)}, ${fmtFull(f.before)} in the ${WINDOW_MONTHS} months before → ${fmtFull(f.after)} from ${monLabel(f.decision.date.slice(0,7))} through ${monLabel(f.to)}. ${esc(f.decision.label)} (${fmtDate(f.decision.date)}).</li>`);
+  return `<section id="f-analysis"><h2 style="margin-top:6px">Money &amp; Influence Analysis</h2>
+    <p class="intro">Whether the timing of ${esc(s.short)}'s money lines up with ${esc(s.short)}'s decisions. It shows timing and alignment, <b>not proof that money caused a decision</b>, so it sits beside the grades and never inside them. Thresholds are placeholders under review: the top ${TOP_DONORS} donors, a ${SWING*100}% change and a ${WINDOW_MONTHS}-month window.</p>
+    <div class="cx-stats">
+      <div class="cx-stat"><span>Vote Donor Alignment</span><b>${v.pct==null?'—':v.pct+'%'}</b><small>${v.n?`${v.same} of ${v.n} votes went the way a donor that took a public position wanted (${v.rows.length} donor${v.rows.length===1?'':'s'})`:'No donor that gave to the campaign took a public position on a vote compared here'}</small></div>
+      <div class="cx-stat"><span>Speech Donor Alignment</span><b>—</b><small>Not measured yet: floor speeches are collected from the Congressional Record and need to be coded by issue and side before they can be compared</small></div>
+      <div class="cx-stat"><span>Timing flags</span><b>${d.allFlags.length}</b><small>for review, not scored</small></div></div>
+    ${d.rows.length?`<div class="chart"><h3>Donations by month from donors with public positions</h3><div class="sub">Contributions to the campaign from each group's PACs, ${d.months.length?`${monLabel(d.months[0])} – ${monLabel(d.months.at(-1))}`:''}, each row on its own scale (the largest month is labeled at the right). Triangles under a row are votes the group took a position on: green when ${esc(s.short)} voted its way, red when not. A shaded window is a timing flag. FEC bulk data; groups are the ones whose scorecards or key-vote letters are collected.</div>
+      <div class="cx-plot" id="f-months"></div>${legend([['var(--s1)','Monthly contributions'],['var(--good)','Voted the way the donor wanted'],['var(--crit)','Voted the other way'],['var(--warn)','Timing flag window']])}
+      ${tableView(['Donor','Total','Votes compared','Flags'],d.rows.map(r=>[esc(r.label),fmtFull(r.total),r.markers.length,r.flags.length]))}</div>`:`<p class="small muted">None of the ${GP.length} groups whose public positions are collected gave to ${esc(s.short)}'s campaign in the FEC data since ${H0()}, so there is no monthly series to compare yet.</p>`}
+    ${flagRows.length?`<div class="chart"><h3>Timing flags</h3><ul class="list small">${flagRows.join('')}</ul></div>`:''}
+    ${v.rows.length?`<details class="tv"><summary>Vote Donor Alignment by donor</summary><div class="tablewrap"><table><thead><tr><th>Donor</th><th class="r">Votes its way</th><th class="r">Votes compared</th></tr></thead><tbody>${v.rows.map(r=>`<tr><td>${esc(r.org)}</td><td class="r">${r.same}</td><td class="r">${r.n}</td></tr>`).join('')}</tbody></table></div></details>`:''}
+    <div id="f-live-analysis"></div></section>`;
+}
+function mountAnalysis(s){
+  const el=document.getElementById('f-months');
+  if(el){const d=influenceData(s);const rows=d.rows.map(r=>({...r,flags:r.flags.map(f=>({from:f.from,to:f.to,tip:`${FLAG_TEXT[f.kind]}: ${fmtFull(f.before)} before, ${fmtFull(f.after)} after`}))}));
+    const f=()=>drawMonthly(document.getElementById('f-months'),rows,d.months,[]);f();resizers.push(f);}
+  liveAnalysis(s,document.getElementById('f-live-analysis'));
+}
+// From the daily refresh: the top donor organizations combining PAC and employee money, and the bills they lobbied on
+// that this person acted on.
+const orgKey=v=>String(v||'').toLowerCase().replace(/\b(pac|political action committee|employees|of|the|inc|corp|corporation|co|company|llc|federal|fund)\b/g,'').replace(/[^a-z0-9]/g,'');
+async function liveAnalysis(s,host){
+  if(!host)return;
+  try{
+    const r=await fetch('/api/profile?id='+encodeURIComponent(s.id),{cache:'no-store'});if(!r.ok)throw 0;const p=await r.json();if(!host.isConnected)return;
+    const emp=p.sections.donors?.orgs||[],pac=p.sections.pac?.rows||[],months=p.sections['donor-months']?.months||{},lob=p.sections.lobbying?.rows||[];
+    if(!emp.length&&!pac.length){host.innerHTML=`<p class="small muted">The top ${TOP_DONORS} donor organizations by month (each organization's PAC plus its employees) and the lobbying on bills ${esc(s.short)} acted on fill in from the daily FEC and LDA.gov refresh once the keys are set. <a href="#updates">Update status</a></p>`;return;}
+    const orgs=new Map();
+    for(const e of emp){const k=orgKey(e.employer);orgs.set(k,{name:e.employer,pac:0,emp:e.total});}
+    for(const x of pac){const k=orgKey(x.name);const o=orgs.get(k)||{name:x.name,pac:0,emp:0};o.pac+=x.amount;orgs.set(k,o);}
+    const top=[...orgs.values()].map(o=>({...o,total:o.pac+o.emp})).sort((a,b)=>b.total-a.total).slice(0,TOP_DONORS);
+    const mine=new Set([...(p.sections.legislation?.rows||[]),...(p.sections.cosponsored?.rows||[])].map(r=>r.bill||String(r.id).toLowerCase()).concat(DATA.votes.concat(DATA.hvotes).filter(v=>v.pos&&s.id in v.pos).map(voteBill)).filter(Boolean));
+    const stake=lob.filter(l=>l.bills.some(b=>mine.has(b)));
+    const mrows=Object.entries(months).map(([org,series])=>({label:org,series,markers:[]})).slice(0,8),ms=[...new Set(mrows.flatMap(r=>Object.keys(r.series)))].sort();
+    const allMonths=[];if(ms.length)for(let m=ms[0];m<=ms.at(-1);m=addMonths(m,1))allMonths.push(m);
+    host.innerHTML=`<div class="chart"><h3>Top ${top.length} donor organizations this cycle</h3><div class="sub">Each organization's PAC contributions plus its employees' itemized contributions (grouped by employer; donors' names are never shown), from the latest FEC refresh.</div>
+      ${rankBars(top.map(o=>({label:o.name,value:Math.round(o.total/top[0].total*100),color:'var(--s1)',display:fmt$(o.total),note:[o.pac&&`PAC ${fmt$(o.pac)}`,o.emp&&`employees ${fmt$(o.emp)}`].filter(Boolean).join(' · '),tip:`${o.name}: ${fmtFull(o.total)}`})))}</div>
+      ${mrows.length?`<div class="chart"><h3>Top donors' employees by month</h3><div class="cx-plot" id="f-live-months"></div></div>`:''}
+      <div class="chart"><h3>Who had a stake</h3><div class="sub">Lobbying reports filed for top donor organizations that name a bill ${esc(s.short)} sponsored, cosponsored or voted on (LDA.gov).</div>${stake.length?`<ul class="list small">${stake.map(l=>`<li>${esc(l.org)} (${esc(l.registrant||'self-filed')}, ${esc(l.period||'')} ${esc(l.year||'')}): ${l.bills.filter(b=>mine.has(b)).map(b=>esc(billLabel(b))).join(', ')}${l.url?` <a href="${esc(l.url)}" target="_blank" rel="noopener">report ↗</a>`:''}</li>`).join('')}</ul>`:'<p class="small muted">No lobbying report from a top donor names one of these bills yet.</p>'}</div>`;
+    if(mrows.length){const f=()=>drawMonthly(document.getElementById('f-live-months'),mrows,allMonths,[]);f();resizers.push(f);}
+    hoverTips(host);
+  }catch{if(host.isConnected)host.innerHTML='<p class="small muted">The refreshed donor and lobbying records are unavailable right now; the analysis above uses the reviewed research.</p>';}
+}
+// Outside spending for and against, each split by the spenders' sectors and colored People- or Profit-aligned.
+function outsideSectorBlock(s){
+  const o=s.out;if(!o||!o.cms?.length)return '';
+  const by=outsideBySector(o.cms,cmOf),F=by.for.reduce((t,x)=>t+x.amount,0),A=by.against.reduce((t,x)=>t+x.amount,0),q=moneyRatio(F,A);
+  const fw=o.multi?'Supporting':'For',aw=o.multi?'Opposing':'Against';
+  const cats=[...new Set([...by.for,...by.against].map(x=>x.cat))];
+  const amt=(side,c)=>side.find(x=>x.cat===c)?.amount||0;
+  return `<div class="chart" id="f-out-sector"><h3>Outside spending by sector</h3><div class="sub">Each bar split by the spending groups' sectors, colored People-aligned (unions), Profit-aligned (industry and corporate groups) or Other (party, ideological and candidate-aligned groups). Sectors are assigned by this app from each committee's name and are under review. ${period(o.start,o.end)}.</div>
+    ${q?`<p class="small" style="margin:0 0 6px"><span class="hc-ratio" style="margin-left:0;font-size:.8rem">${q.oneSided?`<b class="${q.side}">${esc(q.text[0].toUpperCase()+q.text.slice(1))}</b>`:`For-to-against <b class="${q.side}">${esc(q.text)}</b>`}</span></p>`:''}
+    ${sectorSpendBars(by,catLabel,{fw,aw})}${legend([['var(--s1)',ALIGN_LABEL.people],['var(--s5)',ALIGN_LABEL.profit],['var(--cx-other)',ALIGN_LABEL.other]])}
+    ${tableView(['Sector','Alignment',`Amount ${fw.toLowerCase()}`,`Amount ${aw.toLowerCase()}`],cats.map(c=>[esc(catLabel(c)),ALIGN_LABEL[categoryAlign(c)],fmtFull(amt(by.for,c)),fmtFull(amt(by.against,c))]))}</div>`;
+}
+
+// ---------- score pages: each grade ranks everyone; people who are "Not graded" stay as grey rows ----------
+const SCORE_PAGES=[['match','Your match'],['promises','Promises delivered'],['ethics','Ethics'],['pvp','People over profit'],['ideology','Ideological position']];
+const GRADE_FILL={A:'var(--good)',B:'var(--grade-b)',C:'var(--warn)',D:'var(--serious)',F:'var(--crit)'};
+const gradeFill=p=>GRADE_FILL[letter(p)];
+const whoSub=s=>`${partyName(s.party)} · ${chipCh(s)} · ${seatLabel(s)}`;
+// Points lost on the Ethics grade, by kind, in the palette's fixed order.
+const ETH_SEGS=[{key:'finding',label:'Confirmed findings',color:'var(--s1)'},{key:'open',label:'Open investigations',color:'var(--s2)'},{key:'closed',label:'Investigations closed without a finding',color:'var(--s3)'},{key:'late',label:'Late or missing disclosures',color:'var(--s4)'},{key:'conflict',label:'Committee-conflict trades',color:'var(--s5)'}];
+const PROM_SEGS=[{key:'consistent',label:'Supported',color:'var(--good)'},{key:'partial',label:'Partly supported',color:'var(--warn)'},{key:'changed',label:'Changed position',color:'var(--warn)',cls:'cx-hatch'},{key:'contradiction',label:'Contradicted',color:'var(--crit)'}];
+function ethicsPoints(s){const e=personEthics(s);return {e,parts:{finding:e.finding*ETHICS_COST.finding,open:e.open*ETHICS_COST.open,closed:e.closed*ETHICS_COST.closed,late:e.lateCost,conflict:e.conflictCost}};}
+function promiseCounts(s){const c={consistent:0,partial:0,changed:0,contradiction:0};for(const x of s.statements||[])if(!x.vague&&x.assessment in c)c[x.assessment]++;return c;}
+function renderScores(sub){
+  if(!SCORE_PAGES.some(([k])=>k===sub))sub='match';
+  const N=ALL.length,title=SCORE_PAGES.find(([k])=>k===sub)[1];
+  const head=`<section class="hero" style="padding-bottom:6px"><div class="asof">Scores · ${N} politicians and candidates</div><h1 style="margin-top:8px">${esc(title)}</h1>
+    <p class="lede">Each grade ranks everyone on one measure, with the number of data points behind it. People with too little evidence are listed as "Not graded" rather than left out. The Money &amp; Influence Analysis is shown on each profile, beside the grades and never inside them.</p>
+    <nav class="sc-tabs" aria-label="Score pages">${SCORE_PAGES.map(([k,l])=>`<a href="#scores-${k}" class="${k===sub?'active':''}">${esc(l)}</a>`).join('')}</nav></section><section class="section" id="sc-body"></section>`;
+  app.innerHTML=head;
+  const body=$('#sc-body');
+  ({match:scoresMatch,promises:scoresPromises,ethics:scoresEthics,pvp:scoresPvp,ideology:scoresIdeology})[sub](body);
+  hoverTips(body);bindTips(body);
+}
+function scoresMatch(host){
+  const ch=chosenIssues();
+  const rows=ALL.map(s=>({s,r:scoreFor(s)})).sort((a,b)=>(b.r.score??-1)-(a.r.score??-1)||b.r.nCov-a.r.nCov||a.s.name.localeCompare(b.s.name));
+  const bars=rankBars(rows.map(({s,r})=>({label:s.name,sub:whoSub(s),href:`#${s.id}-match`,value:r.score,color:r.score==null?null:gradeFill(r.score),cls:r.score==null?'':'gr-'+letter(r.score),display:r.score==null?'':`${letter(r.score)} ${r.score}%`,
+    note:!ch.length?'choose your issues':`${r.nCov} of ${r.nChosen} issues`,tip:r.score==null?'':`${s.name}: ${r.score}% match on ${r.nCov} of your ${r.nChosen} issues`})));
+  const graded=rows.filter(x=>x.r.score!=null);
+  host.innerHTML=`${ch.length?'':`<div class="note" style="margin-bottom:12px"><b>Choose your positions first.</b> This ranking compares each record with the positions you choose in <a href="#align">My alignment</a>, weighted by the importance you give each issue. Your choices stay in this browser.</div>`}
+    <div class="chart"><h3>Match with your positions</h3><div class="sub">${ch.length?`${graded.length} of ${ALL.length} have evidence on enough of your ${ch.length} issues for a grade. Bars are colored by grade; the note under each value is how many of your issues have evidence.`:'Everyone is shown as Not graded until you choose issues.'}</div>${bars}
+    ${tableView(['Name','Score','Issues with evidence'],rows.map(({s,r})=>[`<a href="#${s.id}-match">${esc(s.name)}</a>`,r.score==null?'Not graded':`${letter(r.score)} ${r.score}%`,`${r.nCov} of ${r.nChosen}`]))}</div>
+    ${ch.length?`<div class="chart"><h3>Issue by issue</h3><div class="sub">For one person, the share of their record that matches your side on each issue, sorted by the importance you chose.</div>
+      <label class="small">Person <select id="sc-person">${rows.map(({s})=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></label><div id="sc-issues"></div></div>`:''}`;
+  const sel=host.querySelector('#sc-person');
+  const drawIssues=()=>{const s=byId[sel.value],r=scoreFor(s);const list=r.rows.slice().sort((a,b)=>b.pr.w-a.pr.w);
+    host.querySelector('#sc-issues').innerHTML=rankBars(list.map(x=>({label:x.i.label,sub:`you: ${sideLabel(x.i.id,x.pr.side)} · importance ${WLAB[x.pr.w]}`,value:x.status==='none'?null:Math.round(x.agree*100),color:'var(--s1)',
+      display:x.status==='none'?'':`${Math.round(x.agree*100)}%`,note:x.status==='none'?'no evidence':`${x.match} of ${x.n} ${x.status==='record'?'actions':'statements'}`,tip:x.status==='none'?'':`${x.i.label}: ${x.match} of ${x.n} match your side`})));
+    hoverTips(host);};
+  if(sel){sel.addEventListener('change',drawIssues);drawIssues();}
+}
+function scoresPromises(host){
+  const rows=ALL.map(s=>({s,p:promiseScore(s.statements),c:promiseCounts(s)})).sort((a,b)=>(b.p.pct??-1)-(a.p.pct??-1)||b.p.clear-a.p.clear||a.s.name.localeCompare(b.s.name));
+  const graded=rows.filter(x=>x.p.pct!=null).length;
+  host.innerHTML=`<div class="chart"><h3>Promises and stated positions checked against the record</h3><div class="sub">Raw counts, so a grade built on 3 checks looks different from one built on 20. ${graded} of ${ALL.length} have the ${MIN_CHECKS} counted checks a grade needs; ambiguous checks, outcome checks, promises with no related bill yet and vague goals are not counted.</div>
+    ${legend(PROM_SEGS.map(x=>[x.color,x.label,x.cls]))}
+    ${stackRows(rows.map(({s,p,c})=>({label:s.name,sub:whoSub(s),href:`#${s.id}-promises`,parts:c,grey:p.pct==null,value:p.pct==null?'Not graded':`${letter(p.pct)} ${p.pct}%`,cls:p.pct==null?'':'gr-'+letter(p.pct),note:`${p.clear} counted check${p.clear===1?'':'s'}`,empty:'No counted checks'})),PROM_SEGS,{unit:''})}
+    ${tableView(['Name','Score','Kept','Half','Contradicted','Not counted'],rows.map(({s,p,c})=>[`<a href="#${s.id}-promises">${esc(s.name)}</a>`,p.pct==null?'Not graded':`${letter(p.pct)} ${p.pct}%`,c.consistent,`${c.partial} partly, ${c.changed} changed`,c.contradiction,p.notCounted+p.vague]))}</div>`;
+}
+function scoresEthics(host){
+  const rows=ALL.map(s=>({s,...ethicsPoints(s)}));
+  const noCases=rows.filter(({e})=>!e.finding&&!e.open&&!e.closed&&!e.allegation).length;
+  const ded=rows.filter(({e})=>e.raw<100).sort((a,b)=>a.e.pct-b.e.pct||a.s.name.localeCompare(b.s.name));
+  host.innerHTML=`<div class="cx-stats"><div class="cx-stat"><span>No recorded cases</span><b>${noCases} of ${ALL.length}</b><small>no finding, investigation or allegation in the sources checked</small></div><div class="cx-stat"><span>Lost points</span><b>${ded.length} of ${ALL.length}</b><small>have at least one deduction</small></div></div>
+    <div class="chart"><h3>Points lost, by kind</h3><div class="sub">Only people with deductions are shown; everyone else scores 100%. Each case counts once, at its current status (−${ETHICS_COST.finding} confirmed finding, −${ETHICS_COST.open} open investigation, −${ETHICS_COST.closed} closed without a finding); stock trading adds −${TRADE_COST.late} per late disclosure and −${TRADE_COST.conflict} per committee-conflict trade, each capped at ${TRADE_COST.lateCap}.</div>
+    ${legend(ETH_SEGS.map(x=>[x.color,x.label]))}
+    ${ded.length?stackRows(ded.map(({s,e,parts})=>({label:s.name,sub:whoSub(s),href:`#${s.id}-ethics`,parts,value:`${letter(e.pct)} ${e.pct}%`,cls:'gr-'+letter(e.pct),note:`−${100-Math.max(0,e.raw)} points`})),ETH_SEGS,{unit:' points'}):'<p class="small muted">No one has a deduction.</p>'}
+    ${tableView(['Name','Score','Points lost','Findings','Open','Closed','Late disclosures','Conflict trades','Allegations (not scored)'],rows.sort((a,b)=>a.e.pct-b.e.pct||a.s.name.localeCompare(b.s.name)).map(({s,e})=>[`<a href="#${s.id}-ethics">${esc(s.name)}</a>`,`${letter(e.pct)} ${e.pct}%`,100-e.pct,e.finding,e.open,e.closed,e.late,e.conflict,e.allegation]))}</div>`;
+}
+function scoresPvp(host){
+  const rows=ALL.map(s=>({s,v:personPvp(s)})).sort((a,b)=>(b.v.pct??-1)-(a.v.pct??-1)||b.v.n-a.v.n||a.s.name.localeCompare(b.s.name));
+  const graded=rows.filter(x=>x.v.pct!=null);
+  const pts=graded.filter(x=>x.s.ideo).map(({s,v})=>({x:s.ideo.dim1,y:v.pct,cls:s.party,tip:`${s.name}: ${v.pct}% for working people · DW-NOMINATE ${s.ideo.dim1>0?'+':''}${s.ideo.dim1.toFixed(2)}`}));
+  host.innerHTML=`${PVP_MARKS.size?'':`<div class="note" style="margin-bottom:12px"><b>No bills are scored yet, so no one has this grade.</b> A bill counts once a nonpartisan analysis of who gains from it (CBO, the Joint Committee on Taxation or the Tax Policy Center) is cited in the reviewed research. Everyone is listed below as Not graded until then.</div>`}
+    <div class="chart"><h3>Who their record delivered more for</h3><div class="sub">Centered at 50%. To the right, more of their scored votes and sponsorships favored working people; to the left, the wealthy and corporations. ${graded.length} of ${ALL.length} have the ${MIN_PVP_ACTIONS} scored actions a grade needs.</div>
+    ${divergingRows(rows.map(({s,v})=>({label:s.name,sub:whoSub(s),href:`#${s.id}-pvp`,value:v.pct,cls:v.pct==null?'':'gr-'+letter(v.pct),note:v.pct==null?`${v.n} of ${MIN_PVP_ACTIONS} actions`:`${v.people} of ${v.n} actions`,tip:v.pct==null?'':`${s.name}: ${v.people} for working people, ${v.profit} for the wealthy and corporations`})))}
+    ${tableView(['Name','Score','People','Profit'],rows.map(({s,v})=>[`<a href="#${s.id}-pvp">${esc(s.name)}</a>`,v.pct==null?'Not graded':`${letter(v.pct)} ${v.pct}%`,v.people,v.profit]))}</div>
+    <div class="chart"><h3>People over profit against ideology</h3><div class="sub">Each graded person with a DW-NOMINATE score, to spot outliers: someone far from others with a similar ideology.</div>
+    ${pts.length?`<div class="cx-plot" id="sc-scatter"></div>${legend([['var(--dem)','Democrats'],['var(--rep)','Republicans'],['var(--muted)','Independents']])}`:'<p class="small muted">Nothing to plot until people are graded.</p>'}</div>`;
+  if(pts.length){const f=()=>drawScatter(document.getElementById('sc-scatter'),pts,{x:{min:-1,max:1,ticks:[-1,-.5,0,.5,1],left:'More liberal',right:'More conservative',label:'DW-NOMINATE'},y:{min:0,max:100,ticks:[0,25,50,75,100],label:'People over profit'}});f();resizers.push(f);}
+}
+function scoresIdeology(host){
+  const list=ALL.filter(s=>s.ideo);
+  host.innerHTML=`<div class="chart"><h3>Where each sits in the chamber</h3><div class="sub">Voteview's DW-NOMINATE score for the whole chamber, with one person highlighted. Not graded: it describes a voting pattern, not a better or worse record. ${list.length} of ${ALL.length} have a score.</div>
+    <label class="small">Person <select id="sc-ideo-p">${list.map(s=>`<option value="${s.id}">${esc(s.name)} (${CH[icH(s)].name})</option>`).join('')}</select></label><div id="sc-ideo-host"></div></div>`;
+  const sel=host.querySelector('#sc-ideo-p');
+  const draw=()=>{const s=byId[sel.value];resizers=resizers.filter(f=>!f.ideoPage);host.querySelector('#sc-ideo-host').innerHTML=ideoBlock(s,'sc-ideo');const f=()=>drawIdeo(document.getElementById('sc-ideo'),s);f.ideoPage=true;f();resizers.push(f);};
+  sel.addEventListener('change',draw);draw();
+}
+
 function renderMethod(){
   const sv=DATA.votes.length, hv=DATA.hvotes.length;
   const nRows=Object.values(IE.rows).reduce((a,r)=>a+r.length,0);

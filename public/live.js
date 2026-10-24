@@ -1,3 +1,5 @@
+import {drawDelay,categoryBars,hoverTips,legend} from './charts.js';
+import {LATE_DAYS} from './grades.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cash=n=>n==null?'Not reported':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
 const date=v=>v?new Date(/^\d{4}-\d{2}-\d{2}$/.test(v)?v+'T12:00:00Z':v).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'Not yet checked';
@@ -61,7 +63,11 @@ const SECTIONS={
   bluesky:{title:'Bluesky posts',body:x=>ul(x.rows,r=>li(r.url,r.text||'Post',`@${esc(r.handle)} · ${date(r.date)}`),'No recent posts.')},
   wayback:{title:'Campaign-site snapshots',body:x=>`<p class="live-meta">${x.count} distinct versions of ${link(x.site,new URL(x.site).host)} since ${date(x.first)}, so a promise can be compared after it is edited or deleted.</p>${ul(x.rows.slice(0,12),r=>li(r.url,`Snapshot of ${date(r.date)}`),'No snapshots yet.')}`},
   news:{title:'News coverage',merged:true,body:x=>`<p class="live-footnote">From GDELT and the New York Times together; the same article from both appears once. Leads for statements and ethics cases, not evidence by themselves.</p>${ul(x.slice(0,30),r=>li(r.url,r.title||r.url,`${esc(r.outlet||'')} · ${date(r.date)} · ${chips(r.sources)}`),'No articles found.')}`},
-  trades:{title:'Stock trades',merged:true,body:(x,p)=>{const f=p.sections['house-fd']?.rows||[];return `<p class="live-footnote">From Bargo, Eulerpool and Financial Modeling Prep together; the same trade from more than one appears once. Each is matched to the member's official House filing, whose date wins. These are leads: a trade counts toward the Ethics grade only after review.</p>
+  trades:{title:'Stock trades',merged:true,mount:(host,x,person)=>{const el=host.querySelector('#live-delay');if(el)drawDelay(el,tradeDays(x),LATE_DAYS);hoverTips(host);},
+    body:(x,p,person)=>{const f=p.sections['house-fd']?.rows||[],over=overseen(person),by={};for(const t of x)if(t.sector)by[t.sector]=(by[t.sector]||0)+1;
+    const cats=Object.entries(by).map(([label,value])=>({label,value,hi:over.includes(label)})).sort((a,b)=>b.value-a.value);
+    return `<p class="live-footnote">From Bargo, Eulerpool and Financial Modeling Prep together; the same trade from more than one appears once. Each is matched to the member's official House filing, whose date wins. These are leads: a trade counts toward the Ethics grade only after review.</p>
+    ${x.length?`<h4>Days from trade to disclosure</h4><div class="cx-plot" id="live-delay"></div>${legend([['var(--crit)','Late or never disclosed'],['var(--cx-other)','On time']])}${cats.length?`<h4>Trades by sector</h4>${categoryBars(cats,{highlightLabel:'Overseen by their committees',otherLabel:'Other sectors'})}`:''}`:''}
     ${x.length?`<div class="tablewrap"><table><thead><tr><th>Traded</th><th>Filed</th><th>Company</th><th>Type</th><th>Amount</th><th>Owner</th><th>Sources</th></tr></thead><tbody>${x.slice(0,100).map(t=>`<tr><td>${date(t.traded)}</td><td>${date(t.filed)}${t.filed&&t.traded?`<div class="live-meta">${Math.round((Date.parse(t.filed)-Date.parse(t.traded))/864e5)} days</div>`:''}${t.official?`<div>${link(t.official.url,'Official filing')}</div>`:''}</td><td>${esc(t.ticker||'')} ${esc(t.asset||'')}${t.sector?`<div class="live-meta">${esc(t.sector)}</div>`:''}</td><td>${esc(t.type)}</td><td>${esc(t.amount||'')}</td><td>${esc(t.owner||'')}</td><td>${chips(t.sources)}${(t.review||[]).map(r=>`<div class="live-warning">${esc(r)}</div>`).join('')}</td></tr>`).join('')}</tbody></table></div>`:'<div class="live-empty">No trades reported by the trade services.</div>'}
     ${f.length?`<details><summary>Official House disclosure filings (${f.length})</summary><ul class="live-linklist">${f.map(r=>li(r.url,`${r.ptr?'Periodic transaction report':'Financial disclosure ('+r.type+')'} ${r.id}`,`Filed ${date(r.filed)}`)).join('')}</ul></details>`:''}`;}},
   courts:{title:'Court records (leads)',body:x=>ul(x.rows,r=>li(r.url,r.title,`${esc(r.kind)} · ${esc(r.court||'')}${r.docket?' · '+esc(r.docket):''} · ${date(r.date)}`),'No court records found.')},
@@ -75,6 +81,9 @@ const SECTIONS={
   contracts:{title:'Federal contracts to top donor organizations',body:x=>`<p class="live-meta">${cash(x.total)} in the largest awards found. Context only, not proof of influence.</p>${ul(x.rows.slice(0,20),r=>li(r.url,`${r.org} · ${cash(r.amount)}`,`${esc(r.agency||'')} · ${date(r.date)}${r.description?' · '+esc(r.description):''}`),'No contracts found.')}`},
   'outside-groups':{title:'Groups behind outside spending',body:x=>ul(x.rows,r=>r.ein?li(r.url,r.name,`Nonprofit (501(c)(${esc(r.subsection??'?')})) · ${r.filings.map(f=>`${esc(f.year)}: revenue ${cash(f.revenue)}`).join('; ')}`):li(r.irs527,r.group,esc(r.review)+' · search the IRS 527 filings'),'No outside spenders checked yet.')},
 };
+// Days from trade to disclosure, and late, for trades not reviewed yet (the same 45-day rule as the grade).
+const tradeDays=x=>x.map(t=>{const days=t.filed&&t.traded?Math.round((Date.parse(t.filed)-Date.parse(t.traded))/864e5):null;return {...t,company:t.asset||t.ticker,days,missing:!t.filed,late:!t.filed||days>LATE_DAYS};});
+const overseen=person=>{const C=window.COMMITTEES||{committees:{},people:{}},S=window.COMMITTEE_SECTORS||{};return [...new Set((C.people[person.id]||[]).flatMap(c=>(S[C.committees[c.id]?.parent||c.id]||{}).sectors||[]))];};
 const freshnessText=at=>`<div class="live-meta">Last successful check: ${time(at)}</div>`;
 function sourceCard(p,s,person,key){
   const def=SECTIONS[key];if(!def)return '';
@@ -84,7 +93,7 @@ function sourceCard(p,s,person,key){
   const job=s.jobs.find(j=>j.kind===jobKind&&(j.subject===person.id||!j.person));
   const has=def.merged?(Array.isArray(data)?true:!!data):!!data;
   const why=job?.error||(!job?'This source does not cover this person.':!job.person&&job.last_success?`No records for ${person.name} in the latest check.`:'Waiting for the first complete refresh.');
-  const body=has?(def.merged?'':freshness(s,person.id,key,data.checkedAt))+def.body(data,p):`<div class="live-empty">${esc(why)} ${job?badge(job):''} <a href="#updates">View update status</a></div>`;
+  const body=has?(def.merged?'':freshness(s,person.id,key,data.checkedAt))+def.body(data,p,person):`<div class="live-empty">${esc(why)} ${job?badge(job):''} <a href="#updates">View update status</a></div>`;
   return `<div class="live-card"><h3>${esc(def.title)}</h3>${body}</div>`;
 }
 export const RecordLive={
@@ -132,6 +141,7 @@ export const RecordLive={
       ${person.bioguide&&want('legislation')?`<div class="live-card"><h3>Sponsored legislation</h3>${legislation?`${freshness(s,person.id,'legislation',legislation.checkedAt)}<p class="live-meta">${legislation.count} measures in Congress ${legislation.congress}. Showing the latest ${legislation.rows.length}.</p><ul class="live-linklist">${legislation.rows.map(r=>`<li>${link(r.source,r.measure+' · '+r.title)}<small>Introduced ${date(r.date)}${r.latestAction?' · '+esc(r.latestAction):''}</small></li>`).join('')||'<li>No sponsored measures returned for this Congress.</li>'}</ul>`:empty(s,person.id,'legislation')}</div>`:''}
       ${(parts||[]).filter(k=>SECTIONS[k]).map(k=>sourceCard(p,s,person,k)).join('')}
       ${want('votes')?`<div class="live-card"><h3>Roll-call votes</h3><p class="live-footnote">${esc(p.voteScope)} An absent record does not imply a vote or an absence.</p>${p.votes.length?`<ul class="live-linklist">${p.votes.map(v=>`<li><span class="live-state">${esc(v.position)}</span> ${link(v.source,v.title)}<small>${date(v.date)} · ${v.chamber==='S'?'Senate':'House'} roll ${v.number} · ${esc(v.result)} · checked ${time(v.checkedAt)}</small></li>`).join('')}</ul>`:'<div class="live-empty">No matching official roll calls have completed a refresh yet.</div>'}</div>`:''}`;
+      for(const k of parts||[]){const d=SECTIONS[k];if(d?.mount){const x=d.merged?p.merged?.[k]:p.sections[k];if(x)d.mount(host,x,person);}}
     }catch{if(host.isConnected)host.innerHTML='<div class="live-empty">Latest official records are temporarily unavailable. The reviewed research on this profile is unaffected.</div>';}
   }
 };
