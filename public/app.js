@@ -395,17 +395,20 @@ function gradeHead(title,pct,detail,rule,extra=''){
   return `<div class="gh"><div class="gh-g">${g?`<b class="gr-${g}">${g}</b><span>${pct}%</span>`:'<span class="gh-ng">Not graded</span>'}</div>
     <div class="gh-t"><h2>${title}</h2><div class="gh-d">${detail}</div>${extra}<p class="small muted gh-r">${rule} <a href="#method">How the grades work</a></p></div></div>`;
 }
-function homeMonths(){const end=DATA.ie_asof.slice(0,7), out=[];let y=+end.slice(0,4), k=+end.slice(5,7);for(let i=0;i<7;i++){out.unshift(`${y}-${String(k).padStart(2,'0')}`);if(--k<1){k=12;y--;}}return out;}
+function homeMonths(asof=DATA.ie_asof){const end=asof.slice(0,7), out=[];let y=+end.slice(0,4), k=+end.slice(5,7);for(let i=0;i<7;i++){out.unshift(`${y}-${String(k).padStart(2,'0')}`);if(--k<1){k=12;y--;}}return out;}
 // Outside money by month: for and against side by side, with the month's for-to-against ratio as a line on its own scale (right).
 const RATIO_TICKS=[[1,'all for'],[.75,'3 : 1'],[.5,'1 : 1'],[.25,'1 : 3'],[0,'all against']];
-function miniOutside(s,bare){
-  const months=homeMonths(), M=Object.fromEntries(months.map(m=>[m,{f:0,a:0}]));
-  for(const r of IE.rows[s.race]||[]){const mo=r[0].slice(0,7);if(!M[mo])continue;const role=ieRole(s,r);if(role==='for')M[mo].f+=r[4];else if(role==='against')M[mo].a+=r[4];}
+// live, when given, is outside spending from the daily FEC refresh ({end, items:[{date, amount, role}]}) instead of the
+// reviewed race data.
+function miniOutside(s,bare,live){
+  const asof=live?live.end:DATA.ie_asof, months=homeMonths(asof), M=Object.fromEntries(months.map(m=>[m,{f:0,a:0}]));
+  const items=live?live.items:(IE.rows[s.race]||[]).map(r=>({date:r[0],amount:r[4],role:ieRole(s,r)}));
+  for(const x of items){const mo=x.date.slice(0,7);if(!M[mo])continue;if(x.role==='for')M[mo].f+=x.amount;else if(x.role==='against')M[mo].a+=x.amount;}
   const fw=s.out.multi?'supporting':'for', aw=s.out.multi?'opposing':'against';
   const max=Math.max(0,...months.map(m=>Math.max(M[m].f,M[m].a)));
   const F=months.reduce((t,m)=>t+M[m].f,0), A=months.reduce((t,m)=>t+M[m].a,0), q=moneyRatio(F,A);
   const badge=q?`<span class="hc-ratio" title="${esc(`For-to-against ratio of outside money in the months charted: ${fmtFull(F)} ${fw} ${s.short}, ${fmtFull(A)} ${aw}.`)}">${q.oneSided?`<b class="${q.side}">${q.text[0].toUpperCase()+q.text.slice(1)}</b>`:`For-to-against <b class="${q.side}">${q.text}</b>`}</span>`:'';
-  const head=`<div class="hc-mh"><span>${bare?'':'Outside money by month'}${badge}</span><span>${MON[+months[0].slice(5,7)-1]} – <b>${fmtDate(DATA.ie_asof)}</b></span></div>`;
+  const head=`<div class="hc-mh"><span>${bare?'':'Outside money by month'}${badge}</span><span>${MON[+months[0].slice(5,7)-1]} – <b>${fmtDate(asof)}</b></span></div>`;
   if(!max)return `<div class="hc-mini">${head}<p class="small muted" style="margin:4px 0 0">No outside spending reported in these months.</p></div>`;
   const W=280,top=6,base=96,gw=W/7,bw=14,y=sh=>top+(1-sh)*(base-top);
   let svg=RATIO_TICKS.slice(1,4).map(([sh])=>`<line class="${sh===.5?'hc-g1':'hc-g'}" x1="0" x2="${W}" y1="${y(sh)}" y2="${y(sh)}"></line>`).join('');
@@ -447,9 +450,10 @@ function homeCard(s){
     <div class="hc-ft"><span>${race?esc(race.label):''}</span><span class="hc-vs">${riv.length?'vs. '+esc(riv.map(x=>x.short).join(', ')):'No profiled opponent'}</span></div>
   </article>`;
 }
-// The featured card (the president): the same Report Card, then the latest official acts in place of 2026 race money.
+// The featured card (the president): the same Report Card and Money & Influence Analysis as the others. Not being on the
+// 2026 ballot, there is no reviewed race money, so the money comes from the daily FEC refresh of the committee that
+// still files (filled in by fillFeatured).
 function featuredCard(s){
-  const acts=s.record.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,3);
   return `<article class="card sen-card hc hc-feat" tabindex="0" data-id="${s.id}" role="link" aria-label="Open profile of ${esc(s.name)}">
     <div class="hc-top">${portrait(s)}<div class="hc-who">
       <div class="row" style="gap:5px"><span class="chip ${s.party}">${s.party} · ${esc(seatLabel(s))}</span><span class="chip ch">${chipCh(s)}</span></div>
@@ -457,10 +461,27 @@ function featuredCard(s){
     <div class="hc-ideo">${esc(REC_SHORT[s.recordType]||'')} · ${esc(s.seat)}</div>
     ${hcHead('✓','rc','Report Card','Four A–F grades from the documented record and your own answers')}
     ${reportCard(s)}
-    ${hcHead('§','mi','Record in office','The latest official acts profiled, each linked to its source')}
-    <ul class="hc-acts">${acts.map(r=>`<li><span>${fmtDate(r.date)}</span>${esc(r.title)}</li>`).join('')}</ul>
-    <div class="hc-ft"><span>Not counted in the filters or races</span><span class="hc-vs">Open profile →</span></div>
+    ${hcHead('$','mi','Money &amp; Influence Analysis',`Money raised by ${esc(s.cmteName||'the campaign committee')}, and outside spending for and against ${esc(s.short)}, from the daily FEC refresh`)}
+    <div class="hc-live" data-live="${s.id}">${featuredMoney(s,null)}</div>
+    <div class="hc-ft"><span>Not on the 2026 ballot</span><span class="hc-vs">Open profile →</span></div>
   </article>`;
+}
+// p is the person's refreshed records (/api/profile), null while loading, or false when the refresh is unreachable.
+function featuredMoney(s,p){
+  const c=p&&p.sections.campaign, o=p&&p.sections.outside;
+  const wait=p===null?'Loading…':p===false?'Refresh unavailable':'Waiting for the FEC refresh';
+  const camp=c?`<b>${fmt$(c.receipts)}</b><span>Campaign funds raised</span><small>${shortPer(c.end)}</small>`:`<b class="hc-na">${wait}</b><span>Campaign funds raised</span><small>${esc(s.fecCmte)}, 2025–26</small>`;
+  const out=o?`<b class="hc-two"><i class="sw" style="background:var(--s3)"></i>${fmt$(o.support)} <em>for</em><br><i class="sw" style="background:var(--s2)"></i>${fmt$(o.oppose)} <em>against</em></b><span>Outside money</span><small>${shortPer(o.through)}</small>`:`<b class="hc-na">${wait}</b><span>Outside money</span><small>2025–26</small>`;
+  const mini=o?miniOutside(s,false,{end:o.through,items:(o.rows||[]).map(r=>({date:r.date,amount:r.amount,role:r.direction==='S'?'for':'against'}))})
+    :`<div class="hc-mini"><div class="hc-mh"><span>Outside money by month</span></div><p class="small muted" style="margin:4px 0 0">${p===false?'The refreshed FEC records are unavailable right now.':p===null?'Loading the refreshed FEC records…':'Fills in from the daily FEC refresh.'}</p></div>`;
+  return `<div class="hc-money"><div class="hc-mt">${camp}</div><div class="hc-mt">${out}</div></div>${mini}`;
+}
+async function fillFeatured(){
+  for(const el of document.querySelectorAll('.hc-live')){
+    const s=byId[el.dataset.live];let p=false;
+    try{const r=await fetch('/api/profile?id='+encodeURIComponent(s.id),{cache:'no-store'});if(r.ok)p=await r.json();}catch{}
+    if(el.isConnected)el.innerHTML=featuredMoney(s,p&&p.sections?p:false);
+  }
 }
 const gradeHow=()=>`<section class="hc-how" aria-labelledby="hc-how-h"><h2 id="hc-how-h" style="font-size:1.05rem">How the grades work</h2>
   <div class="hc-howg">
@@ -510,6 +531,7 @@ function renderHome(){
   $('#q').addEventListener('input',e=>draw(e.target.value));
   const hs=$('#hsort');hs.value=homeSort;hs.addEventListener('change',e=>{homeSort=e.target.value;draw($('#q').value);});
   $('#chs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;homeCh=b.dataset.c;$('#chs .active').classList.remove('active');b.classList.add('active');draw($('#q').value);});
+  fillFeatured();
   for(const host of [cards,$('.hero-side')].filter(Boolean)){
     host.addEventListener('click',e=>{const c=e.target.closest('.sen-card');if(c)location.hash=c.dataset.id;});
     host.addEventListener('keydown',e=>{const c=e.target.closest('.sen-card');if(c&&(e.key==='Enter'||e.key===' ')){e.preventDefault();location.hash=c.dataset.id;}});

@@ -1,6 +1,6 @@
 {
   "about": "Transparent portraits for the home cards. See scripts/build-portraits.py.",
-  "built": "2026-10-22",
+  "built": "2026-10-24",
   "people": {
     "collins": {
       "file": "portraits/collins.webp",
@@ -263,6 +263,10 @@
     "beltran": {
       "file": "portraits/beltran.webp",
       "credit": "Photo supplied by the site's editor for use on this site"
+    },
+    "trump": {
+      "file": "portraits/trump.webp",
+      "credit": "Official presidential portrait (public domain, U.S. government work), supplied by the site's editor"
     }
   }
 }
