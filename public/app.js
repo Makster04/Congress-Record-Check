@@ -22,8 +22,12 @@ function personPvp(s){
   return pvpScore(pvpActions(PVP_MARKS,votes,spons));
 }
 // Ethics: reviewed stock trades (research.json "trades" on a person) checked for late disclosure and committee conflicts.
-const COMMITTEE_SECTORS=window.COMMITTEE_SECTORS||{};
-const overseenSectors=s=>[...new Set((s.committees||[]).flatMap(c=>(COMMITTEE_SECTORS[c.id]||{}).sectors||[]))];
+// Committee assignments (public/committees.json, from congress-legislators) and the sectors each committee oversees
+// (public/committee-sectors.json). A subcommittee seat counts under its full committee.
+const COMMITTEES=window.COMMITTEES||{committees:{},people:{}}, COMMITTEE_SECTORS=window.COMMITTEE_SECTORS||{};
+const committeesOf=s=>COMMITTEES.people[s.id]||[];
+const fullCommittee=id=>(COMMITTEES.committees[id]||{}).parent||id;
+const overseenSectors=s=>[...new Set(committeesOf(s).flatMap(c=>(COMMITTEE_SECTORS[fullCommittee(c.id)]||{}).sectors||[]))];
 const personTrading=s=>tradeChecks(s.trades,overseenSectors(s));
 const personEthics=s=>ethicsScore(s.ethics,personTrading(s));
 const icH=s=>s.ideoKind==='house'?'H':s.chamber;
@@ -1254,12 +1258,21 @@ function panePvp(s,pane){
 }
 
 // The votes, bills and actions behind the match, kept in separate, labeled sections by kind of record.
+// Committee seats, full committees first with their subcommittees beneath, and the sectors each one oversees.
+function committeeBlock(s){
+  const list=committeesOf(s), info=id=>COMMITTEES.committees[id]||{name:id};if(!list.length)return '';
+  const full=[...new Set(list.map(c=>fullCommittee(c.id)))], seat=id=>list.find(c=>c.id===id);
+  return `<section class="recsec" id="rec-cmte"><div class="kicker">Committee assignments</div><h3 style="margin-top:4px">Committees in the ${COMMITTEES.congress}th Congress</h3>
+  <p class="small muted" style="margin:4px 0 8px">From the <a href="${esc(COMMITTEES.source)}" target="_blank" rel="noopener">congress-legislators</a> project, checked ${fmtDate(COMMITTEES.checked)}. The sectors marked on a committee are the ones it oversees; a stock trade in one of them counts as a committee conflict on the Ethics tab (sector list is a draft under review).</p>
+  <ul class="list small cmte">${full.map(id=>{const c=seat(id),i=info(id),sec=(COMMITTEE_SECTORS[id]||{}).sectors||[],subs=list.filter(x=>x.id!==id&&fullCommittee(x.id)===id);
+    return `<li>${i.url?`<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.name)} ↗</a>`:esc(i.name)}${c&&c.title?` <span class="chip ghost">${esc(c.title)}</span>`:''}${c?'':' <span class="small muted">(subcommittee seat only)</span>'}${sec.map(x=>` <span class="chip warn">${esc(x)}</span>`).join('')}${subs.length?`<div class="muted">Subcommittees: ${subs.map(x=>esc(info(x.id).name)+(x.title?` (${esc(x.title)})`:'')).join('; ')}</div>`:''}</li>`;}).join('')}</ul></section>`;
+}
 function recordInto(s,host){
   const inc=!s.cand;
   const SV=inc?(s.chamber==='S'?DATA.votes:[]):(s.senateVotes?DATA.votes.filter(v=>s.id in v.pos):[]);
   const HV=inc?(s.chamber==='H'?DATA.hvotes:[]):(s.ideoKind==='house'?DATA.hvotes.filter(v=>s.id in v.pos):[]);
   const ev=evidenceOf(s);
-  const jump=[['rec-ideo','Ideology'],SV.length&&['rec-sv','Senate votes'],HV.length&&['rec-hv','House votes'],inc&&['rec-bills','Sponsored bills'],!inc&&['rec-other',recordHeading(s)],s.stateRecord&&['rec-state','State legislative record'],['live-records','Latest official records']].filter(Boolean);
+  const jump=[['rec-ideo','Ideology'],SV.length&&['rec-sv','Senate votes'],HV.length&&['rec-hv','House votes'],inc&&['rec-bills','Sponsored bills'],!inc&&['rec-other',recordHeading(s)],committeesOf(s).length&&['rec-cmte','Committees'],s.stateRecord&&['rec-state','State legislative record'],['live-records','Latest official records']].filter(Boolean);
   host.innerHTML=`
   <h2 id="m-record" style="margin-top:34px">The record behind the match</h2>
   <p class="intro">${inc?`${esc(s.short)}'s positions on consequential ${CH[s.chamber].name} roll calls, sponsored bills`:esc(REC_LABEL[s.recordType]||'')+'. '+esc({member_of_congress:'Positions on key House roll calls and notable sponsored bills',senator:'Positions on key Senate roll calls and notable sponsored bills',former_member_of_congress:'Votes and bills from '+s.short+"'s time in Congress",state_legislator:'Recorded votes and bills from '+s.short+"'s time in a state legislature",executive:'No legislative votes in executive office; major official actions are listed instead',none:'No legislative voting record; documented public actions and commitments are listed instead'}[s.recordType]||'')}${hasStateLeg(s)&&s.recordType!=='state_legislator'?', a separate state legislative record':''}. These are what your choices are compared with. Each item links to its source.</p>
@@ -1272,6 +1285,7 @@ function recordInto(s,host){
     <div class="tablewrap"><table><thead><tr><th>Measure</th><th>Title</th><th>Policy area</th><th>Introduced</th></tr></thead><tbody>${s.bills.map(b=>`<tr><td class="mono" style="white-space:nowrap"><a href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.num)}</a></td><td>${esc(b.title)}</td><td class="small">${esc(b.area)}</td><td class="mono">${esc(b.date)}</td></tr>`).join('')}</tbody></table></div></section>`:
   `<section class="recsec" id="rec-other"><div class="kicker">${esc(recordKicker(s))}</div><h3 style="margin-top:4px">${esc(recordHeading(s))}</h3>
     <div>${s.record.map(r=>`<div class="vote"><div class="d">${esc(r.date||'')}</div><div><div class="t">${esc(r.title)}</div><div class="s">${esc(r.detail)}</div><div class="s muted">${esc(r.area||'')}${r.src?` · <a href="${esc(r.src.u)}" target="_blank" rel="noopener">${esc(r.src.t)} ↗</a>`:''}${(r.more||[]).map(m=>` · <a href="${esc(m.u)}" target="_blank" rel="noopener">${esc(m.t)} ↗</a>`).join('')}</div></div><div class="pos"><span class="chip ${posClass(r.position)}">${esc(r.position||'')}</span></div></div>`).join('')}</div></section>`}
+  ${committeeBlock(s)}
   <div id="rec-state">${stateRecordBlock(s)}</div>
   <section id="live-records" style="margin-top:28px"></section>`;
   mountIdeo('ideo2',s);

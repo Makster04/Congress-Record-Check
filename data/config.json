@@ -10,72 +10,191 @@
       "name": "Susan M. Collins",
       "short": "Collins",
       "bioguide": "C001035",
-      "lis": null,
+      "lis": "S252",
       "fecCand": "S6ME00159",
       "fecCmte": "C00314575",
       "chamber": "S",
       "state": "ME",
-      "race": "S-ME"
+      "race": "S-ME",
+      "ids": {
+        "govtrack": 300025,
+        "opensecrets": "N00000491",
+        "votesmart": 379,
+        "wikidata": "Q22279",
+        "ballotpedia": "Susan Collins",
+        "wikipedia": "Susan Collins",
+        "icpsr": 49703,
+        "cspan": 45738,
+        "thomas": "01541"
+      },
+      "social": {
+        "twitter": "SenatorCollins",
+        "facebook": "susancollins",
+        "youtube": "SenatorSusanCollins",
+        "youtube_id": "UC6GYaBx5kT2r4PN8KENxC-w",
+        "instagram": "sensusancollins",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "sullivan",
       "name": "Dan Sullivan",
       "short": "Sullivan",
       "bioguide": "S001198",
-      "lis": null,
+      "lis": "S383",
       "fecCand": "S4AK00214",
       "fecCmte": "C00570994",
       "chamber": "S",
       "state": "AK",
-      "race": "S-AK"
+      "race": "S-AK",
+      "ids": {
+        "govtrack": 412665,
+        "opensecrets": "N00035774",
+        "votesmart": 114964,
+        "wikidata": "Q5218668",
+        "ballotpedia": "Daniel S. Sullivan",
+        "wikipedia": "Dan Sullivan (U.S. senator)",
+        "icpsr": 41500,
+        "cspan": 1023262,
+        "thomas": "02290"
+      },
+      "social": {
+        "twitter": "SenDanSullivan",
+        "facebook": "SenDanSullivan",
+        "youtube_id": "UC7tXCm8gKlAhTFo2kuf5ylw",
+        "instagram": "sen_dansullivan",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "marshall",
       "name": "Roger W. Marshall",
       "short": "Marshall",
       "bioguide": "M001198",
-      "lis": null,
+      "lis": "S411",
       "fecCand": "S0KS00315",
       "fecCmte": "C00576173",
       "chamber": "S",
       "state": "KS",
-      "race": "S-KS"
+      "race": "S-KS",
+      "ids": {
+        "govtrack": 412704,
+        "opensecrets": "N00037034",
+        "votesmart": 172080,
+        "wikidata": "Q27923290",
+        "ballotpedia": "Roger Marshall",
+        "wikipedia": "Roger Marshall",
+        "icpsr": 21734,
+        "cspan": 103425
+      },
+      "social": {
+        "twitter": "SenatorMarshall",
+        "facebook": "RogerMarshallMD",
+        "youtube": "UCR3nOFMqBB-kRpKFwgapMaQ",
+        "instagram": "senrogermarshall",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "ossoff",
       "name": "Jon Ossoff",
       "short": "Ossoff",
       "bioguide": "O000174",
-      "lis": null,
+      "lis": "S414",
       "fecCand": "S8GA00180",
       "fecCmte": "C00718866",
       "chamber": "S",
       "state": "GA",
-      "race": "S-GA"
+      "race": "S-GA",
+      "ids": {
+        "govtrack": 456857,
+        "opensecrets": "N00040675",
+        "votesmart": 176134,
+        "wikidata": "Q28839536",
+        "ballotpedia": "Jon Ossoff",
+        "wikipedia": "Jon Ossoff"
+      },
+      "social": {
+        "twitter": "SenOssoff",
+        "facebook": "SenOssoff",
+        "instagram": "jonossoff",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "booker",
       "name": "Cory A. Booker",
       "short": "Booker",
       "bioguide": "B001288",
-      "lis": null,
+      "lis": "S370",
       "fecCand": "S4NJ00185",
       "fecCmte": "C00540500",
       "chamber": "S",
       "state": "NJ",
-      "race": "S-NJ"
+      "race": "S-NJ",
+      "ids": {
+        "govtrack": 412598,
+        "opensecrets": "N00035267",
+        "votesmart": 76151,
+        "wikidata": "Q1135767",
+        "ballotpedia": "Cory Booker",
+        "wikipedia": "Cory Booker",
+        "icpsr": 41308,
+        "cspan": 84679,
+        "thomas": "02194"
+      },
+      "social": {
+        "twitter": "SenBooker",
+        "facebook": "SenatorCoryBooker",
+        "youtube": "SenCoryBooker",
+        "youtube_id": "UC6FlymqNS1VettnVZa7goPA",
+        "instagram": "corybooker",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "hickenlooper",
       "name": "John W. Hickenlooper",
       "short": "Hickenlooper",
       "bioguide": "H000273",
-      "lis": null,
+      "lis": "S408",
       "fecCand": "S0CO00575",
       "fecCmte": "C00716720",
       "chamber": "S",
       "state": "CO",
-      "race": "S-CO"
+      "race": "S-CO",
+      "ids": {
+        "govtrack": 456797,
+        "opensecrets": "N00044206",
+        "wikidata": "Q430518",
+        "ballotpedia": "John Hickenlooper",
+        "wikipedia": "John Hickenlooper"
+      },
+      "social": {
+        "twitter": "SenatorHick",
+        "facebook": "SenatorHick",
+        "youtube": "UCU6pcq-AZA9wnmIPBj6ePwQ",
+        "instagram": "senatorhick",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "perry",
@@ -87,7 +206,29 @@
       "fecCmte": "C00510164",
       "chamber": "H",
       "state": "PA",
-      "race": "H-PA-10"
+      "race": "H-PA-10",
+      "ids": {
+        "govtrack": 412569,
+        "opensecrets": "N00034120",
+        "votesmart": 59980,
+        "wikidata": "Q7437040",
+        "ballotpedia": "Scott Perry",
+        "wikipedia": "Scott Perry",
+        "icpsr": 21356,
+        "cspan": 79873,
+        "thomas": "02157"
+      },
+      "social": {
+        "twitter": "RepScottPerry",
+        "facebook": "repscottperry",
+        "youtube": "RepScottPerry",
+        "youtube_id": "UCzgrU5PT_HHRgf5hXPen4dQ",
+        "instagram": "repscottperry",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "lawler",
@@ -99,7 +240,25 @@
       "fecCmte": "C00815415",
       "chamber": "H",
       "state": "NY",
-      "race": "H-NY-17"
+      "race": "H-NY-17",
+      "ids": {
+        "govtrack": 456924,
+        "opensecrets": "N00051208",
+        "votesmart": 192271,
+        "wikidata": "Q105179052",
+        "ballotpedia": "Michael Lawler (New York)",
+        "wikipedia": "Mike Lawler"
+      },
+      "social": {
+        "twitter": "RepMikeLawler",
+        "facebook": "RepMikeLawler",
+        "youtube": "@RepMikeLawler",
+        "instagram": "RepMikeLawler",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "evans",
@@ -111,7 +270,24 @@
       "fecCmte": "C00849844",
       "chamber": "H",
       "state": "CO",
-      "race": "H-CO-08"
+      "race": "H-CO-08",
+      "ids": {
+        "govtrack": 456984,
+        "opensecrets": "N00053312",
+        "votesmart": 206217,
+        "wikidata": "Q115458993",
+        "ballotpedia": "Gabe Evans",
+        "wikipedia": "Gabe Evans"
+      },
+      "social": {
+        "twitter": "repgabeevans",
+        "facebook": "RepGabeEvans",
+        "instagram": "RepGabeEvans",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "millermeeks",
@@ -123,7 +299,23 @@
       "fecCmte": "C00558825",
       "chamber": "H",
       "state": "IA",
-      "race": "H-IA-01"
+      "race": "H-IA-01",
+      "ids": {
+        "govtrack": 456817,
+        "opensecrets": "N00029495",
+        "votesmart": 103294,
+        "wikidata": "Q58495662",
+        "ballotpedia": "Mariannette Miller-Meeks",
+        "wikipedia": "Mariannette Miller-Meeks"
+      },
+      "social": {
+        "twitter": "RepMMM",
+        "facebook": "RepMMM",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "kaptur",
@@ -135,7 +327,29 @@
       "fecCmte": "C00154625",
       "chamber": "H",
       "state": "OH",
-      "race": "H-OH-09"
+      "race": "H-OH-09",
+      "ids": {
+        "govtrack": 400211,
+        "opensecrets": "N00003522",
+        "votesmart": 27016,
+        "wikidata": "Q436537",
+        "ballotpedia": "Marcy Kaptur",
+        "wikipedia": "Marcy Kaptur",
+        "icpsr": 15029,
+        "cspan": 1458,
+        "thomas": "00616"
+      },
+      "social": {
+        "twitter": "RepMarcyKaptur",
+        "facebook": "RepresentativeMarcyKaptur",
+        "youtube": "USRepMarcyKaptur",
+        "youtube_id": "UCIJUNf22o09nO02oQPLKQ6w",
+        "instagram": "repmarcykaptur",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "mgp",
@@ -147,7 +361,25 @@
       "fecCmte": "C00806174",
       "chamber": "H",
       "state": "WA",
-      "race": "H-WA-03"
+      "race": "H-WA-03",
+      "ids": {
+        "govtrack": 456949,
+        "opensecrets": "N00050490",
+        "votesmart": 207307,
+        "wikidata": "Q113686944",
+        "ballotpedia": "Marie Gluesenkamp Perez",
+        "wikipedia": "Marie Gluesenkamp Perez"
+      },
+      "social": {
+        "twitter": "RepMGP",
+        "facebook": "RepMGP",
+        "youtube": "@repmgp",
+        "instagram": "repmgp",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "gonzalez",
@@ -159,7 +391,27 @@
       "fecCmte": "C00592659",
       "chamber": "H",
       "state": "TX",
-      "race": "H-TX-34"
+      "race": "H-TX-34",
+      "ids": {
+        "govtrack": 412725,
+        "opensecrets": "N00038809",
+        "votesmart": 166483,
+        "wikidata": "Q27924921",
+        "ballotpedia": "Vicente Gonzalez Jr.",
+        "wikipedia": "Vicente Gonzalez (American politician)",
+        "icpsr": 21722,
+        "cspan": 103568
+      },
+      "social": {
+        "twitter": "RepGonzalez",
+        "facebook": "USCongressmanVicenteGonzalez",
+        "youtube_id": "UC5H6oYLKQ_xIXO5CG7fh4hw",
+        "instagram": "repvicentegonzaleztx",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "castor",
@@ -171,7 +423,29 @@
       "fecCmte": "C00410761",
       "chamber": "H",
       "state": "FL",
-      "race": "H-FL-14"
+      "race": "H-FL-14",
+      "ids": {
+        "govtrack": 412195,
+        "opensecrets": "N00027514",
+        "votesmart": 53825,
+        "wikidata": "Q458492",
+        "ballotpedia": "Kathy Castor",
+        "wikipedia": "Kathy Castor",
+        "icpsr": 20708,
+        "cspan": 1022874,
+        "thomas": "01839"
+      },
+      "social": {
+        "twitter": "USRepKCastor",
+        "facebook": "USRepKathyCastor",
+        "youtube": "RepKathyCastor",
+        "youtube_id": "UC_irxhmLqVenTFPxDxznG6g",
+        "instagram": "usrepkathycastor",
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "talarico",
@@ -183,7 +457,14 @@
       "fecCmte": "C00919084",
       "chamber": "S",
       "state": "TX",
-      "race": "S-TX"
+      "race": "S-TX",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://jamestalarico.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "paxton",
@@ -195,7 +476,14 @@
       "fecCmte": "C00901918",
       "chamber": "S",
       "state": "TX",
-      "race": "S-TX"
+      "race": "S-TX",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.kenpaxton.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "elsayed",
@@ -207,7 +495,14 @@
       "fecCmte": "C00902668",
       "chamber": "S",
       "state": "MI",
-      "race": "S-MI"
+      "race": "S-MI",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://abdulforsenate.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "rogers",
@@ -219,7 +514,24 @@
       "fecCmte": "C00849810",
       "chamber": "S",
       "state": "MI",
-      "race": "S-MI"
+      "race": "S-MI",
+      "ids": {
+        "govtrack": 400342,
+        "opensecrets": "N00009668",
+        "votesmart": 8751,
+        "wikidata": "Q970515",
+        "ballotpedia": "Mike Rogers (Michigan)",
+        "wikipedia": "Mike Rogers (Michigan politician)",
+        "icpsr": 20120,
+        "cspan": 86133,
+        "thomas": "01651"
+      },
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://rogersforsenate.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "cooper",
@@ -231,7 +543,14 @@
       "fecCmte": "C00913566",
       "chamber": "S",
       "state": "NC",
-      "race": "S-NC"
+      "race": "S-NC",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://roycooper.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "whatley",
@@ -243,7 +562,14 @@
       "fecCmte": "C00913996",
       "chamber": "S",
       "state": "NC",
-      "race": "S-NC"
+      "race": "S-NC",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "turek",
@@ -255,7 +581,14 @@
       "fecCmte": "C00915645",
       "chamber": "S",
       "state": "IA",
-      "race": "S-IA"
+      "race": "S-IA",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://turek4iowa.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "hinson",
@@ -267,7 +600,23 @@
       "fecCmte": "C00706267",
       "chamber": "H",
       "state": "IA",
-      "race": "S-IA"
+      "race": "S-IA",
+      "ids": {
+        "govtrack": 456816,
+        "opensecrets": "N00044521",
+        "votesmart": 168783,
+        "wikidata": "Q60713905",
+        "ballotpedia": "Ashley Hinson",
+        "wikipedia": "Ashley Hinson"
+      },
+      "social": {
+        "twitter": "RepAshleyHinson",
+        "facebook": "RepAshleyHinson",
+        "bluesky": []
+      },
+      "campaignSite": "https://vote.ashleyhinson.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "pappas",
@@ -279,19 +628,51 @@
       "fecCmte": "C00660464",
       "chamber": "H",
       "state": "NH",
-      "race": "S-NH"
+      "race": "S-NH",
+      "ids": {
+        "govtrack": 412795,
+        "opensecrets": "N00042161",
+        "votesmart": 42635,
+        "wikidata": "Q5107684",
+        "ballotpedia": "Chris Pappas",
+        "wikipedia": "Chris Pappas (American politician)",
+        "icpsr": 21951
+      },
+      "social": {
+        "twitter": "RepChrisPappas",
+        "bluesky": []
+      },
+      "campaignSite": "https://chrispappas.org/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "sununu",
       "name": "John E. Sununu",
       "short": "Sununu",
       "bioguide": "S001078",
-      "lis": null,
+      "lis": "S296",
       "fecCand": "S6NH00208",
       "fecCmte": "C00924092",
       "chamber": "S",
       "state": "NH",
-      "race": "S-NH"
+      "race": "S-NH",
+      "ids": {
+        "govtrack": 300095,
+        "opensecrets": "N00000397",
+        "votesmart": 617,
+        "wikidata": "Q1699908",
+        "ballotpedia": "John E. Sununu",
+        "wikipedia": "John E. Sununu",
+        "icpsr": 29740,
+        "thomas": "01532"
+      },
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://sununusenator.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "flanagan",
@@ -303,7 +684,14 @@
       "fecCmte": "C00897751",
       "chamber": "S",
       "state": "MN",
-      "race": "S-MN"
+      "race": "S-MN",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://peggyflanagan.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "tafoya",
@@ -315,7 +703,14 @@
       "fecCmte": "C00935528",
       "chamber": "S",
       "state": "MN",
-      "race": "S-MN"
+      "race": "S-MN",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://micheletafoya.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "stratton",
@@ -327,7 +722,14 @@
       "fecCmte": "C00903252",
       "chamber": "S",
       "state": "IL",
-      "race": "S-IL"
+      "race": "S-IL",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.julianastratton.com/news",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "tracy",
@@ -339,7 +741,14 @@
       "fecCmte": "C00917120",
       "chamber": "S",
       "state": "IL",
-      "race": "S-IL"
+      "race": "S-IL",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://dontracyforil.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "cbooker",
@@ -351,7 +760,14 @@
       "fecCmte": "C00929208",
       "chamber": "S",
       "state": "KY",
-      "race": "S-KY"
+      "race": "S-KY",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://charlesbooker.org",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "barr",
@@ -363,7 +779,29 @@
       "fecCmte": "C00467571",
       "chamber": "H",
       "state": "KY",
-      "race": "S-KY"
+      "race": "S-KY",
+      "ids": {
+        "govtrack": 412541,
+        "opensecrets": "N00031233",
+        "votesmart": 117290,
+        "wikidata": "Q3828645",
+        "ballotpedia": "Andy Barr",
+        "wikipedia": "Andy Barr",
+        "icpsr": 21333,
+        "cspan": 61848,
+        "thomas": "02131"
+      },
+      "social": {
+        "twitter": "RepAndyBarr",
+        "facebook": "RepAndyBarr",
+        "youtube": "RepAndyBarr",
+        "youtube_id": "UCVL2s6x7f7H0ZJ-uwU0pQ6Q",
+        "instagram": "RepAndyBarr",
+        "bluesky": []
+      },
+      "campaignSite": "https://barr.house.gov/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "wess",
@@ -375,7 +813,14 @@
       "fecCmte": "C00935783",
       "chamber": "S",
       "state": "AL",
-      "race": "S-AL"
+      "race": "S-AL",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://wessforsenate.com/f/voter-guide-qa",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "moore",
@@ -387,7 +832,23 @@
       "fecCmte": "C00720375",
       "chamber": "H",
       "state": "AL",
-      "race": "S-AL"
+      "race": "S-AL",
+      "ids": {
+        "govtrack": 456800,
+        "opensecrets": "N00041295",
+        "votesmart": 121792,
+        "wikidata": "Q63198048",
+        "ballotpedia": "Barry Moore (Alabama)",
+        "wikipedia": "Barry Moore (American politician)"
+      },
+      "social": {
+        "twitter": "RepBarryMoore",
+        "facebook": "RepBarryMoore",
+        "bluesky": []
+      },
+      "campaignSite": "https://barrymoore.house.gov",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "bankhead",
@@ -399,7 +860,14 @@
       "fecCmte": "C00937201",
       "chamber": "S",
       "state": "MT",
-      "race": "S-MT"
+      "race": "S-MT",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://alaniformt.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "alme",
@@ -411,7 +879,14 @@
       "fecCmte": "C00942060",
       "chamber": "S",
       "state": "MT",
-      "race": "S-MT"
+      "race": "S-MT",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://almeforsenate.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "bodnar",
@@ -423,7 +898,14 @@
       "fecCmte": "C00941708",
       "chamber": "S",
       "state": "MT",
-      "race": "S-MT"
+      "race": "S-MT",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://sethformontana.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "byrd",
@@ -435,7 +917,14 @@
       "fecCmte": "C00938738",
       "chamber": "S",
       "state": "WY",
-      "race": "S-WY"
+      "race": "S-WY",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://byrdforsenate.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "hageman",
@@ -447,7 +936,23 @@
       "fecCmte": "C00788943",
       "chamber": "H",
       "state": "WY",
-      "race": "S-WY"
+      "race": "S-WY",
+      "ids": {
+        "govtrack": 456951,
+        "opensecrets": "N00049197",
+        "votesmart": 182961,
+        "wikidata": "Q110815967",
+        "ballotpedia": "Harriet Hageman",
+        "wikipedia": "Harriet Hageman"
+      },
+      "social": {
+        "twitter": "RepHageman",
+        "youtube": "@rephageman",
+        "bluesky": []
+      },
+      "campaignSite": "https://hagemanforwyoming.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "thomas",
@@ -459,7 +964,14 @@
       "fecCmte": "C00899559",
       "chamber": "S",
       "state": "OK",
-      "race": "S-OK"
+      "race": "S-OK",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.jasmineforok.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "hern",
@@ -471,7 +983,25 @@
       "fecCmte": "C00943142",
       "chamber": "H",
       "state": "OK",
-      "race": "S-OK"
+      "race": "S-OK",
+      "ids": {
+        "govtrack": 412748,
+        "opensecrets": "N00040829",
+        "votesmart": 180004,
+        "wikidata": "Q58333614",
+        "ballotpedia": "Kevin Hern",
+        "wikipedia": "Kevin Hern",
+        "icpsr": 21760
+      },
+      "social": {
+        "twitter": "repkevinhern",
+        "facebook": "repkevinhern",
+        "youtube": "UC9XRRGCgGOEtEOwUAo1rYZg",
+        "bluesky": []
+      },
+      "campaignSite": "https://hernforsenate.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "davis",
@@ -483,7 +1013,14 @@
       "fecCmte": "C00929117",
       "chamber": "S",
       "state": "LA",
-      "race": "S-LA"
+      "race": "S-LA",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://jamieforlouisiana.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "letlow",
@@ -495,43 +1032,108 @@
       "fecCmte": "C00935411",
       "chamber": "H",
       "state": "LA",
-      "race": "S-LA"
+      "race": "S-LA",
+      "ids": {
+        "govtrack": 456859,
+        "opensecrets": "N00047972",
+        "votesmart": 195745,
+        "wikidata": "Q106089241",
+        "ballotpedia": "Julia Letlow",
+        "wikipedia": "Julia Letlow"
+      },
+      "social": {
+        "twitter": "RepJuliaLetlow",
+        "facebook": "repjulialetlow",
+        "bluesky": []
+      },
+      "campaignSite": "https://www.julialetlow.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "husted",
       "name": "Jon Husted",
       "short": "Husted",
       "bioguide": "H001104",
-      "lis": null,
+      "lis": "S438",
       "fecCand": "S6OH00304",
       "fecCmte": "C00896019",
       "chamber": "S",
       "state": "OH",
-      "race": "S-OH"
+      "race": "S-OH",
+      "ids": {
+        "govtrack": 457032,
+        "votesmart": 45796,
+        "wikidata": "Q6270269",
+        "ballotpedia": "Jon Husted",
+        "wikipedia": "Jon Husted"
+      },
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.jonhustedforsenate.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "brown",
       "name": "Sherrod Brown",
       "short": "Brown",
       "bioguide": "B000944",
-      "lis": null,
+      "lis": "S307",
       "fecCand": "S6OH00163",
       "fecCmte": "C00916288",
       "chamber": "S",
       "state": "OH",
-      "race": "S-OH"
+      "race": "S-OH",
+      "ids": {
+        "govtrack": 400050,
+        "opensecrets": "N00003535",
+        "votesmart": 27018,
+        "wikidata": "Q381880",
+        "ballotpedia": "Sherrod Brown",
+        "wikipedia": "Sherrod Brown",
+        "icpsr": 29389,
+        "cspan": 5051,
+        "thomas": "00136"
+      },
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": null,
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "ricketts",
       "name": "Pete Ricketts",
       "short": "Ricketts",
       "bioguide": "R000618",
-      "lis": null,
+      "lis": "S423",
       "fecCand": "S6NE00129",
       "fecCmte": "C00832436",
       "chamber": "S",
       "state": "NE",
-      "race": "S-NE"
+      "race": "S-NE",
+      "ids": {
+        "govtrack": 456952,
+        "opensecrets": "N00027695",
+        "votesmart": 57777,
+        "wikidata": "Q6106781",
+        "ballotpedia": "Pete Ricketts",
+        "wikipedia": "Pete Ricketts",
+        "cspan": 61233
+      },
+      "social": {
+        "twitter": "SenatorRicketts",
+        "facebook": "SenatorRicketts",
+        "youtube": "@SenatorRicketts",
+        "instagram": "SenatorRicketts",
+        "bluesky": []
+      },
+      "campaignSite": "https://www.ricketts.senate.gov/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "osborn",
@@ -543,7 +1145,14 @@
       "fecCmte": "C00901355",
       "chamber": "S",
       "state": "NE",
-      "race": "S-NE"
+      "race": "S-NE",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.osbornforsenate.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "jackson",
@@ -555,7 +1164,14 @@
       "fecCmte": "C00955609",
       "chamber": "S",
       "state": "ME",
-      "race": "S-ME"
+      "race": "S-ME",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.jacksonformaine.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "peltola",
@@ -567,7 +1183,21 @@
       "fecCmte": "C00933978",
       "chamber": "S",
       "state": "AK",
-      "race": "S-AK"
+      "race": "S-AK",
+      "ids": {
+        "govtrack": 456870,
+        "opensecrets": "N00050780",
+        "votesmart": 207620,
+        "wikidata": "Q13562231",
+        "ballotpedia": "Mary Peltola",
+        "wikipedia": "Mary Peltola"
+      },
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://marypeltola.com",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "hamilton",
@@ -579,7 +1209,14 @@
       "fecCmte": "C00948901",
       "chamber": "S",
       "state": "KS",
-      "race": "S-KS"
+      "race": "S-KS",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://hamiltonforkansas.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "mcollins",
@@ -591,7 +1228,24 @@
       "fecCmte": "C00544684",
       "chamber": "H",
       "state": "GA",
-      "race": "S-GA"
+      "race": "S-GA",
+      "ids": {
+        "govtrack": 456895,
+        "opensecrets": "N00035370",
+        "votesmart": 151225,
+        "wikidata": "Q115806750",
+        "ballotpedia": "Mike Collins (Georgia)",
+        "wikipedia": "Mike Collins (politician)"
+      },
+      "social": {
+        "twitter": "RepMikeCollins",
+        "facebook": "RepMikeCollinsGA",
+        "instagram": "repmikecollins",
+        "bluesky": []
+      },
+      "campaignSite": "https://collins.house.gov/about",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "murphy",
@@ -603,7 +1257,14 @@
       "fecCmte": "C00865808",
       "chamber": "S",
       "state": "NJ",
-      "race": "S-NJ"
+      "race": "S-NJ",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://jerseyjustin4senate.org/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "baisley",
@@ -615,7 +1276,14 @@
       "fecCmte": "C00932848",
       "chamber": "S",
       "state": "CO",
-      "race": "S-CO"
+      "race": "S-CO",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://baisleyforsenate.com/issues/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "stelson",
@@ -627,7 +1295,14 @@
       "fecCmte": "C00852368",
       "chamber": "H",
       "state": "PA",
-      "race": "H-PA-10"
+      "race": "H-PA-10",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://janellestelson.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "conley",
@@ -639,7 +1314,14 @@
       "fecCmte": "C00900431",
       "chamber": "H",
       "state": "NY",
-      "race": "H-NY-17"
+      "race": "H-NY-17",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://caitconley.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "rutinel",
@@ -651,7 +1333,14 @@
       "fecCmte": "C00896670",
       "chamber": "H",
       "state": "CO",
-      "race": "H-CO-08"
+      "race": "H-CO-08",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.mannyforcolorado.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "bohannan",
@@ -663,7 +1352,14 @@
       "fecCmte": "C00787820",
       "chamber": "H",
       "state": "IA",
-      "race": "H-IA-01"
+      "race": "H-IA-01",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://bohannanforcongress.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "merrin",
@@ -675,7 +1371,14 @@
       "fecCmte": "C00909630",
       "chamber": "H",
       "state": "OH",
-      "race": "H-OH-09"
+      "race": "H-OH-09",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.derekmerrin.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "braun",
@@ -687,7 +1390,14 @@
       "fecCmte": "C00915884",
       "chamber": "H",
       "state": "WA",
-      "race": "H-WA-03"
+      "race": "H-WA-03",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.votebraun.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "flores",
@@ -699,7 +1409,14 @@
       "fecCmte": "C00912246",
       "chamber": "H",
       "state": "TX",
-      "race": "H-TX-34"
+      "race": "H-TX-34",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://www.facebook.com/p/Eric-Flores-for-Congress-61578310026781/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "beltran",
@@ -711,7 +1428,14 @@
       "fecCmte": "C00950832",
       "chamber": "H",
       "state": "FL",
-      "race": "H-FL-14"
+      "race": "H-FL-14",
+      "ids": {},
+      "social": {
+        "bluesky": []
+      },
+      "campaignSite": "https://beltranforcongress.com/",
+      "openstates": null,
+      "legiscan": null
     },
     {
       "id": "H2AZ02360",

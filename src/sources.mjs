@@ -5,7 +5,6 @@ const list = v => v == null ? [] : Array.isArray(v) ? v : [v];
 const day = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0,10) : null;
 const money = v => { if (v == null || v === '') return null; const n=Number(v); if(!Number.isFinite(n)) throw new Error('Source returned an invalid amount'); return n; };
 const sum = (rows, get) => Math.round(rows.reduce((n,r)=>n+Math.round((get(r)||0)*100),0))/100;
-const nameKey = v => String(v||'').normalize('NFKD').replace(/[^a-z]/gi,'').toLowerCase();
 const allowedHosts = new Set(['api.open.fec.gov','api.congress.gov','www.senate.gov','clerk.house.gov']);
 export class SourceError extends Error { constructor(message, retryAfter=0,statusCode=0){super(message);this.retryAfter=retryAfter;this.statusCode=statusCode;} }
 
@@ -96,9 +95,9 @@ export function normalizeVote(document,args,people) {
   if(args.chamber==='S') {
     const v=document.roll_call_vote;if(!v||Number(v.vote_number)!==Number(args.number)||Number(v.congress)!==Number(args.congress)||Number(v.session)!==Number(args.session))throw new SourceError('Senate vote identity mismatch');
     const members=list(v.members?.member);if(members.length<1)throw new SourceError('Senate vote has no member records');
-    const positions={}; for(const p of people.filter(p=>p.bioguide&&p.chamber==='S')) {
-      const surname=nameKey(p.name.replace(/\s+(Jr\.?|III|II)$/,'').split(' ').at(-1));
-      const matches=members.filter(m=>m.state===p.state && (p.lis?m.lis_member_id===p.lis:nameKey(m.last_name)===surname));
+    // Senators are matched by their official LIS member ID (from congress-legislators); anyone without one gets no position.
+    const positions={}; for(const p of people.filter(p=>p.lis)) {
+      const matches=members.filter(m=>m.lis_member_id===p.lis);
       if(matches.length===1)positions[p.id]=matches[0].vote_cast;
     }
     const date=new Date(v.vote_date.replace(/,\s+\d\d?:\d\d.*$/,'')+' UTC');
