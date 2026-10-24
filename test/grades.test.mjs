@@ -38,7 +38,7 @@ test('every displayed investigation says whether it is open or closed',()=>{
 });
 test('any bill marked for people over profit has a valid ID, a side, a reason and a source',()=>{
   for(const v of data.votes.concat(data.hvotes))assert.ok(!v.pvp,v.id+': People/Profit marks belong in the bills list, once per bill');
-  for(const b of data.bills||[]){assert.ok(/^\d+-[a-z]+-\d+$/.test(b.id),b.id);assert.ok(['people','profit'].includes(b.pvp),b.id);assert.ok(b.why,b.id+' needs a reason');assert.ok(b.src&&/^https:\/\//.test(b.src.u),b.id+' needs a source link');}
+  for(const b of data.bills||[]){assert.ok(/^(\d+-[a-z]+-\d+|eo-\d+)$/.test(b.id),b.id);assert.ok(['people','profit'].includes(b.pvp),b.id);assert.ok(b.why,b.id+' needs a reason');assert.ok(b.src&&/^https:\/\//.test(b.src.u),b.id+' needs a source link');}
 });
 test('My alignment: every issue has a statement to agree or disagree with, and a known category',()=>{
   const groups=new Set(['econ','rights','imm','foreign','env']);
@@ -96,4 +96,19 @@ test('ethics: late disclosures and committee-conflict trades cost points, each c
   assert.equal(t.late,2);assert.equal(t.conflict,1);
   assert.equal(ethicsScore([],t).pct,100-2*TRADE_COST.late-TRADE_COST.conflict);
   assert.equal(ethicsScore([],{late:9,conflict:30}).pct,100-TRADE_COST.lateCap-TRADE_COST.conflictCap);
+});
+test('promises: a president\'s PolitiFact tracker tallies count kept 1, compromise 1/2, broken 0; stalled and in the works wait',()=>{
+  const p=promiseScore([],[{counts:{kept:3,compromise:2,broken:1,stalled:4,inTheWorks:5}}]);
+  assert.equal(p.clear,6);assert.equal(p.pct,Math.round((3+1)/6*100));assert.equal(p.notCounted,9);assert.equal(p.total,15);
+  assert.equal(promiseScore(st('consistent'),[{counts:{kept:1,broken:1}}]).clear,3,'tracker tallies add to any checked statements');
+  for(const s of people)for(const t of s.promiseTrackers||[]){
+    assert.ok(/^https:\/\//.test(t.url)&&/^https:\/\//.test(t.src.u),`${s.id}: ${t.name} needs source links`);
+    for(const k of Object.keys(t.counts))assert.ok(['kept','compromise','broken','stalled','inTheWorks'].includes(k)&&Number.isInteger(t.counts[k]),`${s.id}: ${t.name} ${k}`);
+    for(const x of t.examples||[])assert.ok(t.counts[x.rating]>0&&/^https:\/\//.test(x.url),`${s.id}: ${t.name} example ${x.title}`);
+  }
+});
+test('people over profit: a president\'s signature or order takes the bill\'s side and a veto the other',()=>{
+  const marks=new Map([['119-hr-1',{pvp:'profit'}],['118-s-2',{pvp:'people'}],['eo-14251',{pvp:'profit'}]]);
+  const v=pvpScore(pvpActions(marks,[],[{bill:'119-hr-1',kind:'signed'},{bill:'118-s-2',kind:'vetoed'},{bill:'eo-14251',kind:'order'},{bill:'1-hr-9',kind:'signed'}]));
+  assert.deepEqual(v.scored.map(a=>a.took),['profit','profit','profit']);assert.equal(v.pct,0);
 });

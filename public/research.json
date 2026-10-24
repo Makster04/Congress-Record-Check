@@ -191386,7 +191386,28 @@
       ]
     }
   ],
-  "bills": [],
+  "bills": [
+    {
+      "id": "119-hr-1",
+      "pvp": "profit",
+      "title": "One Big Beautiful Bill Act (Public Law 119-21)",
+      "why": "CBO estimates that, compared with its January 2025 projections, the law lowers resources for households in the bottom tenth of the income distribution by about $1,200 a year (3.1% of income), mainly through cuts to Medicaid and SNAP, and raises them for the top tenth by about $13,600 a year, mainly through lower taxes.",
+      "src": {
+        "t": "CBO: Distributional Effects of Public Law 119-21 (Aug. 2025)",
+        "u": "https://www.cbo.gov/system/files/2025-08/61367-Distributional-Effects.pdf"
+      }
+    },
+    {
+      "id": "115-hr-1",
+      "pvp": "profit",
+      "title": "Tax Cuts and Jobs Act (Public Law 115-97)",
+      "why": "The Tax Policy Center estimates that in 2018 the largest cuts as a share of after-tax income go to households making about $308,000 to $733,000, and that in 2027, after most individual provisions expire, the top 1 percent receive 83 percent of the total benefit.",
+      "src": {
+        "t": "Tax Policy Center: Distributional Analysis of the Conference Agreement for the Tax Cuts and Jobs Act (Dec. 2017)",
+        "u": "https://taxpolicycenter.org/sites/default/files/publication/150816/2001641_distributional_analysis_of_the_conference_agreement_for_the_tax_cuts_and_jobs_act_0.pdf"
+      }
+    }
+  ],
   "featured": [
     {
       "id": "trump",
@@ -191427,7 +191448,8 @@
           "src": {
             "t": "GovInfo: Executive Order 14389, Ending Certain Tariff Actions (Feb. 20, 2026)",
             "u": "https://www.govinfo.gov/content/pkg/DCPD-202600131/html/DCPD-202600131.htm"
-          }
+          },
+          "bill": "eo-14389"
         },
         {
           "date": "2025-07-04",
@@ -191444,7 +191466,8 @@
               "t": "American Hospital Association: Resources on the One Big Beautiful Bill Act, signed into law July 4, 2025",
               "u": "https://www.aha.org/resources-one-big-beautiful-bill-act-signed-law-july-4-2025"
             }
-          ]
+          ],
+          "bill": "119-hr-1"
         },
         {
           "date": "2025-03-27",
@@ -191455,7 +191478,8 @@
           "src": {
             "t": "American Presidency Project: Executive Order 14251 (Mar. 27, 2025)",
             "u": "https://www.presidency.ucsb.edu/documents/executive-order-14251-exclusions-from-federal-labor-management-relations-programs"
-          }
+          },
+          "bill": "eo-14251"
         },
         {
           "date": "2025-03-25",
@@ -191472,7 +191496,8 @@
               "t": "League of Women Voters: case summary",
               "u": "https://www.lwv.org/node/945834"
             }
-          ]
+          ],
+          "bill": "eo-14248"
         },
         {
           "date": "2025-02-07",
@@ -191483,7 +191508,8 @@
           "src": {
             "t": "Federal Register: Executive Order 14206 (published Feb. 12, 2025)",
             "u": "https://www.federalregister.gov/documents/2025/02/12/2025-02636/protecting-second-amendment-rights"
-          }
+          },
+          "bill": "eo-14206"
         },
         {
           "date": "2025-02-01",
@@ -191494,7 +191520,8 @@
           "src": {
             "t": "GovInfo: Executive Order 14193, Imposing Duties To Address the Flow of Illicit Drugs Across Our Northern Border",
             "u": "https://www.govinfo.gov/link/cpd/executiveorder/14193"
-          }
+          },
+          "bill": "eo-14193"
         },
         {
           "date": "2025-01-24",
@@ -191505,7 +191532,8 @@
           "src": {
             "t": "Federal Register (GovInfo): Executive Order 14182 (published Jan. 31, 2025)",
             "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-31/html/2025-02175.htm"
-          }
+          },
+          "bill": "eo-14182"
         },
         {
           "date": "2025-01-20",
@@ -191516,7 +191544,8 @@
           "src": {
             "t": "Federal Register (GovInfo): Executive Order 14162 (published Jan. 30, 2025)",
             "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-30/html/2025-02010.htm"
-          }
+          },
+          "bill": "eo-14162"
         },
         {
           "date": "2025-01-20",
@@ -191527,7 +191556,8 @@
           "src": {
             "t": "Federal Register (GovInfo): Executive Order 14160 (published Jan. 29, 2025)",
             "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-29/html/2025-02007.htm"
-          }
+          },
+          "bill": "eo-14160"
         },
         {
           "date": "2025-01-20",
@@ -191538,6 +191568,18 @@
           "src": {
             "t": "Federal Register (GovInfo): Proclamation 10887 (published Jan. 29, 2025)",
             "u": "https://www.govinfo.gov/content/pkg/FR-2025-01-29/html/2025-01950.htm"
+          }
+        },
+        {
+          "date": "2017-12-22",
+          "title": "Signed H.R. 1, the Tax Cuts and Jobs Act",
+          "detail": "Cut the corporate income tax rate from 35% to 21% permanently, and cut individual income tax rates through 2025 (Public Law 115-97).",
+          "position": "Signed into law",
+          "area": "Taxes",
+          "bill": "115-hr-1",
+          "src": {
+            "t": "Congress.gov: H.R. 1 (115th Congress), Public Law 115-97",
+            "u": "https://www.congress.gov/bill/115th-congress/house-bill/1"
           }
         }
       ],
@@ -192043,7 +192085,182 @@
       },
       "notVoted": {},
       "assoc": {},
-      "funderPos": []
+      "funderPos": [],
+      "promiseTrackers": [
+        {
+          "id": "maga-meter",
+          "name": "MAGA-Meter",
+          "rater": "PolitiFact",
+          "term": "Second term (2025–2029)",
+          "final": false,
+          "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/",
+          "asOf": "October 2026",
+          "counts": {
+            "kept": 15,
+            "compromise": 3,
+            "broken": 3,
+            "stalled": 22,
+            "inTheWorks": 32
+          },
+          "about": "75 promises from the 2024 campaign. Ratings change as results come in; Stalled and In the Works are not counted until they become Promise Kept, Compromise or Promise Broken.",
+          "src": {
+            "t": "PolitiFact: MAGA-Meter scorecard",
+            "u": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/"
+          },
+          "also": {
+            "t": "PolitiFact: Trump’s midterm rallies, a fact-checked guide to talking points (Sept. 29, 2026)",
+            "u": "https://www.politifact.com/article/2026/sep/29/a-cheat-sheet-to-trumps-2026-talking-points/"
+          },
+          "examples": [
+            {
+              "rating": "kept",
+              "title": "Extend the 2017 tax cuts",
+              "did": "Signed H.R. 1 (July 4, 2025), which made the 2017 individual tax cuts permanent.",
+              "action": {
+                "t": "Congress.gov: H.R. 1 (119th Congress), Public Law 119-21",
+                "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+              },
+              "url": "https://www.pbs.org/newshour/politics/trump-says-hes-kept-all-of-his-campaign-promises-politifacts-maga-meter-shows-otherwise",
+              "urlT": "PolitiFact via PBS NewsHour: Trump says he’s kept all of his campaign promises. PolitiFact’s MAGA-Meter shows otherwise"
+            },
+            {
+              "rating": "kept",
+              "title": "End taxation on tips",
+              "did": "H.R. 1 created a broad deduction for tip income, which expires after 2028.",
+              "action": {
+                "t": "Congress.gov: H.R. 1 (119th Congress), Public Law 119-21",
+                "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+              },
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/387440/end-taxation-on-tips/"
+            },
+            {
+              "rating": "kept",
+              "title": "Provide $10,000 per child tax-free to homeschoolers",
+              "did": "H.R. 1 let 529 savings plans pay homeschool costs and raised the yearly tax-free withdrawal limit from $10,000 to $20,000 per child.",
+              "action": {
+                "t": "Congress.gov: H.R. 1 (119th Congress), Public Law 119-21",
+                "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+              },
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/387540/provide-10000-per-child-tax-free-to-homeschoolers/article/387543/"
+            },
+            {
+              "rating": "kept",
+              "title": "Withdraw from the World Health Organization",
+              "did": "Executive Order 14155 (Jan. 20, 2025) gave notice of withdrawal on the first day in office.",
+              "action": {
+                "t": "GovInfo: Executive Order 14155",
+                "u": "https://www.govinfo.gov/link/cpd/executiveorder/14155"
+              },
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/1644/withdraw-from-the-world-health-organization/article/3239/"
+            },
+            {
+              "rating": "kept",
+              "title": "Empower the president to remove federal workers through Schedule F",
+              "did": "Executive Order 14171 (Jan. 20, 2025) restored the Schedule F job category, making policy-related federal jobs easier to fire from.",
+              "action": {
+                "t": "GovInfo: Executive Order 14171",
+                "u": "https://www.govinfo.gov/link/cpd/executiveorder/14171"
+              },
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/1671/empower-the-president-to-remove-rogue-bureaucrats/article/3243/"
+            },
+            {
+              "rating": "kept",
+              "title": "Restore and expand the travel ban",
+              "did": "A June 2025 proclamation restricted entry from 19 countries, up from 7 in the first-term ban.",
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/1619/restore-and-expand-the-travel-ban/article/3257/"
+            },
+            {
+              "rating": "kept",
+              "title": "Cut off federal funding for NPR",
+              "did": "Signed the Rescissions Act of 2025 (H.R. 4) in July 2025, canceling about $1 billion for public broadcasting.",
+              "action": {
+                "t": "Congress.gov: H.R. 4 (119th Congress), Rescissions Act of 2025",
+                "u": "https://www.congress.gov/bill/119th-congress/house-bill/4"
+              },
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/1679/cut-off-federal-funding-for-npr/article/3212/"
+            },
+            {
+              "rating": "compromise",
+              "title": "End taxation on overtime",
+              "did": "H.R. 1 created a capped deduction for the extra \"half\" of time-and-a-half overtime pay, through 2028, not an end to taxes on overtime.",
+              "action": {
+                "t": "Congress.gov: H.R. 1 (119th Congress), Public Law 119-21",
+                "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+              },
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/387445/end-taxation-on-overtime/article/387449/"
+            },
+            {
+              "rating": "compromise",
+              "title": "End taxation on Social Security",
+              "did": "H.R. 1 created an extra $6,000 deduction for people 65 and older, through 2028; Social Security benefits are still taxed.",
+              "action": {
+                "t": "Congress.gov: H.R. 1 (119th Congress), Public Law 119-21",
+                "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+              },
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/1631/end-taxation-on-social-security/article/3192/"
+            },
+            {
+              "rating": "broken",
+              "title": "End the Russia-Ukraine war within 24 hours",
+              "did": "The war continued past the first day in office, and no peace deal had been reached as of 2026.",
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/1641/end-the-russia-ukraine-war-within-24-hours/"
+            },
+            {
+              "rating": "stalled",
+              "title": "Cut the corporate tax rate to 15% for companies making products in the U.S.",
+              "did": "H.R. 1 added other business tax breaks but no corporate rate cut.",
+              "action": {
+                "t": "Congress.gov: H.R. 1 (119th Congress), Public Law 119-21",
+                "u": "https://www.congress.gov/bill/119th-congress/house-bill/1"
+              },
+              "url": "https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/promise/1634/reduce-corporate-tax-rate-from-21-to-15-for-compan/article/3201/"
+            }
+          ]
+        },
+        {
+          "id": "trumpometer",
+          "name": "Trump-O-Meter",
+          "rater": "PolitiFact",
+          "term": "First term (2017–2021)",
+          "final": true,
+          "url": "https://www.politifact.com/truth-o-meter/promises/trumpometer/",
+          "asOf": "January 19, 2021 (final)",
+          "counts": {
+            "kept": 25,
+            "compromise": 23,
+            "broken": 54
+          },
+          "about": "102 promises from the 2016 campaign, given final ratings when the term ended.",
+          "src": {
+            "t": "PolitiFact: Trump’s term ends with half his campaign promises unachieved (Jan. 19, 2021)",
+            "u": "https://www.politifact.com/article/2021/jan/19/trumps-term-ends-half-his-campaign-promises-unachi/"
+          },
+          "examples": [
+            {
+              "rating": "compromise",
+              "title": "Lower the business tax rate to 15%",
+              "did": "Signed the Tax Cuts and Jobs Act (Dec. 22, 2017), which cut the corporate rate from 35% to 21%, not 15%.",
+              "action": {
+                "t": "Congress.gov: H.R. 1 (115th Congress), Public Law 115-97",
+                "u": "https://www.congress.gov/bill/115th-congress/house-bill/1"
+              },
+              "url": "https://www.politifact.com/truth-o-meter/promises/trumpometer/promise/386601/lower-business-tax-rate/"
+            },
+            {
+              "rating": "broken",
+              "title": "Build a wall, and make Mexico pay for it",
+              "did": "Mexico did not pay for any wall construction.",
+              "url": "https://www.politifact.com/truth-o-meter/promises/trumpometer/promise/1397/build-wall-and-make-mexico-pay-it/article/2693/"
+            },
+            {
+              "rating": "broken",
+              "title": "Eliminate the federal debt in 8 years",
+              "did": "Federal debt grew during the term instead of shrinking.",
+              "url": "https://www.politifact.com/truth-o-meter/promises/trumpometer/promise/1418/eliminate-federal-debt-8-years/article/2669/"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
