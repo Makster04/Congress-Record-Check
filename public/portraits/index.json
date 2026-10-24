@@ -58,8 +58,7 @@
     },
     "mgp": {
       "file": "portraits/mgp.webp",
-      "credit": "Official congressional portrait (public domain), via the unitedstates/images project",
-      "src": "https://raw.githubusercontent.com/unitedstates/images/gh-pages/congress/original/G000600.jpg"
+      "credit": "Official congressional portrait (public domain), supplied by the site's editor"
     },
     "gonzalez": {
       "file": "portraits/gonzalez.webp",

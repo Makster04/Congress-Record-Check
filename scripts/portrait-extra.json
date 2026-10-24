@@ -156,5 +156,10 @@
   "trump": {
     "file": "data/portraits/trump.jpg",
     "credit": "Official presidential portrait (public domain, U.S. government work), supplied by the site's editor"
+  },
+  "mgp": {
+    "file": "data/portraits/mgp.jpg",
+    "credit": "Official congressional portrait (public domain), supplied by the site's editor",
+    "tighten": true
   }
 }
