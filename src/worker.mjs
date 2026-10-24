@@ -9,7 +9,7 @@ export default {
       if(url.pathname==='/api/profile'&&request.method==='GET') {const data=await getProfile(env,url.searchParams.get('id'));return data?json(data):json({error:'Profile not found'},404);}
       if(url.pathname==='/api/refresh'&&request.method==='POST'){
         if(env.LOCAL_MODE!==true)return json({error:'Manual refresh is available only in the local application. Hosted refreshes use the schedule.'},403);
-        if(request.headers.get('Origin')!==url.origin||request.headers.get('X-Requested-With')!=='CongressRecordCheck')return json({error:'Same-origin request required'},403);
+        if(request.headers.get('Origin')!==url.origin||request.headers.get('X-Requested-With')!=='PublicLedger')return json({error:'Same-origin request required'},403);
         return json(await runRefresh(env,{steps:8}));
       }
       if(url.pathname==='/api/records'&&request.method==='GET'){

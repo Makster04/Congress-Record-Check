@@ -86,7 +86,7 @@ test('concurrent refreshers respect the lock',async()=>{
   const result=await runRefresh({DB:db},{steps:1});assert.equal(result.busy,true);db.close();
 });
 test('manual refresh cannot be triggered cross-origin or on the hosted worker',async()=>{
-  const request=new Request('http://localhost:8787/api/refresh',{method:'POST',headers:{Origin:'https://evil.example','X-Requested-With':'CongressRecordCheck'}});
+  const request=new Request('http://localhost:8787/api/refresh',{method:'POST',headers:{Origin:'https://evil.example','X-Requested-With':'PublicLedger'}});
   assert.equal((await worker.fetch(request,{LOCAL_MODE:true},{})).status,403);
   assert.equal((await worker.fetch(request,{LOCAL_MODE:false},{})).status,403);
 });
