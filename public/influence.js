@@ -95,10 +95,16 @@ export function positionChangeFlags(org,series,issues,changes,through){
 }
 // Stock in a donor: a reviewed trade in a company whose name matches a donor organization that also took positions on
 // bills the politician acted on.
-const corp=v=>String(v||'').toLowerCase().replace(/\b(inc|corp|corporation|co|company|plc|ltd|llc|holdings|group|class [a-z]|common stock)\b\.?/g,'').replace(/[^a-z0-9]/g,'');
-export function stockFlags(trades,donors){
+export const corp=v=>String(v||'').toLowerCase().replace(/\b(inc|corp|corporation|co|company|plc|ltd|llc|holdings|group|class [a-z]|common stock)\b\.?/g,'').replace(/[^a-z0-9]/g,'');
+// Trades in a donor's own company: [{org, trade}]. donors: [{org}].
+export function tradesInDonors(trades,donors){
   const out=[];
   for(const t of trades||[]){const c=corp(t.company||t.asset);if(c.length<3)continue;
-    for(const d of donors)if(d.positions>0&&(corp(d.org)===c||(corp(d.org).startsWith(c)&&c.length>=5)))out.push({org:d.org,kind:'stock',decision:{date:t.traded,label:`${t.type||'Trade'} of ${t.company||t.asset}`},trade:t});}
+    for(const d of donors)if(corp(d.org)===c||(corp(d.org).startsWith(c)&&c.length>=5))out.push({org:d.org,donor:d,trade:t});}
   return out;
+}
+// The stock timing flag: a trade in a donor that also had a stake in their decisions (took a public position on a vote,
+// positions > 0, or lobbied on a bill they acted on, stake: true).
+export function stockFlags(trades,donors){
+  return tradesInDonors(trades,donors.filter(d=>d.positions>0||d.stake)).map(({org,trade:t})=>({org,kind:'stock',decision:{date:t.traded,label:`${t.type||'Trade'} of ${t.company||t.asset}`},trade:t}));
 }

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
-import {categoryAlign,spenderSector,outsideBySector,topDonors,voteDonorAlignment,timingFlags,positionChangeFlags,stockFlags,addMonths,TOP_DONORS} from '../public/influence.js';
+import {categoryAlign,spenderSector,outsideBySector,topDonors,voteDonorAlignment,timingFlags,positionChangeFlags,stockFlags,tradesInDonors,addMonths,TOP_DONORS} from '../public/influence.js';
 const research=JSON.parse(await fs.readFile(new URL('../public/research.json',import.meta.url),'utf8'));
 
 test('donor alignment: unions and small donors are People, industry is Profit, the rest Other',()=>{
@@ -45,4 +45,7 @@ test('position-change and stock flags',()=>{
   assert.equal(p.length,1);assert.equal(p[0].kind,'changed');
   const s=stockFlags([{company:'Pfizer Inc.',traded:'2026-01-05',type:'purchase'},{company:'Apple Inc',traded:'2026-01-06'}],[{org:'Pfizer',positions:2},{org:'Apple',positions:0}]);
   assert.deepEqual(s.map(x=>x.org),['Pfizer']);
+  const trades=[{asset:'Lockheed Martin Corporation - Common Stock',traded:'2026-02-01'},{company:'Microsoft Corp',traded:'2026-02-02'}];
+  assert.deepEqual(tradesInDonors(trades,[{org:'Lockheed Martin'},{org:'Boeing'}]).map(x=>x.org),['Lockheed Martin'],'a trade in any donor is listed');
+  assert.deepEqual(stockFlags(trades,[{org:'Lockheed Martin',stake:false},{org:'Microsoft',stake:true}]).map(x=>x.org),['Microsoft'],'a donor that lobbied on their bills makes it a flag');
 });

@@ -2,7 +2,7 @@ import {KV_MIN,leanOfVote,whyNotMarked,sideTaken,keyVoteRows,keyVoteScore} from 
 import {MIN_CHECKS,MIN_PVP_ACTIONS,ETHICS_COST,TRADE_COST,LATE_DAYS,WEIGHT,ACTION_TYPES,letter,billKey,matchScore,promiseScore,moneyRatio} from './grades.js';
 import {makeScorer,voteBill} from './scoring.js';
 import {hoverTips,tableView,legend,rankBars,stackRows,divergingRows,categoryBars,drawScatter,drawDelay,drawTradeTimeline,drawCaseTimeline,drawTreemap,drawMonthly,sectorSpendBars} from './charts.js';
-import {ALIGN_LABEL,SECTOR_LABEL_EXTRA,TOP_DONORS,WINDOW_MONTHS,SWING,categoryAlign,outsideBySector,topDonors,voteDonorAlignment,timingFlags,positionChangeFlags,stockFlags,addMonths} from './influence.js';
+import {ALIGN_LABEL,SECTOR_LABEL_EXTRA,TOP_DONORS,WINDOW_MONTHS,SWING,categoryAlign,outsideBySector,topDonors,voteDonorAlignment,timingFlags,positionChangeFlags,stockFlags,tradesInDonors,corp,addMonths} from './influence.js';
 (function(){
 const $=s=>document.querySelector(s);
 const app=$('#app'), tip=$('#tip');
@@ -1611,8 +1611,25 @@ function influenceData(s){
   }
   rows.sort((a,b)=>b.total-a.total);
   const trades=personTrading(s).rows,stock=stockFlags(trades,funders.map(g=>({org:g.org,positions:(g.compared||[]).length})));
+  // Reviewed trades in a charted donor's company, as diamonds on that donor's row.
+  const inDonors=tradesInDonors(trades,rows.map(r=>({org:r.label})));
+  for(const {org,trade:t} of inDonors)rows.find(r=>r.label===org).markers.push({date:t.traded,kind:'trade',label:`${t.type||'Trade'} of ${t.company||t.asset}${t.owner?` (${t.owner})`:''}`});
   const months=[];if(H)for(let m=H.start.slice(0,7);m<=through;m=addMonths(m,1))months.push(m);
-  return {rows:rows.slice(0,8),allFlags:rows.flatMap(r=>r.flags).concat(stock),months,vda:voteDonorAlignment(funders),through};
+  return {rows:rows.slice(0,8),allFlags:rows.flatMap(r=>r.flags).concat(stock),months,vda:voteDonorAlignment(funders),through,trades,inDonors,stock};
+}
+// Whose trades the disclosures cover: members of Congress file Periodic Transaction Reports (STOCK Act); a president files
+// OGE Form 278-T reports, not imported yet; anyone else has no trading data.
+const tradeCoverage=s=>s.office?{ok:false,why:`A president reports trades on OGE Form 278-T, which is not imported yet.`}
+  :s.bioguide?{ok:true}:{ok:false,why:'Trade disclosures cover members of Congress only, and state disclosure rules vary.'};
+function stockBlock(s,d){
+  const cov=tradeCoverage(s),tr=d.trades;
+  const body=!cov.ok?`<p class="small muted" style="margin:0">No trading data. ${esc(cov.why)}</p>`
+    :!tr.length?`<p class="small muted" style="margin:0">No reviewed trades for ${esc(s.short)} yet. The latest disclosed trades are checked against the top donors below, as leads; a trade counts once it is reviewed.</p>`
+    :d.inDonors.length?`<div class="tablewrap"><table><thead><tr><th>Traded</th><th>Company</th><th>Type</th><th>Owner</th><th>Donor</th><th>Flag</th></tr></thead><tbody>${d.inDonors.map(({org,trade:t})=>`<tr><td class="mono" style="white-space:nowrap">${esc(t.traded||'')}</td><td>${esc(t.company||t.asset||'')}</td><td>${esc(t.type||'')}</td><td>${esc(t.owner||'Self')}</td><td>${esc(org)}</td><td>${d.stock.some(f=>f.trade===t)?`<b>${FLAG_TEXT.stock}</b>`:'<span class="muted">Donor took no position on a vote compared here</span>'}</td></tr>`).join('')}</tbody></table></div>`
+    :`<p class="small muted" style="margin:0">None of ${esc(s.short)}'s ${tr.length} reviewed trade${tr.length===1?'':'s'} was in a donor's company.</p>`;
+  if(!cov.ok)return `<div class="chart" id="f-stock"><h3>Stock holdings and trades</h3>${body}</div>`;
+  return `<div class="chart" id="f-stock"><h3>Stock holdings and trades</h3><div class="sub">Trades from the official disclosures, including spouse and dependent-child accounts, checked against the donors. A trade in a donor that also had a stake in ${esc(s.short)}'s decisions (a public position on a vote, or lobbying on a bill ${esc(s.short)} acted on) is a timing flag. Not scored here: late filings and committee-conflict trades count in <a href="#${s.id}-ethics">Ethics</a>.</div>
+    ${body}<div id="f-live-stock"></div></div>`;
 }
 const H0=()=>window.FUNDHIST?monLabel(window.FUNDHIST.start.slice(0,7)):'2019';
 const FLAG_TEXT={rose:'Donations rose',dropped:'Donations dropped',changed:'Position changed after a donation shift',stock:'Held or traded stock in a donor'};
@@ -1625,11 +1642,13 @@ function analysisBlock(s){
     <div class="cx-stats">
       <div class="cx-stat"><span>Vote Donor Alignment</span><b>${v.pct==null?'—':v.pct+'%'}</b><small>${v.n?`${v.same} of ${v.n} votes went the way a donor that took a public position wanted (${v.rows.length} donor${v.rows.length===1?'':'s'})`:'No donor that gave to the campaign took a public position on a vote compared here'}</small></div>
       <div class="cx-stat"><span>Speech Donor Alignment</span><b>—</b><small>Not measured yet: floor speeches are collected from the Congressional Record and need to be coded by issue and side before they can be compared</small></div>
-      <div class="cx-stat"><span>Timing flags</span><b>${d.allFlags.length}</b><small>for review, not scored</small></div></div>
-    ${d.rows.length?`<div class="chart"><h3>Donations by month from donors with public positions</h3><div class="sub">Contributions to the campaign from each group's PACs, ${d.months.length?`${monLabel(d.months[0])} – ${monLabel(d.months.at(-1))}`:''}, each row on its own scale (the largest month is labeled at the right). Triangles under a row are votes the group took a position on: green when ${esc(s.short)} voted its way, red when not. A shaded window is a timing flag. FEC bulk data; groups are the ones whose scorecards or key-vote letters are collected.</div>
-      <div class="cx-plot" id="f-months"></div>${legend([['var(--s1)','Monthly contributions'],['var(--good)','Voted the way the donor wanted'],['var(--crit)','Voted the other way'],['var(--warn)','Timing flag window']])}
+      <div class="cx-stat"><span>Timing flags</span><b>${d.allFlags.length}</b><small>for review, not scored${d.stock.length?`; ${d.stock.length} from stock in a donor`:''}</small></div>
+      <div class="cx-stat"><span>Stock in donors</span><b>${tradeCoverage(s).ok&&d.trades.length?d.inDonors.length:'—'}</b><small>${!tradeCoverage(s).ok?'No trading data':d.trades.length?`of ${d.trades.length} reviewed trade${d.trades.length===1?' was':'s were'} in a donor's company`:'No reviewed trades yet; the latest disclosures are checked below'}</small></div></div>
+    ${d.rows.length?`<div class="chart"><h3>Donations by month from donors with public positions</h3><div class="sub">Contributions to the campaign from each group's PACs, ${d.months.length?`${monLabel(d.months[0])} – ${monLabel(d.months.at(-1))}`:''}, each row on its own scale (the largest month is labeled at the right). Triangles under a row are votes the group took a position on: green when ${esc(s.short)} voted its way, red when not. A diamond at the top is a reviewed trade in that group's company. A shaded window is a timing flag. FEC bulk data; groups are the ones whose scorecards or key-vote letters are collected.</div>
+      <div class="cx-plot" id="f-months"></div>${legend([['var(--s1)','Monthly contributions'],['var(--good)','Voted the way the donor wanted'],['var(--crit)','Voted the other way'],['var(--s4)','Trade in the donor\'s company'],['var(--warn)','Timing flag window']])}
       ${tableView(['Donor','Total','Votes compared','Flags'],d.rows.map(r=>[esc(r.label),fmtFull(r.total),r.markers.length,r.flags.length]))}</div>`:s.office?`<p class="small muted">The monthly series of donations from the ${GP.length} groups whose public positions are collected covers the 2026 candidates' committees, not ${esc(s.short)}'s, so there is no series to compare.</p>`:`<p class="small muted">None of the ${GP.length} groups whose public positions are collected gave to ${esc(s.short)}'s campaign in the FEC data since ${H0()}, so there is no monthly series to compare yet.</p>`}
     ${flagRows.length?`<div class="chart"><h3>Timing flags</h3><ul class="list small">${flagRows.join('')}</ul></div>`:''}
+    ${stockBlock(s,d)}
     ${v.rows.length?`<details class="tv"><summary>Vote Donor Alignment by donor</summary><div class="tablewrap"><table><thead><tr><th>Donor</th><th class="r">Votes its way</th><th class="r">Votes compared</th></tr></thead><tbody>${v.rows.map(r=>`<tr><td>${esc(r.org)}</td><td class="r">${r.same}</td><td class="r">${r.n}</td></tr>`).join('')}</tbody></table></div></details>`:''}
     <div id="f-live-analysis"></div></section>`;
 }
@@ -1642,19 +1661,33 @@ function mountAnalysis(s){
 // From the daily refresh: the top donor organizations combining PAC and employee money, and the bills they lobbied on
 // that this person acted on.
 const orgKey=v=>String(v||'').toLowerCase().replace(/\b(pac|political action committee|employees|of|the|inc|corp|corporation|co|company|llc|federal|fund)\b/g,'').replace(/[^a-z0-9]/g,'');
+// The latest disclosed trades (from the refresh, not yet reviewed) in the top donor organizations; a donor that also
+// lobbied on a bill this person acted on makes it a timing flag, as leads for review.
+function liveStock(s,p,top,stake){
+  const el=document.getElementById('f-live-stock');if(!el)return [];
+  const trades=p.merged?.trades||[];
+  if(!trades.length){el.innerHTML=`<p class="small muted" style="margin:8px 0 0">The latest disclosed trades fill in from the daily refresh (Bargo, Eulerpool and Financial Modeling Prep, checked against the official filings) once the keys are set. <a href="#updates">Update status</a></p>`;return [];}
+  if(!top.length){el.innerHTML=`<p class="small muted" style="margin:8px 0 0">${trades.length} disclosed trade${trades.length===1?' is':'s are'} on file; they are checked against the top donor organizations once the FEC refresh lists them.</p>`;return [];}
+  const lobbied=new Set(stake.map(l=>corp(l.org)));
+  const hits=tradesInDonors(trades.map(t=>({...t,company:t.asset||t.ticker})),top.map(o=>({org:o.name,stake:lobbied.has(corp(o.name))})));
+  el.innerHTML=`<h4 style="margin:12px 0 6px">Latest disclosed trades in top donors (leads, for review)</h4>${hits.length?`<div class="tablewrap"><table><thead><tr><th>Traded</th><th>Asset</th><th>Type</th><th class="r">Amount</th><th>Owner</th><th>Top donor</th><th>Flag</th></tr></thead><tbody>${hits.map(({org,donor,trade:t})=>`<tr><td class="mono" style="white-space:nowrap">${esc(t.traded||'')}</td><td>${esc(t.asset||t.ticker||'')}${t.ticker?` <span class="muted mono">${esc(t.ticker)}</span>`:''}</td><td>${esc(t.type||'')}</td><td class="r">${esc(t.amount||'')}</td><td>${esc(t.owner||'')}</td><td>${esc(org)}</td><td>${donor.stake?`<b>${FLAG_TEXT.stock}</b> (it lobbied on a bill ${esc(s.short)} acted on)`:'<span class="muted">No lobbying on their bills found</span>'}</td></tr>`).join('')}</tbody></table></div>`:`<p class="small muted" style="margin:0">None of the ${trades.length} latest disclosed trades was in one of the top ${top.length} donor organizations.</p>`}`;
+  return hits;
+}
 async function liveAnalysis(s,host){
   if(!host)return;
   try{
     const r=await fetch('/api/profile?id='+encodeURIComponent(s.id),{cache:'no-store'});if(!r.ok)throw 0;const p=await r.json();if(!host.isConnected)return;
     const emp=p.sections.donors?.orgs||[],pac=p.sections.pac?.rows||[],months=p.sections['donor-months']?.months||{},lob=p.sections.lobbying?.rows||[];
-    if(!emp.length&&!pac.length){host.innerHTML=`<p class="small muted">The top ${TOP_DONORS} donor organizations by month (each organization's PAC plus its employees) and the lobbying on bills ${esc(s.short)} acted on fill in from the daily FEC and LDA.gov refresh once the keys are set. <a href="#updates">Update status</a></p>`;return;}
+    if(!emp.length&&!pac.length){liveStock(s,p,[],[]);host.innerHTML=`<p class="small muted">The top ${TOP_DONORS} donor organizations by month (each organization's PAC plus its employees) and the lobbying on bills ${esc(s.short)} acted on fill in from the daily FEC and LDA.gov refresh once the keys are set. <a href="#updates">Update status</a></p>`;return;}
     const orgs=new Map();
     for(const e of emp){const k=orgKey(e.employer);orgs.set(k,{name:e.employer,pac:0,emp:e.total});}
     for(const x of pac){const k=orgKey(x.name);const o=orgs.get(k)||{name:x.name,pac:0,emp:0};o.pac+=x.amount;orgs.set(k,o);}
     const top=[...orgs.values()].map(o=>({...o,total:o.pac+o.emp})).sort((a,b)=>b.total-a.total).slice(0,TOP_DONORS);
     const mine=new Set([...(p.sections.legislation?.rows||[]),...(p.sections.cosponsored?.rows||[])].map(r=>r.bill||String(r.id).toLowerCase()).concat(DATA.votes.concat(DATA.hvotes).filter(v=>v.pos&&s.id in v.pos).map(voteBill)).filter(Boolean));
     const stake=lob.filter(l=>l.bills.some(b=>mine.has(b)));
+    const hits=liveStock(s,p,top,stake);
     const mrows=Object.entries(months).map(([org,series])=>({label:org,series,markers:[]})).slice(0,8),ms=[...new Set(mrows.flatMap(r=>Object.keys(r.series)))].sort();
+    for(const {org,trade:t} of hits){const row=mrows.find(r=>corp(r.label)===corp(org));if(row)row.markers.push({date:t.traded,kind:'trade',label:`${t.type||'Trade'} of ${t.asset||t.ticker} (disclosed, not yet reviewed)`});}
     const allMonths=[];if(ms.length)for(let m=ms[0];m<=ms.at(-1);m=addMonths(m,1))allMonths.push(m);
     host.innerHTML=`<div class="chart"><h3>Top ${top.length} donor organizations this cycle</h3><div class="sub">Each organization's PAC contributions plus its employees' itemized contributions (grouped by employer; donors' names are never shown), from the latest FEC refresh.</div>
       ${rankBars(top.map(o=>({label:o.name,value:Math.round(o.total/top[0].total*100),color:'var(--s1)',display:fmt$(o.total),note:[o.pac&&`PAC ${fmt$(o.pac)}`,o.emp&&`employees ${fmt$(o.emp)}`].filter(Boolean).join(' · '),tip:`${o.name}: ${fmtFull(o.total)}`})))}</div>
@@ -1662,7 +1695,8 @@ async function liveAnalysis(s,host){
       <div class="chart"><h3>Who had a stake</h3><div class="sub">Lobbying reports filed for top donor organizations that name a bill ${esc(s.short)} sponsored, cosponsored or voted on (LDA.gov).</div>${stake.length?`<ul class="list small">${stake.map(l=>`<li>${esc(l.org)} (${esc(l.registrant||'self-filed')}, ${esc(l.period||'')} ${esc(l.year||'')}): ${l.bills.filter(b=>mine.has(b)).map(b=>esc(billLabel(b))).join(', ')}${l.url?` <a href="${esc(l.url)}" target="_blank" rel="noopener">report ↗</a>`:''}</li>`).join('')}</ul>`:'<p class="small muted">No lobbying report from a top donor names one of these bills yet.</p>'}</div>`;
     if(mrows.length){const f=()=>drawMonthly(document.getElementById('f-live-months'),mrows,allMonths,[]);f();resizers.push(f);}
     hoverTips(host);
-  }catch{if(host.isConnected)host.innerHTML='<p class="small muted">The refreshed donor and lobbying records are unavailable right now; the analysis above uses the reviewed research.</p>';}
+  }catch{if(host.isConnected)host.innerHTML='<p class="small muted">The refreshed donor and lobbying records are unavailable right now; the analysis above uses the reviewed research.</p>';
+    const el=document.getElementById('f-live-stock');if(el)el.innerHTML='<p class="small muted" style="margin:8px 0 0">The latest disclosed trades are unavailable right now.</p>';}
 }
 // Outside spending for and against, each split by the spenders' sectors and colored People- or Profit-aligned.
 function outsideSectorBlock(s){

@@ -155,8 +155,11 @@ export function drawMonthly(el,rows,months,markers){
     const d=months.map((m,i)=>`${i?'L':'M'}${X(i).toFixed(1)} ${Y(r.series[m]||0).toFixed(1)}`).join('');
     g+=`<path class="cx-wash" d="${d}L${X(n-1)} ${base}L${X(0)} ${base}Z"></path><path class="cx-line" d="${d}"></path><line class="cx-axis" x1="${mL}" x2="${W-mR}" y1="${base}" y2="${base}"></line>`;
     g+=`<text class="cx-lab" x="${mL-8}" y="${y0+rowH/2}" text-anchor="end">${esc(r.label.length>28?r.label.slice(0,27)+'…':r.label)}</text><text class="cx-tick" x="${W-mR+6}" y="${y0+14}">${money(max)}</text>`;
-    months.forEach((m,i)=>{const v=r.series[m]||0;g+=`<rect class="cx-hit" x="${X(i)-Math.max(3,(W-mL-mR)/n/2)}" y="${y0}" width="${Math.max(6,(W-mL-mR)/n)}" height="${rowH-8}" data-tip="${esc(`${r.label} · ${MON[+m.slice(5,7)-1]} ${m.slice(0,4)}: ${money(v)}`)}"></rect>`;});
-    for(const mk of r.markers||[]){const x=xm(mk.date);if(x==null)continue;g+=`<path class="cx-mark ${mk.kind}" d="M${x} ${base+1}l-4 6h8z" data-tip="${esc(`${when(mk.date)} · ${mk.label}`)}"></path>`;}
+    // Each month's hover area, kept inside the plot so the first and last months don't spill past the edges.
+    const half=Math.max(3,(W-mL-mR)/n/2);
+    months.forEach((m,i)=>{const v=r.series[m]||0,a=Math.max(mL-3,X(i)-half),b=Math.min(W-mR+3,X(i)+half);g+=`<rect class="cx-hit" x="${a}" y="${y0}" width="${Math.max(6,b-a)}" height="${rowH-8}" data-tip="${esc(`${r.label} · ${MON[+m.slice(5,7)-1]} ${m.slice(0,4)}: ${money(v)}`)}"></rect>`;});
+    // Votes are triangles under the row; trades in the donor's company are diamonds at the top.
+    for(const mk of r.markers||[]){const x=xm(mk.date);if(x==null)continue;g+=`<path class="cx-mark ${mk.kind}" d="${mk.kind==='trade'?`M${x} ${y0+1}l4.5 4.5l-4.5 4.5l-4.5-4.5z`:`M${x} ${base+1}l-4 6h8z`}" data-tip="${esc(`${when(mk.date)} · ${mk.label}`)}"></path>`;}
   });
   for(const mk of markers||[]){const x=xm(mk.date);if(x==null)continue;g+=`<line class="cx-vline ${mk.kind}" x1="${x}" x2="${x}" y1="${top}" y2="${H-26}" data-tip="${esc(`${when(mk.date)} · ${mk.label}`)}"></line>`;}
   el.innerHTML=svgOpen(W,H,`Monthly money from ${rows.length} donors`)+g+'</svg>';
