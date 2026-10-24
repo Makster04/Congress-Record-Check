@@ -38,8 +38,11 @@ const recent=(rows,n=50)=>({count:rows.length,rows:top(rows,n),rowLimit:n});
 const byPersonOf=rows=>{const out={};for(const r of rows)for(const id of r.people||[])(out[id]||=[]).push(r);return out;};
 
 // ---------- Record ----------
+// Congress.gov lists the amendments a member sponsored or cosponsored (mostly senators') with their bills; an amendment
+// has an amendment number instead of a bill number and no title, so it is left out rather than failing the page.
+export const isAmendment=r=>r.amendmentNumber!=null||/AMDT$/i.test(r.type||'');
 function billRows(items,a){
-  return items.filter(r=>Number(r.congress)===Number(a.congress)).map(r=>{
+  return items.filter(r=>Number(r.congress)===Number(a.congress)&&!isAmendment(r)).map(r=>{
     need(BILL_PATH[r.type]&&r.number&&(r.title||r.latestTitle)&&day(r.introducedDate),'Legislation record incomplete');
     return {id:`${r.congress}-${r.type}-${r.number}`,bill:billKey(r.congress,r.type+r.number),title:r.title||r.latestTitle,measure:`${r.type} ${r.number}`,date:day(r.introducedDate),latestAction:r.latestAction?.text||null,actionDate:day(r.latestAction?.actionDate),source:billPage(r.congress,r.type,r.number)};
   });
