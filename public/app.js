@@ -2,6 +2,7 @@ import {KV_MIN,leanOfVote,whyNotMarked,sideTaken,keyVoteRows,keyVoteScore} from 
 import {MIN_CHECKS,MIN_PVP_ACTIONS,ETHICS_COST,TRADE_COST,LATE_DAYS,WEIGHT,ACTION_TYPES,letter,billKey,matchScore,promiseScore,moneyRatio} from './grades.js';
 import {makeScorer,voteBill} from './scoring.js';
 import {hoverTips,tableView,legend,rankBars,stackRows,divergingRows,categoryBars,drawScatter,drawDelay,drawTradeTimeline,drawCaseTimeline,drawTreemap,drawMonthly,sectorSpendBars} from './charts.js';
+import {makeOrgs,SMALL_DOLLAR_ABOUT,EMPLOYER_ABOUT} from './orgs.js';
 import {ALIGN_LABEL,SECTOR_LABEL_EXTRA,TOP_DONORS,WINDOW_MONTHS,SWING,categoryAlign,outsideBySector,topDonors,voteDonorAlignment,timingFlags,positionChangeFlags,stockFlags,tradesInDonors,corp,addMonths} from './influence.js';
 (function(){
 const $=s=>document.querySelector(s);
@@ -148,6 +149,10 @@ const term=(k,t)=>`<span class="term" tabindex="0" data-tip="${esc(GLOSS[k])}">$
 const period=(a,b)=>`${fmtDate(a)} – ${fmtDate(b)}`;
 const shortPer=(b)=>'through '+fmtDate(b);
 const cmOf=i=>IE.cm[i];
+// An organization's name with its one-line description (public/orgs.js) shown on hover, tap or focus; inner replaces the
+// plain name, for a name that is also a link.
+const ORGS=makeOrgs(DATA);
+const orgName=(name,about,inner)=>about?`<span class="org" data-tip="${esc(`${name}: ${about}`)}">${inner??esc(name)}</span>`:(inner??esc(name));
 const candName=id=>IE.cands[id]||id;
 const flag=(t,why)=>`<span class="flag" ${why?`data-tip="${esc(why)}" tabindex="0"`:''}>${t}</span>`;
 function raceOf(s){return DATA.races.find(r=>r.keys.includes(s.id))}
@@ -246,7 +251,7 @@ function ieCommitteeTable(s){
   const o=s.out, multi=o.multi, hasO=o.others.length;
   if(!o.cms.length)return `<p class="small muted">No general-election independent expenditures were reported in this race through ${fmtDate(o.end)}.</p>`;
   const head=`<tr><th>Committee</th><th class="r">${esc(forLabel(s))}</th><th class="r">${esc(agLabel(s))}</th>${multi?'<th class="r">Aimed at rivals</th>':''}${hasO?'<th class="r">Other candidates</th>':''}<th class="r">Items</th><th>Dates</th></tr>`;
-  const body=o.cms.map(([ci,f,a,rv,ot,n,d0,d1])=>{const m=cmOf(ci);return `<tr><td><a href="https://www.fec.gov/data/committee/${m[0]}/?cycle=2026" target="_blank" rel="noopener">${esc(m[1])}</a><div><span class="tag">${CLS1[m[2]]||m[2]}</span>${m[5]===1?'<span class="tag">only this race</span>':`<span class="tag">${m[5]} races</span>`}</div>${m[3]?`<div class="small" style="color:var(--ink-2);margin-top:4px">${esc(m[3])}${m[4]?` <a href="${esc(m[4])}" target="_blank" rel="noopener">source ↗</a>`:''}</div>`:''}</td>
+  const body=o.cms.map(([ci,f,a,rv,ot,n,d0,d1])=>{const m=cmOf(ci);return `<tr><td>${orgName(m[1],ORGS.spender(m),`<a href="https://www.fec.gov/data/committee/${m[0]}/?cycle=2026" target="_blank" rel="noopener">${esc(m[1])}</a>`)}<div><span class="tag">${CLS1[m[2]]||m[2]}</span>${m[5]===1?'<span class="tag">only this race</span>':`<span class="tag">${m[5]} races</span>`}</div>${m[3]?`<div class="small" style="color:var(--ink-2);margin-top:4px">${esc(m[3])}${m[4]?` <a href="${esc(m[4])}" target="_blank" rel="noopener">source ↗</a>`:''}</div>`:''}</td>
     <td class="r">${f?fmtFull(f):'—'}</td><td class="r">${a?fmtFull(a):'—'}</td>${multi?`<td class="r">${rv?fmtFull(rv):'—'}</td>`:''}${hasO?`<td class="r">${ot?fmtFull(ot):'—'}</td>`:''}<td class="r">${n}</td><td class="mono small" style="white-space:nowrap">${d0===d1?fmtDate(d0):fmtDate(d0)+' –<br>'+fmtDate(d1)}</td></tr>`}).join('');
   return `<div class="tablewrap"><table>${'<thead>'+head+'</thead>'}<tbody>${body}</tbody></table></div>`;
 }
@@ -274,7 +279,8 @@ function ieItems(s,host){
     L=L.slice().sort(st.sort==='amt'?(a,b)=>b.r[4]-a.r[4]:(a,b)=>b.r[0].localeCompare(a.r[0])||b.r[4]-a.r[4]);
     const tot=L.reduce((a,x)=>a+x.r[4],0);
     host.querySelector('#iesum').innerHTML=`<b class="num">${L.length.toLocaleString()}</b> items · <b class="num">${fmtFull(tot)}</b>${L.some(x=>x.r[4]<0)?' · negative amounts are corrections filed by the committee':''}`;
-    host.querySelector('#ietb').innerHTML=L.slice(0,st.n).map(({r,role})=>{const m=cmOf(r[1]);return `<tr><td class="mono" style="white-space:nowrap">${fmtDate(r[0])}</td><td>${esc(m[1])}<div class="small muted">${CLS1[m[2]]||''}</div></td><td><span class="chip ${role==='for'?'dfor':role==='against'?'dag':'ghost'}">${r[3]==='S'?'Supports':'Opposes'} ${esc(candName(r[2]))}</span>${rowFlags(r)}</td><td class="small">${esc(IE.purp[r[5]]||'—')}</td><td class="r">${fmtFull(r[4])}</td><td class="small"><a href="https://docquery.fec.gov/cgi-bin/forms/${m[0]}/${esc(r[6])}/" target="_blank" rel="noopener">${esc(r[6])} ↗</a></td></tr>`}).join('')||'<tr><td colspan="6" class="muted">No items match.</td></tr>';
+    host.querySelector('#ietb').innerHTML=L.slice(0,st.n).map(({r,role})=>{const m=cmOf(r[1]);return `<tr><td class="mono" style="white-space:nowrap">${fmtDate(r[0])}</td><td>${orgName(m[1],ORGS.spender(m))}<div class="small muted">${CLS1[m[2]]||''}</div></td><td><span class="chip ${role==='for'?'dfor':role==='against'?'dag':'ghost'}">${r[3]==='S'?'Supports':'Opposes'} ${esc(candName(r[2]))}</span>${rowFlags(r)}</td><td class="small">${esc(IE.purp[r[5]]||'—')}</td><td class="r">${fmtFull(r[4])}</td><td class="small"><a href="https://docquery.fec.gov/cgi-bin/forms/${m[0]}/${esc(r[6])}/" target="_blank" rel="noopener">${esc(r[6])} ↗</a></td></tr>`}).join('')||'<tr><td colspan="6" class="muted">No items match.</td></tr>';
+    hoverTips(host.querySelector('#ietb'));
     host.querySelector('#iemore').innerHTML=L.length>st.n?`<button class="more" id="iemb">Show ${Math.min(50,L.length-st.n)} more of ${(L.length-st.n).toLocaleString()} remaining</button>`:'';
     const b=host.querySelector('#iemb');if(b)b.addEventListener('click',()=>{st.n+=50;draw();});
   };
@@ -306,13 +312,14 @@ function pacTable(s,host){
   host.innerHTML=`<div class="toolbar" style="margin:0 0 10px"><div class="search" style="margin:0"><input id="pq" type="search" placeholder="Filter by committee or sector" aria-label="Filter PAC contributions"></div></div>
     <p class="small" id="psum" style="margin:0 0 8px"></p>
     <div class="tablewrap"><table id="pt"><thead><tr><th><button data-k="name">Contributor (as filed)</button></th><th><button data-k="cat">Sector (assigned)</button></th><th><button data-k="rep">Report and period</button></th><th class="r"><button data-k="amt">Amount</button></th></tr></thead><tbody></tbody></table></div><div id="pmore" style="margin-top:8px"></div>`;
-  const R=p.rows.map(r=>({name:DATA.pacNames[r[0]],amt:r[1],cat:DATA.categories[r[2]]||r[2],fi:r[3],rep:p.filings[r[3]].start,orient:(DATA.pacOrient||{})[r[0]]}));
+  const R=p.rows.map(r=>({name:DATA.pacNames[r[0]],about:ORGS.pac(r[0]),amt:r[1],cat:DATA.categories[r[2]]||r[2],fi:r[3],rep:p.filings[r[3]].start,orient:(DATA.pacOrient||{})[r[0]]}));
   const draw=()=>{
     const q=st.q.toLowerCase();
     let L=R.filter(x=>!q||(x.name+' '+x.cat).toLowerCase().includes(q));
     L.sort((a,b)=>{const x=a[st.k],y=b[st.k];return (typeof x==='number'?x-y:String(x).localeCompare(String(y)))*st.dir||b.amt-a.amt});
     host.querySelector('#psum').innerHTML=`<b class="num">${L.length.toLocaleString()}</b> contributions · <b class="num">${fmtFull(L.reduce((a,x)=>a+x.amt,0))}</b>. The FEC lists these by report, so each row shows its report period, not an exact date.`;
-    host.querySelector('#pt tbody').innerHTML=L.slice(0,st.n).map(x=>{const f=p.filings[x.fi];return `<tr><td>${esc(x.name)}${x.orient?`<div class="small muted">${esc(x.orient)}</div>`:''}</td><td class="small">${esc(x.cat)}</td><td class="small"><a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.report)}</a><div class="muted">${fmtDate(f.start)} – ${fmtDate(f.end)}</div></td><td class="r">${fmtFull(x.amt)}</td></tr>`}).join('')||'<tr><td colspan="4" class="muted">No rows match.</td></tr>';
+    host.querySelector('#pt tbody').innerHTML=L.slice(0,st.n).map(x=>{const f=p.filings[x.fi];return `<tr><td>${orgName(x.name,x.about)}${x.orient?`<div class="small muted">${esc(x.orient)}</div>`:''}</td><td class="small">${esc(x.cat)}</td><td class="small"><a href="${esc(f.url)}" target="_blank" rel="noopener">${esc(f.report)}</a><div class="muted">${fmtDate(f.start)} – ${fmtDate(f.end)}</div></td><td class="r">${fmtFull(x.amt)}</td></tr>`}).join('')||'<tr><td colspan="4" class="muted">No rows match.</td></tr>';
+    hoverTips(host.querySelector('#pt tbody'));
     host.querySelector('#pmore').innerHTML=L.length>st.n?`<button class="more" id="pmb">Show ${Math.min(50,L.length-st.n)} more of ${(L.length-st.n).toLocaleString()} remaining</button>`:'';
     const b=host.querySelector('#pmb');if(b)b.addEventListener('click',()=>{st.n+=50;draw();});
   };
@@ -322,7 +329,7 @@ function pacTable(s,host){
 }
 function topSpenders(s,role,n){
   const idx=role==='for'?1:2;
-  return s.out.cms.filter(x=>x[idx]>0).sort((a,b)=>b[idx]-a[idx]).slice(0,n).map(x=>({name:cmOf(x[0])[1],cls:cmOf(x[0])[2],amt:x[idx]}));
+  return s.out.cms.filter(x=>x[idx]>0).sort((a,b)=>b[idx]-a[idx]).slice(0,n).map(x=>({name:cmOf(x[0])[1],cls:cmOf(x[0])[2],about:ORGS.spender(cmOf(x[0])),amt:x[idx]}));
 }
 
 // ---------- routing ----------
@@ -613,7 +620,7 @@ function ovOutside(s,here){
   const col=(label,amt,list,cls)=>`<div class="ov-col"><div class="ov-amt">${fmt$(amt)}</div>
     <div class="ov-plot">${amt>0?`<i class="${cls}" style="height:${Math.max(2,amt/max*100).toFixed(1)}%" data-tip="${esc(label)}: ${fmtFull(amt)}"></i>`:''}</div>
     <div class="ov-collab">${esc(label)}</div>
-    ${list.length?`<ul class="ov-top">${list.map(x=>`<li><span>${esc(x.name)}<small class="muted">${CLS1[x.cls]||''}</small></span><b>${fmt$(x.amt)}</b></li>`).join('')}</ul>`:'<p class="small muted" style="margin:6px 0 0">No groups reported</p>'}</div>`;
+    ${list.length?`<ul class="ov-top">${list.map(x=>`<li><span>${orgName(x.name,x.about)}<small class="muted">${CLS1[x.cls]||''}</small></span><b>${fmt$(x.amt)}</b></li>`).join('')}</ul>`:'<p class="small muted" style="margin:6px 0 0">No groups reported</p>'}</div>`;
   const body=`<div class="ov-pair">${col(forLabel(s),f,topSpenders(s,'for',3),'for')}${col(agLabel(s),a,topSpenders(s,'against',3),'ag')}</div>${o.incomplete.length?`<p class="small" style="margin:10px 0 0">${flag('Incomplete data',o.incomplete.join(' '))}</p>`:''}`;
   return ovCard('Outside money',T,sub,body,foot);
 }
@@ -794,7 +801,7 @@ function conduitBlock(s){
   <p class="small" style="color:var(--ink-2);max-width:72ch;margin-bottom:10px">A PAC can give a candidate at most $5,000 per election from its own account, but some groups also act as a conduit: their members write checks that the PAC collects and forwards ("earmarked" contributions). The FEC records that money as individual contributions, so it is already inside campaign funds raised, but it does not appear in the PAC contributions table above even though the group directed it.</p>`;
   let body='';
   if(c.status==='measured'){
-    body=`<div class="tablewrap"><table><thead><tr><th>Conduit</th><th>Period</th><th class="r">Amount</th></tr></thead><tbody>${c.rows.map(r=>`<tr><td><a href="${fecCmteUrl(r.id)}" target="_blank" rel="noopener">${esc(r.conduit)}</a><div class="small" style="color:var(--ink-2);margin-top:4px">${esc(r.detail)}</div><div class="small" style="margin-top:4px">${r.srcs.map(x=>`<a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)} ↗</a>`).join(' · ')}</div></td><td class="mono" style="white-space:nowrap">${esc(r.period)}</td><td class="r"><b>${fmtFull(r.amount)}</b></td></tr>`).join('')}</tbody></table></div>`;
+    body=`<div class="tablewrap"><table><thead><tr><th>Conduit</th><th>Period</th><th class="r">Amount</th></tr></thead><tbody>${c.rows.map(r=>`<tr><td>${orgName(r.conduit,ORGS.about(r.conduit),`<a href="${fecCmteUrl(r.id)}" target="_blank" rel="noopener">${esc(r.conduit)}</a>`)}<div class="small" style="color:var(--ink-2);margin-top:4px">${esc(r.detail)}</div><div class="small" style="margin-top:4px">${r.srcs.map(x=>`<a href="${esc(x.u)}" target="_blank" rel="noopener">${esc(x.t)} ↗</a>`).join(' · ')}</div></td><td class="mono" style="white-space:nowrap">${esc(r.period)}</td><td class="r"><b>${fmtFull(r.amount)}</b></td></tr>`).join('')}</tbody></table></div>`;
   } else if(c.status==='present'){
     body=`<div class="note"><b>Earmarked money found, total not yet tallied.</b> ${esc(c.note)}</div>`;
   } else {
@@ -1250,7 +1257,7 @@ function fundersBlock(s){
     else if(!g.compared.length)res=`<p class="small muted" style="margin:6px 0 0">No published position by ${esc(g.org)} was found on the key votes ${esc(s.short)} cast.</p>`;
     else res=`<p class="small" style="margin:6px 0 4px"><b>${esc(s.short)} voted the way ${esc(g.org)} wanted on ${g.agree} of ${g.n} key votes it scored or took a public position on.</b></p>
       <div class="tablewrap"><table><thead><tr><th>#</th><th>Vote</th><th>${esc(g.org)} wanted</th><th>${esc(s.short)} voted</th><th>Same?</th><th>Group's own source</th></tr></thead><tbody>${g.compared.map((c,ci)=>{const v=(DATA.votes.concat(DATA.hvotes)).find(x=>x.id===c.voteId);return `<tr><td><span class="ftl-num ${c.match===null?'nv':c.match?'same':'opp'}">${voteNum(g,ci)}</span></td><td><a href="${voteUrl(v)}" target="_blank" rel="noopener">${esc(c.short)}</a><div class="small muted">${esc(c.chamber)} · ${fmtDate(c.date)}</div></td><td><span class="chip ${posClass(c.wanted)}">${esc(c.wanted)}</span></td><td><span class="chip ${posClass(c.cast)}">${esc(c.cast)}</span></td><td>${c.match===null?'<span class="muted">did not vote</span>':c.match?'<b style="color:var(--good)">✓ Same</b>':'<b style="color:var(--crit)">✕ Opposite</b>'}</td><td class="small">${c.basis==='scorecard'?'Scored in its scorecard':'Public position before the vote'}: <a href="${esc(c.src.u)}" target="_blank" rel="noopener">${esc(c.src.t)} ↗</a></td></tr>`}).join('')}</tbody></table></div>${fundTimeline(s,g,'ftl-'+g.key)}`;
-    return `<div class="mv"><h4>${esc(g.org)}</h4><p class="small" style="margin:0">${money(g)}${g.spenders.length?` <span class="muted">(${esc(g.spenders.join(', '))})</span>`:''}</p>${res}</div>`;}).join('');
+    return `<div class="mv"><h4>${orgName(g.org,ORGS.group(g.key))}</h4><p class="small" style="margin:0">${money(g)}${g.spenders.length?` <span class="muted">(${esc(g.spenders.join(', '))})</span>`:''}</p>${res}</div>`;}).join('');
   return head+body+`<p class="small muted" style="margin-top:10px">Organizations researched: ${GP.map(g=>esc(g.org)+(g.status==='pending'?' (in progress)':'')).join(', ')}. <a href="#method">How positions were collected</a>.</p></section>`;
 }
 
@@ -1264,7 +1271,7 @@ function moneyVotesBlock(s){
       <div><div class="kicker">${esc(s.short)}'s recorded actions</div>${ev.length?`<ul class="list small">${ev.map(e=>`<li><b>${esc(e.title)}</b> (${esc(e.date||'')}): ${esc(e.pos||'')} → "${esc(sideLabel(k,e.side))}" <span class="muted">${esc(TYPEL[e.type])}</span></li>`).join('')}</ul>`:`<p class="small muted">No recorded vote, bill or official action on this issue${st.length?` (${st.length} stated position${st.length>1?'s':''} on the Your match tab)`:''}.</p>`}</div>
       <div><div class="kicker">Groups with a stake in this issue</div>
         ${a.pac.length?`<p class="small" style="margin:4px 0 2px"><b>PAC contributions to the campaign</b> (${esc(s.pac.window)}): ${fmtFull(a.pacTotal)} from ${a.pac.length+a.pacMore} PAC${a.pac.length+a.pacMore>1?'s':''}</p>${(()=>{const li=g=>`<li>${esc(g.name)}: <b class="num">${fmtFull(g.amount)}</b> <span class="muted">(${g.n} × ${g.reports.map(fi=>esc(s.pac.filings[fi].report)).join(', ')})</span> <span class="term small" tabindex="0" data-tip="${esc(g.why)}">${esc(g.whyShort)}</span></li>`;return `<ul class="list small">${a.pac.slice(0,5).map(li).join('')}</ul>${a.pac.length>5?`<details class="tv"><summary>${a.pac.length-5} more</summary><ul class="list small">${a.pac.slice(5).map(li).join('')}</ul></details>`:''}`})()}${a.pacMore?`<p class="small muted">and ${a.pacMore} more in the PAC table on the Money &amp; Influence tab.</p>`:''}`:'<p class="small muted" style="margin:4px 0">No issue-linked PAC contributions in the itemized reports.</p>'}
-        ${a.out.length?`<p class="small" style="margin:8px 0 2px"><b>Outside spending on the race</b> (${period(s.out.start,s.out.end)}):</p><ul class="list small">${a.out.map(o=>{const m=cmOf(o.ci);return `<li>${esc(m[1])} (${CLS1[m[2]]}): ${o.for?`<b class="num">${fmtFull(o.for)}</b> ${s.out.multi?'supporting':'for'} ${esc(s.short)}`:''}${o.for&&o.against?'; ':''}${o.against?`<b class="num">${fmtFull(o.against)}</b> ${s.out.multi?'opposing':'against'}`:''}, ${fmtDate(o.first)}${o.last!==o.first?' – '+fmtDate(o.last):''} <span class="term small" tabindex="0" data-tip="${esc(o.why)}">${esc(o.whyShort)}</span></li>`}).join('')}</ul>`:''}
+        ${a.out.length?`<p class="small" style="margin:8px 0 2px"><b>Outside spending on the race</b> (${period(s.out.start,s.out.end)}):</p><ul class="list small">${a.out.map(o=>{const m=cmOf(o.ci);return `<li>${orgName(m[1],ORGS.spender(m))} (${CLS1[m[2]]}): ${o.for?`<b class="num">${fmtFull(o.for)}</b> ${s.out.multi?'supporting':'for'} ${esc(s.short)}`:''}${o.for&&o.against?'; ':''}${o.against?`<b class="num">${fmtFull(o.against)}</b> ${s.out.multi?'opposing':'against'}`:''}, ${fmtDate(o.first)}${o.last!==o.first?' – '+fmtDate(o.last):''} <span class="term small" tabindex="0" data-tip="${esc(o.why)}">${esc(o.whyShort)}</span></li>`}).join('')}</ul>`:''}
       </div></div></div>`}).join('');
   return head+body+'</section>';
 }
@@ -1582,15 +1589,15 @@ const catLabel=c=>c==='small'?'Small-dollar donors':DATA.categories[c]||SECTOR_L
 function donorTreemapBlock(s){
   const p=s.pac||{},t=topDonors(p.rows,DATA.pacNames,s.camp&&!s.camp.missing?s.camp.unitemized:0);
   if(!t.tiles.length)return `<div class="chart"><h3>Top donors</h3><p class="small muted">No PAC contributions or small-dollar totals are on file for ${esc(s.short)}'s campaign.</p></div>`;
-  const tiles=t.tiles.map(x=>({...x,alignLabel:ALIGN_LABEL[x.align],catLabel:catLabel(x.cat)}));
+  const tiles=t.tiles.map(x=>({...x,alignLabel:ALIGN_LABEL[x.align],catLabel:catLabel(x.cat),about:x.cat==='small'?SMALL_DOLLAR_ABOUT:ORGS.about(x.label,'pac')}));
   const sum=k=>tiles.filter(x=>x.align===k).reduce((n,x)=>n+x.value,0);
   return `<div class="chart" id="pvp-donors"><h3>Top ${tiles.length} donors</h3><div class="sub">Tile size is the amount given${p.window?` (PAC contributions ${esc(p.window)}; small-dollar donors ${s.camp?period(s.camp.start,s.camp.end):''})`:''}. People-aligned: unions and small-dollar donors, as one tile. Profit-aligned: corporate PACs and industry groups. Other: leadership, party and ideological committees. Sectors are assigned by this app from each committee's name.${t.rest?` ${t.rest} smaller PACs (${fmtFull(t.restAmount)}) are not shown.`:''}</div>
     <div class="cx-plot" id="pvp-tm"></div>${legend([['var(--s1)',`People-aligned ${fmt$(sum('people'))}`],['var(--s5)',`Profit-aligned ${fmt$(sum('profit'))}`],['var(--cx-other)',`Other ${fmt$(sum('other'))}`]])}
-    ${tableView(['Donor','Amount','Alignment','Sector'],tiles.map(x=>[esc(x.label),fmtFull(x.value),x.alignLabel,esc(x.catLabel)]))}
+    ${tableView(['Donor','Amount','Alignment','Sector'],tiles.map(x=>[orgName(x.label,x.about),fmtFull(x.value),x.alignLabel,esc(x.catLabel)]))}
     <p class="small" style="margin:8px 0 0"><a href="#${s.id}-finance">Outside spending by sector, for and against, on the Money &amp; Influence tab →</a></p></div>`;
 }
 function mountTreemap(s){const el=document.getElementById('pvp-tm');if(!el)return;const p=s.pac||{},t=topDonors(p.rows,DATA.pacNames,s.camp&&!s.camp.missing?s.camp.unitemized:0);
-  const tiles=t.tiles.map(x=>({...x,alignLabel:ALIGN_LABEL[x.align],catLabel:catLabel(x.cat)}));const f=()=>drawTreemap(document.getElementById('pvp-tm'),tiles);f();resizers.push(f);}
+  const tiles=t.tiles.map(x=>({...x,alignLabel:ALIGN_LABEL[x.align],catLabel:catLabel(x.cat),about:x.cat==='small'?SMALL_DOLLAR_ABOUT:ORGS.about(x.label,'pac')}));const f=()=>drawTreemap(document.getElementById('pvp-tm'),tiles);f();resizers.push(f);}
 
 // Money & Influence Analysis: alignment and timing, from the reviewed research now, and from the daily FEC and LDA.gov
 // refresh as it fills in. Never part of a grade.
@@ -1649,7 +1656,7 @@ function analysisBlock(s){
       ${tableView(['Donor','Total','Votes compared','Flags'],d.rows.map(r=>[esc(r.label),fmtFull(r.total),r.markers.length,r.flags.length]))}</div>`:s.office?`<p class="small muted">The monthly series of donations from the ${GP.length} groups whose public positions are collected covers the 2026 candidates' committees, not ${esc(s.short)}'s, so there is no series to compare.</p>`:`<p class="small muted">None of the ${GP.length} groups whose public positions are collected gave to ${esc(s.short)}'s campaign in the FEC data since ${H0()}, so there is no monthly series to compare yet.</p>`}
     ${flagRows.length?`<div class="chart"><h3>Timing flags</h3><ul class="list small">${flagRows.join('')}</ul></div>`:''}
     ${stockBlock(s,d)}
-    ${v.rows.length?`<details class="tv"><summary>Vote Donor Alignment by donor</summary><div class="tablewrap"><table><thead><tr><th>Donor</th><th class="r">Votes its way</th><th class="r">Votes compared</th></tr></thead><tbody>${v.rows.map(r=>`<tr><td>${esc(r.org)}</td><td class="r">${r.same}</td><td class="r">${r.n}</td></tr>`).join('')}</tbody></table></div></details>`:''}
+    ${v.rows.length?`<details class="tv"><summary>Vote Donor Alignment by donor</summary><div class="tablewrap"><table><thead><tr><th>Donor</th><th class="r">Votes its way</th><th class="r">Votes compared</th></tr></thead><tbody>${v.rows.map(r=>`<tr><td>${orgName(r.org,ORGS.about(r.org,'group'))}</td><td class="r">${r.same}</td><td class="r">${r.n}</td></tr>`).join('')}</tbody></table></div></details>`:''}
     <div id="f-live-analysis"></div></section>`;
 }
 function mountAnalysis(s){
@@ -1690,7 +1697,7 @@ async function liveAnalysis(s,host){
     for(const {org,trade:t} of hits){const row=mrows.find(r=>corp(r.label)===corp(org));if(row)row.markers.push({date:t.traded,kind:'trade',label:`${t.type||'Trade'} of ${t.asset||t.ticker} (disclosed, not yet reviewed)`});}
     const allMonths=[];if(ms.length)for(let m=ms[0];m<=ms.at(-1);m=addMonths(m,1))allMonths.push(m);
     host.innerHTML=`<div class="chart"><h3>Top ${top.length} donor organizations this cycle</h3><div class="sub">Each organization's PAC contributions plus its employees' itemized contributions (grouped by employer; donors' names are never shown), from the latest FEC refresh.</div>
-      ${rankBars(top.map(o=>({label:o.name,value:Math.round(o.total/top[0].total*100),color:'var(--s1)',display:fmt$(o.total),note:[o.pac&&`PAC ${fmt$(o.pac)}`,o.emp&&`employees ${fmt$(o.emp)}`].filter(Boolean).join(' · '),tip:`${o.name}: ${fmtFull(o.total)}`})))}</div>
+      ${rankBars(top.map(o=>({label:o.name,value:Math.round(o.total/top[0].total*100),color:'var(--s1)',display:fmt$(o.total),note:[o.pac&&`PAC ${fmt$(o.pac)}`,o.emp&&`employees ${fmt$(o.emp)}`].filter(Boolean).join(' · '),tip:`${o.name}: ${fmtFull(o.total)}. ${EMPLOYER_ABOUT}`})))}</div>
       ${mrows.length?`<div class="chart"><h3>Top donors' employees by month</h3><div class="cx-plot" id="f-live-months"></div></div>`:''}
       <div class="chart"><h3>Who had a stake</h3><div class="sub">Lobbying reports filed for top donor organizations that name a bill ${esc(s.short)} sponsored, cosponsored or voted on (LDA.gov).</div>${stake.length?`<ul class="list small">${stake.map(l=>`<li>${esc(l.org)} (${esc(l.registrant||'self-filed')}, ${esc(l.period||'')} ${esc(l.year||'')}): ${l.bills.filter(b=>mine.has(b)).map(b=>esc(billLabel(b))).join(', ')}${l.url?` <a href="${esc(l.url)}" target="_blank" rel="noopener">report ↗</a>`:''}</li>`).join('')}</ul>`:'<p class="small muted">No lobbying report from a top donor names one of these bills yet.</p>'}</div>`;
     if(mrows.length){const f=()=>drawMonthly(document.getElementById('f-live-months'),mrows,allMonths,[]);f();resizers.push(f);}
@@ -1980,10 +1987,10 @@ function renderMethod(sub){
 function bindTips(root){
   root.querySelectorAll('[data-tip]').forEach(el=>{
     el.addEventListener('mouseenter',()=>{tip.textContent=el.dataset.tip;tip.classList.add('show');});
-    el.addEventListener('mousemove',e=>{const x=Math.min(e.clientX+12,window.innerWidth-270);tip.style.left=x+'px';tip.style.top=(e.clientY+14)+'px';});
+    el.addEventListener('mousemove',e=>{const x=Math.max(10,Math.min(e.clientX+12,window.innerWidth-310));tip.style.left=x+'px';tip.style.top=(e.clientY+14)+'px';});
     el.addEventListener('mouseleave',()=>tip.classList.remove('show'));
     el.setAttribute('tabindex','0');el.setAttribute('aria-label',el.dataset.tip);
-    el.addEventListener('focus',()=>{const r=el.getBoundingClientRect();tip.textContent=el.dataset.tip;tip.style.left=r.left+'px';tip.style.top=(r.bottom+6)+'px';tip.classList.add('show')});
+    el.addEventListener('focus',()=>{const r=el.getBoundingClientRect();tip.textContent=el.dataset.tip;tip.style.left=Math.max(10,Math.min(r.left,window.innerWidth-310))+'px';tip.style.top=(r.bottom+6)+'px';tip.classList.add('show')});
     el.addEventListener('blur',()=>tip.classList.remove('show'));
   });
 }
