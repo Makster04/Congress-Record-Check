@@ -25,6 +25,15 @@ Each politician gets four graded scores, shown as a letter grade with the percen
 
 Percentages are rounded to the nearest whole number before a grade is assigned.
 
+### The president (featured profile)
+
+Donald Trump has a featured profile: a card beside the home page's title and a full profile page. Trump is not on the 2026 ballot, so the profile is left out of the home filters and counts, the races, the comparisons and the score pages, which cover the 2026 candidates. The grades follow the same four scores, with these differences for a president:
+
+- **Promise Score:** from PolitiFact's promise trackers instead of the site's own statement checks (see Promise Score).
+- **People over Profit:** from the bills the president signed or vetoed and the president's executive orders, instead of votes and sponsorships (see People over Profit).
+- **Stock trading:** a president reports trades on OGE Form 278-T, not the STOCK Act reports members of Congress file, and those reports are not imported yet (see Stock trading).
+- **Money & Influence:** with no 2026 race, the card and profile show the money of the 2024 Trump campaign committee, which still files with the FEC, from the daily refresh.
+
 ## Rule 1: Actions count more than words
 
 Every recorded action on an issue gets a weight, and this weight is used in every score below. A speech or statement counts half as much as a vote or sponsorship, because only legislative actions have a binding effect.
@@ -33,12 +42,12 @@ Every recorded action on an issue gets a weight, and this weight is used in ever
 | --- | --- |
 | Sponsors or co-sponsors a bill | 1.0 |
 | Votes for or against a bill | 1.0 |
-| Official act, for officials who do not vote in Congress (for example, an executive order or official ruling) | 1.0 |
+| Official act, for officials who do not vote in Congress (for example, an executive order, a bill signed or vetoed by a president, or an official ruling) | 1.0 |
 | Speech in Congress or public statement on an issue with no recorded action | 0.5 |
 
 - **Actions first.** Statements are used only on issues with no recorded action. Once a vote, sponsorship, or official act happens on an issue, it replaces earlier statements, so the politician is not counted twice.
 - **One credit per bill.** Sponsoring a bill and then voting for it counts once, at 1.0.
-- **Votes take a side.** A Yea or sponsorship counts toward the bill's marked side; a Nay counts toward the opposite side.
+- **Votes take a side.** A Yea or sponsorship counts toward the bill's marked side; a Nay counts toward the opposite side. For a president, signing a bill or issuing an executive order counts like a Yea, and a veto like a Nay.
 - **Missed votes are not counted.**
 - **The vote wins.** If a politician says one thing and votes the other way, only the vote is scored.
 - **State officials.** If a person has never held federal office but has held a state office (for example, state legislator, governor, or attorney general), their record from that state office is used instead. Their state bills, votes, official acts, statements, and campaign promises determine their views and promises, scored with the same weights and rules.
@@ -91,6 +100,21 @@ At the end of a term, a promise the politician could have acted on but did not (
 
 **Examples:** Collins has 3 supported checks plus 1 outcome check left out: 3 ÷ 3 = **A (100%)**. Marshall has 1 supported and 2 partly supported: (1 + ½ + ½) ÷ 3 = **D (67%)**.
 
+### For a president: PolitiFact's promise trackers
+
+A president's promises are graded from PolitiFact's own ratings, which compare each campaign promise with what happened, including the executive orders and bills the president signed or vetoed. Each tracker's published tally counts like the checks above:
+
+| PolitiFact rating | Credit |
+| --- | --- |
+| Promise Kept | 1 |
+| Compromise | ½ |
+| Promise Broken | 0 |
+| Stalled, In the Works | Not counted until PolitiFact gives a final rating |
+
+Trump's grade combines both trackers. The first-term **Trump-O-Meter** is final: 102 promises from the 2016 campaign, rated 25 Kept, 23 Compromise and 54 Broken when the term ended. The second-term **MAGA-Meter** tracks 75 promises from the 2024 campaign; as of October 2026 it shows 15 Kept, 3 Compromise, 3 Broken, 22 Stalled and 32 In the Works. Each tracker's tally is shown on Trump's Promises tab with sourced examples and the executive order or bill behind each one.
+
+**Example:** (25 + 15 kept + ½ × (23 + 3) compromises) ÷ 123 promises with a final rating = 53 ÷ 123 = **F (43%)**. The 54 Stalled or In the Works promises are not counted yet.
+
 ## Ethics Score
 
 The Ethics Score starts at 100% and loses points for each documented ethics or legal case, based on where that case currently stands, and for stock-trading problems (see Stock trading below).
@@ -128,7 +152,8 @@ Trades come from the Periodic Transaction Reports that members of Congress file 
 - **No individual stocks** means no deduction and a "No individual stock trades" label. There are no bonus points, since the score already starts at 100.
 - **Timing flags** follow the same principle as the Money & Influence Analysis: timing is not proof. If an official body opens an investigation, the case table above applies instead.
 - **Returns are not scored**, because disclosures report value ranges (such as $1,001–$15,000) rather than exact amounts, so profit figures are estimates, and a large gain can simply reflect a market rally.
-- **State-only officials** show "No trading data," since these filings cover Congress only and state disclosure rules vary.
+- **State-only officials** show "No trading data," since these filings cover Congress only and state disclosure rules vary. Candidates who never served in Congress show the same.
+- **A president** files OGE Form 278-T transaction reports instead, under the same 30- and 45-day deadlines. They are public but not imported yet, so the president shows "No trading data" for now. The committee-conflict rule has no direct equivalent for a president (see Open decisions).
 - **Votes on stock-trading-ban bills** are policy positions, so they are scored in Your match and Promise, not here.
 
 **Example:** 3 late reports and 4 committee-conflict trades: 100 − 6 − 4 = **A (90%)**, before any other ethics cases.
@@ -143,6 +168,13 @@ Bills in the areas listed in Step 2 are in scope. A bill counts **only if** a no
 
 A tax bill counts as benefiting the wealthy when independent analysis shows 80% or more of its benefits go to the highest-income households and large corporations.
 
+Each mark is stored once per bill and applies to everyone who acted on that bill. Two bills are marked so far, both **Profit**:
+
+| Bill | Analysis | Why |
+| --- | --- | --- |
+| H.R. 1 of 2025, the One Big Beautiful Bill Act (Public Law 119-21) | CBO, *Distributional Effects of Public Law 119-21* (August 2025) | Households in the bottom tenth of the income distribution lose about $1,200 a year (3.1% of income), mainly through Medicaid and SNAP cuts, while the top tenth gain about $13,600 a year, mainly through lower taxes. A loss at the bottom, so the 80% test is not needed. |
+| H.R. 1 of 2017, the Tax Cuts and Jobs Act (Public Law 115-97) | Tax Policy Center, *Distributional Analysis of the Conference Agreement for the Tax Cuts and Jobs Act* (December 2017) | By 2027, after most individual provisions expire, the top 1% receive 83% of the total benefit. |
+
 ### Step 2: Score each action
 
 | Area | People-leaning actions | Profit-leaning actions |
@@ -154,7 +186,7 @@ A tax bill counts as benefiting the wealthy when independent analysis shows 80% 
 | Cost of essentials | Votes for bills that lower prescription drug, healthcare, and education costs | Votes against those bills; votes for bills that raise those costs |
 | Regulation | Votes to keep or strengthen financial, worker, and consumer protections | Votes to dismantle key financial regulations or other worker and consumer protections |
 
-Each action carries its Rule 1 weight and takes a side as Rule 1 describes.
+Each action carries its Rule 1 weight and takes a side as Rule 1 describes. For a president, the actions are bills signed or vetoed and executive orders: signing a marked bill or issuing a marked order counts for its side, and a veto for the other side. An executive order can be marked like a bill, from a cited analysis of who gains.
 
 ### Step 3: Calculate
 
@@ -163,6 +195,8 @@ Each action carries its Rule 1 weight and takes a side as Rule 1 describes.
 ```
 
 **Example:** 12 People-leaning points and 8 Profit-leaning points give 12 ÷ 20 = 60%, shown as **D (60%)**.
+
+**Where it stands:** Trump signed both marked bills, which gives Trump 2 Profit-leaning actions, one short of the 3 a grade needs. 24 members of Congress have 1 scored action each, from their vote on H.R. 1 of 2025 (a Nay counts as People-leaning, a Yea as Profit-leaning). Everyone is still "Not graded" on this score.
 
 ## Other indicators (not graded)
 
@@ -184,6 +218,12 @@ This analysis checks whether month-by-month changes in a politician's donations,
 - **Decisions:** votes, sponsorships, and speeches in Congress, weighted as in Rule 1.
 - **Stock holdings and trades:** holdings from annual financial disclosure reports and trades from Periodic Transaction Reports, including spouse and dependent-child accounts (see Stock trading under the Ethics Score).
 
+Every profile's analysis shows where stock stands, even when nothing is flagged:
+
+- **Stock in donors:** how many reviewed trades were in a donor's company, or "No trading data" for people the disclosures don't cover.
+- **Stock holdings and trades:** the reviewed trades in a donor's company and whether each is a timing flag. Below them, the latest disclosed trades from the daily refresh (not yet reviewed) are checked against the top 20 donor organizations as leads.
+- Most of the reviewed donor groups are advocacy groups and unions, which have no stock, so most matches are expected to come from the top 20 donor organizations in the refresh: companies, their PACs and their employees.
+
 ### Two alignment measures
 
 | Measure | Question it answers |
@@ -198,7 +238,7 @@ A decision is flagged for review when any of these happen within a 6-month windo
 - Donations from an organization **rose** 50% or more around a decision in that organization's favor.
 - Donations from an organization **dropped** 50% or more after a decision against that organization's interest.
 - The politician **changed position** on an issue after a 50% or larger shift in donations from an organization that lobbied on it.
-- The politician **held or traded stock** in an organization that also donated to them and lobbied on a bill they acted on.
+- The politician **held or traded stock** in an organization that also donated to them and lobbied on a bill they acted on. For the reviewed donor groups, a public position on a vote they cast counts the same as lobbying.
 
 Each flag lists the organization, its monthly donation totals, the decision, and the dates, so readers can judge the pattern for themselves.
 
@@ -214,6 +254,7 @@ Each score's main page uses the charts below. Every chart shows how many data po
 ### Promises delivered
 
 - Stacked horizontal bar per politician (supported, partly supported, changed position, contradicted), using raw counts so a grade built on 3 checks looks different from one built on 20
+- For a president, on the profile: one bar per PolitiFact tracker (Kept, Compromise, Broken, Stalled, In the Works), with sourced examples
 
 ### Ethics
 
@@ -238,7 +279,7 @@ Each score's main page uses the charts below. Every chart shows how many data po
 
 ### Money & Influence
 
-- Monthly line chart of donations from each top donor, with markers for related votes, speeches, and stock trades in that donor's company, and flagged moments highlighted
+- Monthly line chart of donations from each top donor, with markers for related votes (triangles), speeches, and stock trades in that donor's company (diamonds), and flagged moments highlighted
 - Outside spending bar chart: money outside groups spent for vs. against the politician, from FEC independent expenditure filings, with each bar split by sector and colored People-aligned vs. Profit-aligned
 - For-to-Against Ratio beside it (for example, "3.2 : 1"), or "no opposing spending" when nothing was spent against them
 
@@ -248,7 +289,7 @@ Outside spending is shown as a plain number, not a grade. The politician cannot 
 
 Scores are refreshed once a month, matching the monthly donation data.
 
-1. Collect everything new since the last update: votes, sponsorships, floor speeches, campaign statements, ethics case changes, stock trade disclosures, and donation filings.
+1. Collect everything new since the last update: votes, sponsorships, floor speeches, campaign statements, ethics case changes, stock trade disclosures, donation filings, and, for the president, PolitiFact's latest tracker tallies and new bills signed or vetoed.
 2. Mark new bills People or Profit from a cited nonpartisan analysis, and record the reason.
 3. Match new actions to existing promises, and replace earlier statements with votes where Rule 1 applies.
 4. Apply the weights and recalculate all four scores.
@@ -271,7 +312,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 *Feeds Rule 1 official acts by officials who don't vote in Congress.*
 
-- **Federal Register API** *(in use, for people given a federalRegister setting; none yet)*: executive orders, rules, and other official acts by federal executive officials, with no key **(Federal only)**. [Docs](https://www.federalregister.gov/developers/documentation/api/v1)
+- **Federal Register API** *(in use, for people given a federalRegister setting: Donald Trump)*: executive orders, rules, and other official acts by federal executive officials, with no key **(Federal only)**. [Docs](https://www.federalregister.gov/developers/documentation/api/v1)
 
 ### Votes
 
@@ -306,6 +347,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 - **GDELT DOC API** and the **New York Times Article Search API** *(in use)*: news coverage of each politician (GDELT with no key, back to 2017; NYT with a free key), as leads for statements and ethics cases **(State and federal)**. [GDELT](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/) · [NYT](https://developer.nytimes.com/)
 - **Bluesky public API** *(in use, for accounts added by hand)*: officials' public posts, with no login or key **(State and federal)**. [Docs](https://docs.bsky.app/docs/category/http-reference)
 - **congress-legislators** *(by hand)*: each member's official social media accounts, so you know which feeds to follow **(Federal only)**. [github.com/unitedstates/congress-legislators](https://github.com/unitedstates/congress-legislators)
+- **PolitiFact Trump-O-Meter and MAGA-Meter** *(by hand, from the published tallies)*: PolitiFact's ratings of Donald Trump's 2016 and 2024 campaign promises, used for Trump's Promise Score. PolitiFact has no API and could not be reached from the build environment, so the tallies are entered by hand with their date; the MAGA-Meter tally needs checking against the live page each month **(Federal only)**. [Trump-O-Meter](https://www.politifact.com/truth-o-meter/promises/trumpometer/) · [MAGA-Meter](https://www.politifact.com/truth-o-meter/promises/maga-meter-tracking-donald-trumps-2024-promises/)
 - **Wayback Machine** *(in use)*: every archived snapshot of a campaign website, to capture promises before they are edited or deleted. It is free with no key **(State and federal)**. [Docs](https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server) · [Endpoint](https://web.archive.org/cdx/search/cdx)
 
 ### State officials' records
@@ -345,7 +387,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 - **CourtListener API** *(in use, weekly)*: court opinions and dockets, with a free account. Since May 2026, free accounts reportedly get about 125 requests a day *(unconfirmed)*; paid memberships get more. Pulling new documents from PACER costs PACER's fees **(State and federal)**. [Docs](https://www.courtlistener.com/help/api/rest/)
 - **FEC enforcement records** *(in use)*: closed enforcement cases (MURs), advisory opinions, and fines, with the existing FEC key **(Federal only)**. [FEC legal search](https://www.fec.gov/legal-resources/how-to-use-fec-legal-search-systems)
 - **DOJ press releases API** *(in use)*: indictments, plea deals, and settlements, with no key **(Federal only)**. [R client documenting it](https://cran.r-universe.dev/usdoj)
-- **Office of Government Ethics** *(not used yet)*: executive-branch financial disclosures, for candidates who held federal executive posts; no API, so by hand **(Federal only)**. [OGE Form 278e](https://oge.gov/web/278eGuide.nsf/Overview)
+- **Office of Government Ethics** *(not used yet)*: executive-branch financial disclosures, for candidates who held federal executive posts and for the president: yearly OGE Form 278e reports and Form 278-T transaction reports, the president's equivalent of the STOCK Act trade reports. No API, and the reports are scanned PDFs, so they would be entered by hand **(Federal only)**. [OGE Form 278e](https://oge.gov/web/278eGuide.nsf/Overview)
 
 ### Donations and outside spending
 
@@ -372,12 +414,12 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 ### Profile photos
 
-- **unitedstates/images** *(in use)*: official public-domain congressional portraits; candidates who never served in Congress use photos supplied for the site **(Federal only)**. [github.com/unitedstates/images](https://github.com/unitedstates/images)
+- **unitedstates/images** *(in use)*: official public-domain congressional portraits; candidates who never served in Congress use photos supplied for the site, and the president's official portrait (public domain) was supplied too **(Federal only)**. [github.com/unitedstates/images](https://github.com/unitedstates/images)
 - **Wikimedia Commons** *(in use)*: freely licensed photos for candidates without an official portrait; check each photo's license and credit **(State and federal)**. [commons.wikimedia.org](https://commons.wikimedia.org/)
 
 ### Other sources
 
-- Nonpartisan analyses from the Congressional Budget Office, the Joint Committee on Taxation, and the Tax Policy Center mark People over Profit bills.
+- Nonpartisan analyses from the Congressional Budget Office, the Joint Committee on Taxation, and the Tax Policy Center mark People over Profit bills (two so far, from CBO and the Tax Policy Center).
 - The project's original research file supplies vote records, statement checks, ethics summaries, and the issue coding of each vote.
 
 ### Do not use (shut down, closing, or not free)
@@ -395,8 +437,9 @@ Some links were built from paths the sites list rather than opened directly (vot
 
 **Where things stand now:**
 
-- 46 of 59 politicians are "Not graded" on the Promise Score, because most have only 2 or 3 checks.
-- No bills are marked for People over Profit yet, because the cited analyses have not been verified, so everyone is "Not graded" on that score.
+- 46 of 59 politicians are "Not graded" on the Promise Score, because most have only 2 or 3 checks. The president is graded from PolitiFact's trackers: **F (43%)**.
+- Two bills are marked for People over Profit (H.R. 1 of 2025 and the 2017 Tax Cuts and Jobs Act), but no one has the 3 scored actions a grade needs yet, so everyone is still "Not graded" on that score.
+- The president's Ethics Score is **F (0%)**: 5 confirmed findings and 7 investigations that ended without a finding.
 - The original research file was not independently fact-checked.
 - The ethics tags, open/closed labels, and liberal/conservative key-vote marks were added on top of that file and are judgment calls.
 
@@ -405,7 +448,8 @@ Some links were built from paths the sites list rather than opened directly (vot
 - [ ] Review every ethics tag and open/closed label
 - [ ] Review the liberal/conservative marks on the 16 key bills
 - [ ] Fact-check the original research file
-- [ ] Add People over Profit bills with cited analyses
+- [ ] Add People over Profit bills with cited analyses (two added so far)
+- [ ] Check the MAGA-Meter tally against PolitiFact's live page
 - [ ] Tag true campaign promises separately from other stated positions
 - [ ] Review the committee-sector list (`public/committee-sectors.json`) and the outside-spender sectors assigned from names
 - [ ] Enter the API keys and check each new source's first live refresh on the Updates screen
@@ -423,7 +467,7 @@ These values are placeholders or interpretations of the original notes. Confirm 
 - [ ] **Transparency:** the Ethics Score covers misconduct only. Add items such as late financial disclosures if it should also measure transparency.
 - [ ] **The 80% rule:** read here as "a tax bill favors the wealthy if 80% or more of its benefit goes to them." If it meant "votes for such bills 80% or more of the time," this rule changes. Also define "wealthy" (top 1%, top 10%, or another cut-off).
 - [ ] **People-leaning list:** the original notes repeated the Profit items under "People," so the People column was written as their mirror image. Add anything missing.
-- [ ] **Which votes count:** final-passage votes only, or also amendments and procedural motions?
+- [ ] **Which votes count:** final-passage votes only, or also amendments and procedural motions? When a bill has more than one recorded vote (H.R. 1 of 2025 has the House's May passage and its July final vote), the app counts the first one listed. No profiled member voted differently on the two, but the final vote should probably win.
 - [ ] **Money analysis:** kept separate from the grades. Decide whether it should ever affect a grade.
 - [ ] **Flag thresholds:** top 20 donors, a 50% donation change, and a 6-month window.
 - [ ] **Who marks bills:** who assigns People/Profit and liberal/conservative marks, and how reviewer disagreements are settled.
@@ -433,3 +477,9 @@ These values are placeholders or interpretations of the original notes. Confirm 
 - [ ] **Trading history:** Bargo's free tier covers only the last 3 months, so older trades are imported from the official filings with `scripts/build-holdings.py`, for review. Confirm that your use fits Senate eFD's terms before including senators.
 - [ ] **Court records:** CourtListener's free account allows only about 125 requests a day. Decide whether checking the profiled politicians weekly fits that, or whether a membership is needed.
 - [ ] **Ethics leads:** court records, FEC enforcement records, DOJ press releases, and news only point to possible cases. Decide who confirms a case's status from an official record before it is scored.
+- [x] **The president's promises:** graded from PolitiFact's trackers, with both terms counted together (the Trump-O-Meter and the MAGA-Meter).
+- [x] **Shared bill marks:** a People or Profit mark applies to everyone who acted on the bill, so a president's signature and members' votes on the same bill are scored from the same mark.
+- [ ] **Agency estimates:** decide whether a government agency's own estimate (for example the CFPB's estimate of what its overdraft-fee rule saved consumers) can mark a bill, or only the CBO, the Joint Committee on Taxation and the Tax Policy Center. The repeal of that rule, which Trump signed in 2025, would be the next mark.
+- [ ] **Tariffs:** analyses find the 2025 tariffs cost lower-income households the most as a share of income, but show no group that gains. Decide whether a policy like that can be marked.
+- [ ] **The president's trades:** whether to import the OGE Form 278-T reports, and what replaces the committee-conflict rule for a president (for example, trades in companies or industries the president's own executive orders or signed bills directly affected), or whether conflicts are left out.
+- [ ] **Featured profiles on the score pages:** the president is left out of the score pages, which rank the 2026 candidates. Decide whether to show the president there too.

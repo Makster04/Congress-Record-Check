@@ -1,4 +1,4 @@
-Everything the scoring overhaul changed, built on October 24, 2026, grouped by where each change happens: the site, the scoring methodology, and the repo. Each item appears once. `4_MAJOR_OVERHAUL.md` has the same changes with what is still open.
+Everything the scoring overhaul changed, built on October 24, 2026, grouped by where each change happens: the site, the scoring methodology, and the repo. Each item appears once. Section 4 lists what was added after the overhaul. `4_MAJOR_OVERHAUL.md` has the same changes with what is still open.
 
 ## 1. The site (what visitors see)
 
@@ -62,6 +62,28 @@ Everything the scoring overhaul changed, built on October 24, 2026, grouped by w
 - **`3_ALT_README.md`,** now that it has become the README.
 - **Sources never added:** the `crec` package and Capitol API, since the GovInfo API and CapitolGains cover them.
 
-**Staying the same:** the six tabs, home-card layout, portraits, dark theme, My alignment quiz, A–F scale, current ethics deductions (−20, −15, −5), funder timelines, the existing money refreshes, and old links.
+## 4. Added after the overhaul
 
-Several values are still placeholders from your "Open decisions" list (trading deductions, the 80% rule, flag thresholds, who marks bills, the sector lists), so some details above could change.
+**The site**
+- **Donald Trump as a featured profile:** a card beside the home page's title and description, above every other card, with the official portrait, the Report Card and a Money & Influence Analysis filled from the daily FEC refresh of the 2024 Trump campaign committee. The full profile has every tab, but is left out of the home filters and counts ("All 59"), the races, the comparisons and the score pages, which cover the 2026 ballot.
+- **Trump's Promises Delivered tab:** PolitiFact's two promise trackers, each tally as a bar, with sourced examples and the executive order or bill behind each one.
+- **Stock in the Money & Influence Analysis, on every profile:** a "Stock in donors" figure, a "Stock holdings and trades" section, and diamonds on the monthly charts for trades in a donor's company. The latest disclosed trades from the daily refresh are checked against the top 20 donor organizations, as leads.
+- **Fixes:** the Ethics headline's plural ("7 investigations closed without a finding"), two charts that ran 1px past the edge of the page, and Vote Smart's key links, which now point to its API access page.
+
+**The methodology**
+- **Promises delivered for a president:** PolitiFact's tallies count like statement checks: Promise Kept 1, Compromise ½, Promise Broken 0, with Stalled and In the Works left out. Trump's grade combines the first-term Trump-O-Meter (final) and the second-term MAGA-Meter: **F (43%)**.
+- **People over profit for a president:** signing a marked bill or issuing a marked executive order counts for its side, and a veto for the other side.
+- **The first two bill marks,** both Profit, applied to everyone who acted on them: H.R. 1 of 2025 (CBO) and the 2017 Tax Cuts and Jobs Act (Tax Policy Center). Trump has 2 scored actions and 24 members have 1, so everyone is still "Not graded" on this score.
+- **Trump's other grades:** Ethics **F (0%)**, from 5 confirmed findings and 7 investigations that ended without a finding; Your match from Trump's official acts, coded on 10 issues.
+
+**The repo**
+- `public/research.json`: a `featured` list with Trump's profile and its `promiseTrackers`, and the first two entries in `bills`.
+- `data/config.json`: Trump's FEC IDs, Wikidata ID and Federal Register setting, so the daily refresh covers Trump; the 2017 tax law added to `keyBills`.
+- `src/refresh.mjs`: existing databases now also get the campaign, PAC and outside-spending jobs for anyone added to the config later.
+- `public/grades.js`, `public/scoring.js`, `public/influence.js`, `public/charts.js` and `public/app.js` for the rules and pages above. `scripts/check.mjs` accepts presidential FEC IDs, and `scripts/build-ids.mjs`, `scripts/build-portraits.py` and `scripts/scores-monthly.mjs` include featured profiles.
+- `data/portraits/trump.jpg` and `public/portraits/trump.webp`: the official portrait.
+- Tests for the tracker tallies, signing and vetoing, and trades in donors (74 in all).
+
+**Staying the same:** the six tabs, home-card layout (the featured card is the only addition), portraits, dark theme, My alignment quiz, A–F scale, current ethics deductions (−20, −15, −5), funder timelines, the existing money refreshes, and old links.
+
+Several values are still placeholders from your "Open decisions" list (trading deductions, the 80% rule, flag thresholds, who marks bills, the sector lists, and now whether agency estimates can mark a bill and how the president's trades are handled), so some details above could change.

@@ -1,4 +1,4 @@
-This was the plan for building the rules in `1_Political_Scorecard_Metholodgy.md` and the sources in `2_API_SOURCES_TO_CONSIDER.md`. **It was built on October 24, 2026**, and `README.md` now describes the result. Below is what was added, changed and removed, with notes where the build differs from the plan, and what is still open.
+This was the plan for building the rules in `1_Political_Scorecard_Metholodgy.md` and the sources in `2_API_SOURCES_TO_CONSIDER.md`. **It was built on October 24, 2026**, and `README.md` now describes the result. Below is what was added, changed and removed, with notes where the build differs from the plan, what was added after the build, and what is still open.
 
 ## WHATS NEW:
 
@@ -91,10 +91,19 @@ This was the plan for building the rules in `1_Political_Scorecard_Metholodgy.md
 - **Not used at all:** the `crec` package and Capitol API, because they repeat work already done.
 - **Never usable:** sources that are shut down, closing or paid, listed in `2_API_SOURCES_TO_CONSIDER.md`.
 
+## ADDED AFTER THE BUILD
+
+- **Donald Trump as a featured profile:** a card beside the home page's title, above every other card, with the official portrait, the Report Card and a Money & Influence Analysis from the daily FEC refresh of the 2024 Trump committee; and a full profile, left out of the home filters and counts, the races, the comparisons and the score pages. The refresh covers Trump through `data/config.json`, including the Federal Register feed.
+- **Presidents' grades:** Promises delivered from PolitiFact's promise trackers (Trump-O-Meter and MAGA-Meter, both terms, Kept 1, Compromise ½, Broken 0; **F (43%)** for Trump), and People over profit from bills signed or vetoed and executive orders (signing counts like a Yea, a veto like a Nay).
+- **The first two People/Profit bill marks,** both Profit and shared by everyone who acted on them: H.R. 1 of 2025 (CBO) and the 2017 Tax Cuts and Jobs Act (Tax Policy Center). No one has the 3 scored actions a grade needs yet.
+- **Stock in the Money & Influence Analysis:** a "Stock in donors" figure and a "Stock holdings and trades" section on every profile, diamonds on the monthly charts for trades in a donor's company, and the latest disclosed trades checked against the top 20 donor organizations, as leads. The build had the stock flag but showed nothing until it fired.
+- **Refresh jobs:** existing databases now also get the campaign, PAC and outside-spending jobs for anyone added to the config later, not only the new feeds.
+- **Fixes:** the Ethics headline's plural, two charts running past the page edge, and Vote Smart's key links (now its API access page).
+
 ## Stays the same
 
 - The six tabs and their names
-- The home-card layout (Report Card, Money & Influence Analysis), portraits, and dark theme
+- The home-card layout (Report Card, Money & Influence Analysis), portraits, and dark theme; the featured card beside the title is the only addition
 - The My alignment quiz
 - The A–F scale and "Not graded" rule
 - The current ethics deductions (−20, −15, −5)
@@ -105,7 +114,9 @@ This was the plan for building the rules in `1_Political_Scorecard_Metholodgy.md
 ## Still open
 
 - **Placeholders to decide:** the trading deductions, the 80% rule, the flag thresholds (top 20, 50%, 6 months), who marks bills, the committee-sector list and the outside-spender sectors.
-- **Reviewed research to add:** People/Profit bill marks with cited analyses, promise tags, end-of-term closures, reviewed trades, Bluesky accounts.
+- **Reviewed research to add:** more People/Profit bill marks with cited analyses (two so far), promise tags, end-of-term closures, reviewed trades, Bluesky accounts.
+- **The president:** check the MAGA-Meter tally (15 Kept, 3 Compromise, 3 Broken, 22 Stalled, 32 In the Works, as of October 2026) against PolitiFact's live page, which could not be reached from the build; decide whether agency estimates (such as the CFPB's) can mark a bill, whether tariffs can be marked, whether to import the president's OGE Form 278-T trade reports and what replaces the committee-conflict rule for a president, and whether featured profiles belong on the score pages.
+- **Bills with more than one vote:** the first vote listed counts today (for H.R. 1 of 2025, the House's May passage rather than its July final vote). No profiled member voted differently, but the final vote should probably win.
 - **Check once your keys are in:** every new source's live response. The least certain formats are Eulerpool's path and fields, the LDA.gov API host, the Senate committee XML, the FEC legal-search fields, the DOJ title filter and the FARA registrant list. A source that answers in an unexpected shape stops with an error on the Updates screen and keeps its last published records.
-- **Not built yet:** Speech Donor Alignment, lobbyist contribution reports, OGE disclosures and state campaign finance.
+- **Not built yet:** Speech Donor Alignment, lobbyist contribution reports, OGE disclosures (including the president's trade reports) and state campaign finance.
 - **Earlier questions still open:** whether Senate eFD's terms allow your use (the holdings script asks you to confirm), whether CourtListener's free limit of about 125 requests a day is enough, who confirms an ethics lead before it is scored, and whether Financial Modeling Prep's free plan includes congressional trades.
