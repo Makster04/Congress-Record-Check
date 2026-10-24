@@ -32,7 +32,7 @@ Checked October 23, 2026. Details marked *(unconfirmed)* come from third-party p
 - **Congress.gov committee-meeting endpoint** *(in use)*: hearing and markup schedules, using your existing key **(Federal only)**. [Docs](https://github.com/LibraryOfCongress/api.congress.gov)
 
 ## **Added: statements and issue positions**
-- **Vote Smart API** *(in use)*: candidates' issue positions, votes and interest-group ratings. It needs a free key and doesn't allow bulk requests. A 2020 report said API access was limited to select organizations, so confirm you can get a key **(State and federal)**. [votesmart.org/services_api.php](https://www.votesmart.org/votesmart-api)
+- **Vote Smart API** *(in use)*: candidates' issue positions, votes and interest-group ratings. It needs a free key and doesn't allow bulk requests. A 2020 report said API access was limited to select organizations, so confirm you can get a key **(State and federal)**. [votesmart.org/votesmart-api](https://www.votesmart.org/votesmart-api)
 - **Google Fact Check Tools API** *(in use)*: published fact-checks of politicians' claims (PolitiFact, FactCheck.org and others), with a free Google key. Google's page doesn't state the quota **(State and federal)**. [Docs](https://developers.google.com/fact-check-tools)
 - **GDELT DOC API** *(in use)*: news coverage search back to 2017, with no key. It sometimes refuses requests briefly, so it needs retries **(State and federal)**. [Announcement](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/)
 - **New York Times Article Search API** *(in use)*: the news archive, with a free key, capped at 1,000 results per search **(State and federal)**. [developer.nytimes.com](https://developer.nytimes.com/)
