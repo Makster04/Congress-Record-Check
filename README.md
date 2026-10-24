@@ -20,7 +20,7 @@ The local server binds only to your computer. It uses `.local/records.sqlite` an
 | `FEC_API_KEY` | [api.open.fec.gov/developers](https://api.open.fec.gov/developers/) | Campaign totals, donors grouped by employer, PAC contributions, outside spending, campaign-committee lookup, FEC enforcement records |
 | `CONGRESS_API_KEY` | [api.congress.gov/sign-up](https://api.congress.gov/sign-up/) | Sponsored and cosponsored bills, House roll calls from 2023 on, bill details (summaries, amendments, CBO estimates), CRS reports, committee meetings and testimony |
 | `GOVINFO_API_KEY` | [govinfo.gov/api-signup](https://www.govinfo.gov/api-signup) | Floor speeches and hearing transcripts. Leave it blank to use the Congress.gov key; both are api.data.gov keys |
-| `VOTESMART_API_KEY` | [votesmart.org/services_api.php](https://votesmart.org/services_api.php) | Issue positions (Political Courage Test) and interest-group ratings |
+| `VOTESMART_API_KEY` | [votesmart.org/services_api.php](https://www.votesmart.org/votesmart-api) | Issue positions (Political Courage Test) and interest-group ratings |
 | `OPENSTATES_API_KEY` | [openstates.org/accounts/signup](https://openstates.org/accounts/signup/) | State legislators' bills, votes and sponsorships |
 | `LEGISCAN_API_KEY` | [legiscan.com/legiscan](https://legiscan.com/legiscan) | State bills, cross-checked against Open States (checked weekly to stay well inside the monthly query cap) |
 | `LDA_API_KEY` (optional) | [lda.gov](https://lda.gov/) | Lobbying filings. Works without a key at a lower rate limit |
