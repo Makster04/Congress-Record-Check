@@ -11,7 +11,8 @@
 - **Money & Influence Analysis:** each politician's top 20 donor organizations by month, matched to lobbying on bills they acted on, with two alignment measures and timing flags. It is shown beside the grades, never inside them.
 - **Score pages:** each grade gets its own page ranking everyone, with "Not graded" people shown as grey rows.
 - **Scores are recalculated monthly** after review, with a log of every change; the data underneath still refreshes daily.
-- **New data sources:** cosponsorships, House votes, bill summaries and CRS reports from Congress.gov, the Congressional Record, hearings, the Federal Register, Vote Smart, fact-checks, news coverage, Bluesky, the Wayback Machine, Open States, official committee lists, congress-legislators, court records, FEC enforcement records, DOJ press releases, LDA.gov and FARA lobbying, stock trades, company industry codes (SEC EDGAR), nonprofit and 527 filings, USAspending and SAM.gov.
+- **New data sources:** cosponsorships, House votes, bill summaries and CRS reports from Congress.gov, the Congressional Record, hearings, the Federal Register, Vote Smart, fact-checks, news coverage (GDELT and the New York Times), officials' videos (YouTube), committee documents and testimony, Bluesky, the Wayback Machine, Open States and LegiScan, official committee lists, congress-legislators, court records, FEC enforcement records, DOJ press releases, LDA.gov and FARA lobbying, comments on federal rules (Regulations.gov), stock trades from three services (Bargo, Eulerpool and Financial Modeling Prep) checked against the official filings, company industry codes (SEC EDGAR), nonprofit and 527 filings, USAspending and SAM.gov.
+- **Every source that can run alongside the others is used.** Where several cover the same thing (stock trades, state records, news), their records are merged so each trade, bill or article appears once, and the official record wins when they disagree.
 - **Ethics leads:** court records, FEC enforcement records, DOJ press releases and news are collected as leads; a case is scored only after its status is confirmed from an official record.
 
 ## Run locally
@@ -34,14 +35,19 @@ The local server binds only to your computer. It uses `.local/records.sqlite` an
 | `GOVINFO_API_KEY` | [govinfo.gov/api-signup](https://www.govinfo.gov/api-signup) | Floor speeches and hearing transcripts. Leave it blank to try the Congress.gov key; both are api.data.gov keys |
 | `VOTESMART_API_KEY` | [votesmart.org/services_api.php](http://votesmart.org/services_api.php) | Issue positions and interest-group ratings |
 | `OPENSTATES_API_KEY` | [openstates.org/accounts/signup](https://openstates.org/accounts/signup/) | State legislators' bills, votes and sponsorships |
+| `LEGISCAN_API_KEY` | [legiscan.com/legiscan](https://legiscan.com/legiscan) | State bills and votes, cross-checked against Open States. Its weekly bulk files don't count against the monthly query cap |
 | `LDA_API_KEY` (optional) | [lda.gov](https://lda.gov/) | Lobbying filings. Works without a key at a lower rate limit |
-| `STOCK_TRADES_API_KEY` | [bargo.ai/free-apis/dash](https://www.bargo.ai/free-apis/dash) | Members' stock trades from the last 3 months, with late-filing flags |
+| `BARGO_API_KEY` | [bargo.ai/free-apis/dash](https://www.bargo.ai/free-apis/dash) | Members' stock trades from the last 3 months, with late-filing flags |
+| `EULERPOOL_API_KEY` | [eulerpool.com/developers/register](https://eulerpool.com/developers/register) | Members' stock trades, with party and committee filters (100,000 requests a month free) |
+| `FMP_API_KEY` (optional) | [Financial Modeling Prep](https://site.financialmodelingprep.com/developer/docs/senate-trading-api) | Members' stock trades, if its free plan includes them; leave blank if not |
 | `COURTLISTENER_API_TOKEN` | [courtlistener.com/help/api/rest](https://www.courtlistener.com/help/api/rest/) | Court opinions and dockets naming profiled people. A free account allows about 125 requests a day |
-| `GOOGLE_API_KEY` | [developers.google.com/fact-check-tools](https://developers.google.com/fact-check-tools) | Published fact-checks of politicians' claims |
+| `GOOGLE_API_KEY` | [developers.google.com/fact-check-tools](https://developers.google.com/fact-check-tools) | Published fact-checks of politicians' claims, and officials' YouTube videos. Turn on both the Fact Check Tools API and the YouTube Data API for this one key |
+| `NYT_API_KEY` | [developer.nytimes.com](https://developer.nytimes.com/) | New York Times articles naming each politician |
+| `REGULATIONS_API_KEY` | [open.gsa.gov/api/regulationsgov](https://open.gsa.gov/api/regulationsgov/) | Donor companies' comments on federal rules. Leave it blank to try the Congress.gov key; both are api.data.gov keys |
 | `SAM_API_KEY` | [open.gsa.gov/api/entity-api](https://open.gsa.gov/api/entity-api) | Companies' federal IDs and industry codes, for matching donors to contracts |
 | `SEC_USER_AGENT` (not a key) | [SEC developer resources](https://www.sec.gov/search-filings/edgar-application-programming-interfaces) | Your name and contact email, which SEC EDGAR asks every request to include |
 
-No key is needed for the Senate and older House roll calls, the Senate and House committee lists, the Federal Register, Bluesky posts, the congress-legislators files, the Wayback Machine, GDELT news, DOJ press releases, SEC EDGAR, ProPublica's Nonprofit Explorer, the IRS 527 data, FARA or USAspending. Sources whose key is missing wait on the Updates screen as "Awaiting API keys", and the app shows the reviewed research. The Updates screen distinguishes setup requirements, queued work, successful refreshes, and retrying failures. The button runs the next eight source pages; a large source can require several batches. Frontend keys are never used, and saved request URLs exclude credentials.
+No key is needed for the Senate and older House roll calls, the Senate and House committee lists, the House Document Repository, the Federal Register, Bluesky posts, the congress-legislators files, the Wayback Machine, GDELT news, DOJ press releases, SEC EDGAR, ProPublica's Nonprofit Explorer, the IRS 527 data, FARA or USAspending. Sources whose key is missing wait on the Updates screen as "Awaiting API keys", and the app shows the reviewed research. The Updates screen distinguishes setup requirements, queued work, successful refreshes, and retrying failures. The button runs the next eight source pages; a large source can require several batches. Frontend keys are never used, and saved request URLs exclude credentials.
 
 ## What refreshes
 
@@ -55,7 +61,8 @@ No key is needed for the Senate and older House roll calls, the Senate and House
 - **Groups behind outside spending:** for nonprofits and 527 groups that spend in a race, their own filings from ProPublica's Nonprofit Explorer and the IRS 527 data, so "dark money" spenders show who they are.
 - **Lobbying:** LDA.gov registrations, quarterly activity reports and lobbyist contribution reports for the tracked donor organizations, plus FARA registrations for any of them lobbying for a foreign government or company.
 - **Federal contracts:** USAspending contracts and grants to the tracked donor organizations, matched by the company's federal ID (UEI) from SAM.gov, with uncertain name matches left for review.
-- **Stock trades:** members' Periodic Transaction Reports from the last 3 months (Bargo's free tier), with trade and filing dates so late reports are flagged, and each company's industry code from SEC EDGAR for the committee-conflict rule. Each trade links to the original House Clerk or Senate eFD filing.
+- **Stock trades:** members' Periodic Transaction Reports from all three trade services at once: Bargo (last 3 months, with its late-filing flag), Eulerpool, and Financial Modeling Prep if its free plan includes them. The same trade reported by more than one service is merged into one row (same member, company, date, buy or sell, and amount range). Each trade is matched to its official House Clerk or Senate eFD filing, which wins whenever the services disagree; disagreements are listed for review. Late reports are flagged from the dates on the official filing, not from any one service. Each company's industry code comes from SEC EDGAR for the committee-conflict rule.
+- **Comments on federal rules:** Regulations.gov comments filed by the tracked donor organizations, as context for the Money & Influence Analysis.
 
 **Record**
 
@@ -63,18 +70,19 @@ No key is needed for the Senate and older House roll calls, the Senate and House
 - **Bill details:** Congress.gov bill summaries, amendments, committee reports and CRS reports for each key bill, so the bill-detail panels no longer have to be written by hand.
 - **Official acts:** Federal Register documents (executive orders, rules) for profiled people who held federal executive office.
 - **Votes:** the original 50 selected roll calls, the latest 30 Senate roll calls discovered from the official index, and new House roll calls. House votes from 2023 on come from Congress.gov's House vote endpoints; earlier ones from the House Clerk's files. This is not a complete historical voting archive. House positions use Bioguide IDs; Senate positions use LIS IDs from congress-legislators. An unmatched person produces no inferred vote.
-- **State legislative records:** Open States bills, votes and sponsorships for profiled people who serve or served in a state legislature, matched by their Open States ID.
+- **State legislative records:** bills, votes and sponsorships for profiled people who serve or served in a state legislature, from Open States and LegiScan together, matched by each person's IDs in both and merged by state bill number. Open States is checked daily; LegiScan's weekly bulk files fill gaps without using its monthly query cap. Where they disagree, the item is listed for review against the legislature's own record.
 - **Committees and member IDs:** committee assignments from the official Senate and House member files, plus each member's IDs across systems (Bioguide, FEC, LIS and others) from congress-legislators, used to match people between sources. Candidates who never served in Congress are matched through Wikidata.
 
 **Statements**
 
 - **Floor speeches:** the Congressional Record from GovInfo, split into individual speeches and matched to members by Bioguide ID.
-- **Hearings:** GovInfo hearing transcripts in which a profiled member spoke.
+- **Hearings:** GovInfo hearing transcripts in which a profiled member spoke, plus committee documents and witness testimony from the House Document Repository.
+- **Videos:** new uploads on each official's YouTube channels (speeches, town halls), within YouTube's free daily quota.
 - **Issue positions:** Vote Smart positions and interest-group ratings, requested one person at a time because bulk requests aren't allowed.
 - **Social posts:** public Bluesky posts from each member's official accounts in congress-legislators, plus campaign accounts listed in `data/config.json`.
 - **Campaign websites:** each new Wayback Machine snapshot of each campaign site, so a promise can be compared with earlier versions after it is edited or deleted.
 - **Fact-checks:** published fact-checks of each politician's claims, from Google's Fact Check Tools, as leads for statement checks.
-- **News coverage:** articles naming each politician, from GDELT, as leads for statements and ethics cases.
+- **News coverage:** articles naming each politician, from GDELT and the New York Times together, merged by link, as leads for statements and ethics cases.
 
 **Ethics leads**
 
@@ -88,9 +96,9 @@ Each source is scheduled again 24 hours after completion, except individual roll
 
 Some snapshots can have different check and coverage dates. In particular, checking the FEC today does not create a newer campaign filing. Imported comparisons stay labeled as research snapshots; refreshed records appear separately, under **Latest official records** at the bottom of each profile's tabs, so different reporting windows are not silently mixed:
 
-- **Money & Influence:** campaign totals, donors by employer, PAC contributions, outside spending and the groups behind it, lobbying (including FARA) and federal contracts
+- **Money & Influence:** campaign totals, donors by employer, PAC contributions, outside spending and the groups behind it, lobbying (including FARA), comments on federal rules and federal contracts
 - **Your match:** sponsored and cosponsored bills, bill details, official acts, roll calls, state legislative records and committee assignments
-- **Promises Delivered:** floor speeches, hearings, issue positions, social posts, campaign-site snapshots, fact-checks and news
+- **Promises Delivered:** floor speeches, hearings and testimony, videos, issue positions, social posts, campaign-site snapshots, fact-checks and news
 - **Ethics:** stock trades and late-filing flags, court records, FEC enforcement records and DOJ press releases
 
 **Not refreshed automatically.** These are imported once and rebuilt by hand, so they change only when someone reruns them:
@@ -216,7 +224,7 @@ Before grades go public: review every ethics tag and open/closed label and the l
 
 ## Checks
 
-Run `npm test` for the refresher (pagination, transaction deduplication, negative corrections, API identity validation, precision-safe IDs, stale-data preservation, atomic publication, never re-fetching a published vote, the bundled seed, refresh locking and request protection), for every scoring rule (Rule 1 weights and one credit per bill, statement-only issues at half importance, end-of-term promises, each Ethics deduction and cap, People over profit points, the money ratio), for the Money & Influence measures and flags, and for the reviewed data (ideology marks, Overview inputs, funder timelines, portraits). Run `npm run check` for syntax and import validation.
+Run `npm test` for the refresher (pagination, transaction deduplication, negative corrections, API identity validation, precision-safe IDs, stale-data preservation, atomic publication, never re-fetching a published vote, the bundled seed, refresh locking and request protection), for every scoring rule (Rule 1 weights and one credit per bill, statement-only issues at half importance, end-of-term promises, each Ethics deduction and cap, People over profit points, the money ratio), for the Money & Influence measures and flags, for merging the same trade, state bill or article from several sources (and the official record winning when they disagree), and for the reviewed data (ideology marks, Overview inputs, funder timelines, portraits). Run `npm run check` for syntax and import validation.
 
 Each new source's adapter is covered by representative response tests. Authenticated live refreshes require your API keys; they are not claimed as verified without them.
 
@@ -228,7 +236,7 @@ The local and Cloudflare servers share the same refresh and API implementation. 
 2. `npx wrangler d1 create congress-record-check`
 3. Put the returned database ID in `wrangler.jsonc`.
 4. `npm run db:migrate`
-5. `npx wrangler secret put FEC_API_KEY`, then the same for `CONGRESS_API_KEY`, `GOVINFO_API_KEY`, `VOTESMART_API_KEY`, `OPENSTATES_API_KEY`, `LDA_API_KEY`, `STOCK_TRADES_API_KEY`, `COURTLISTENER_API_TOKEN`, `GOOGLE_API_KEY`, `SAM_API_KEY` and `SEC_USER_AGENT` (skip any you don't use)
+5. `npx wrangler secret put FEC_API_KEY`, then the same for `CONGRESS_API_KEY`, `GOVINFO_API_KEY`, `VOTESMART_API_KEY`, `OPENSTATES_API_KEY`, `LEGISCAN_API_KEY`, `LDA_API_KEY`, `BARGO_API_KEY`, `EULERPOOL_API_KEY`, `FMP_API_KEY`, `COURTLISTENER_API_TOKEN`, `GOOGLE_API_KEY`, `NYT_API_KEY`, `REGULATIONS_API_KEY`, `SAM_API_KEY` and `SEC_USER_AGENT` (skip any you don't use)
 6. `npm run cloudflare:deploy`
 
 The hosted cron checks every five minutes, processing up to eight source pages per invocation. Use the Workers paid plan for the configured CPU allowance. D1 and Worker usage may incur charges beyond included allowances; this project does not enable billing or create any cloud resources by itself. The hosted database begins empty and fills from official sources; the reviewed snapshot is bundled with the static assets. Local SQLite files and API keys are excluded from deployment.
@@ -258,18 +266,33 @@ VOTESMART_API_KEY=
 # Open States: state legislators' bills, votes and sponsorships
 # https://openstates.org/accounts/signup/
 OPENSTATES_API_KEY=
+# LegiScan: state bills and votes, cross-checked against Open States
+# https://legiscan.com/legiscan
+LEGISCAN_API_KEY=
 # Optional. LDA.gov: lobbying filings (works without a key at a lower rate limit)
 # https://lda.gov/
 LDA_API_KEY=
-# Bargo: members' stock trades from the last 3 months, with late-filing flags
-# https://www.bargo.ai/free-apis/dash
-STOCK_TRADES_API_KEY=
+# Stock trades: all three services run together, checked against the official filings
+# Bargo: last 3 months, with late-filing flags. https://www.bargo.ai/free-apis/dash
+BARGO_API_KEY=
+# Eulerpool: 100,000 requests a month free. https://eulerpool.com/developers/register
+EULERPOOL_API_KEY=
+# Optional. Financial Modeling Prep, if its free plan includes congressional trades.
+# https://site.financialmodelingprep.com/developer/docs/senate-trading-api
+FMP_API_KEY=
 # CourtListener: court opinions and dockets (free account, about 125 requests a day)
 # https://www.courtlistener.com/help/api/rest/
 COURTLISTENER_API_TOKEN=
-# Google: published fact-checks (enable the Fact Check Tools API for this key)
+# Google: published fact-checks and officials' YouTube videos
+# (turn on the Fact Check Tools API and the YouTube Data API for this key)
 # https://developers.google.com/fact-check-tools
 GOOGLE_API_KEY=
+# New York Times: articles naming each politician
+# https://developer.nytimes.com/
+NYT_API_KEY=
+# Regulations.gov: comments on federal rules. Leave blank to try the Congress.gov key.
+# https://open.gsa.gov/api/regulationsgov/
+REGULATIONS_API_KEY=
 # SAM.gov: companies' federal IDs and industry codes
 # https://open.gsa.gov/api/entity-api
 SAM_API_KEY=
@@ -277,7 +300,7 @@ SAM_API_KEY=
 SEC_USER_AGENT=
 
 # No key needed: Senate and older House roll calls, Senate and House committee
-# lists, Federal Register, Bluesky, congress-legislators, Wayback Machine, GDELT,
+# lists, House Document Repository, Federal Register, Bluesky, congress-legislators, Wayback Machine, GDELT,
 # DOJ press releases, SEC EDGAR, ProPublica Nonprofit Explorer, IRS 527 data,
 # FARA, USAspending.
 
@@ -304,20 +327,22 @@ When hosting on Cloudflare, each key also needs its own `npx wrangler secret put
 - `test/` — regression tests
 - `1_Political_Scorecard_Metholodgy.md` — the scoring methodology; `2_API_SOURCES_TO_CONSIDER.md` — free data sources
 
-Sources: [FEC API](https://api.open.fec.gov/developers/) and [bulk files](https://www.fec.gov/data/browse-data/?tab=bulk-data), [Congress.gov API](https://github.com/LibraryOfCongress/api.congress.gov), [GovInfo](https://api.govinfo.gov/docs), [Senate roll calls](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm), [House Clerk](https://clerk.house.gov/Votes), [Voteview](https://voteview.com), [Vote Smart](http://votesmart.org/services_api.php), [Bluesky](https://docs.bsky.app/docs/category/http-reference), [Wayback Machine](https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server), [Open States](https://v3.openstates.org/docs/), [congress-legislators](https://github.com/unitedstates/congress-legislators), [LDA.gov](https://lda.gov/), [Bargo](https://www.bargo.ai/free-apis/congress/v1), [USAspending](https://api.usaspending.gov/), [Federal Register](https://www.federalregister.gov/developers/documentation/api/v1), [Google Fact Check Tools](https://developers.google.com/fact-check-tools), [GDELT](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/), [CourtListener](https://www.courtlistener.com/help/api/rest/), [FARA](https://efile.fara.gov/api), [SEC EDGAR](https://www.sec.gov/search-filings/edgar-application-programming-interfaces), [SAM.gov](https://open.gsa.gov/api/entity-api), [ProPublica Nonprofit Explorer](https://www.propublica.org/nerds/announcing-the-nonprofit-explorer-api), [IRS 527 data](https://www.irs.gov/node/471), [unitedstates/images](https://github.com/unitedstates/images); People over profit marks from the [Congressional Budget Office](https://www.cbo.gov), the [Joint Committee on Taxation](https://www.jct.gov) and the [Tax Policy Center](https://www.taxpolicycenter.org).
+Sources: [FEC API](https://api.open.fec.gov/developers/) and [bulk files](https://www.fec.gov/data/browse-data/?tab=bulk-data), [Congress.gov API](https://github.com/LibraryOfCongress/api.congress.gov), [GovInfo](https://api.govinfo.gov/docs), [Senate roll calls](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm), [House Clerk](https://clerk.house.gov/Votes), [Voteview](https://voteview.com), [Vote Smart](http://votesmart.org/services_api.php), [Bluesky](https://docs.bsky.app/docs/category/http-reference), [Wayback Machine](https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server), [Open States](https://v3.openstates.org/docs/), [congress-legislators](https://github.com/unitedstates/congress-legislators), [LDA.gov](https://lda.gov/), [Bargo](https://www.bargo.ai/free-apis/congress/v1), [Eulerpool](https://eulerpool.com/financial-data-api/congress-trading-data), [Financial Modeling Prep](https://site.financialmodelingprep.com/developer/docs/senate-trading-api), [LegiScan](https://legiscan.com/legiscan), [YouTube Data API](https://developers.google.com/youtube/v3/getting-started), [New York Times](https://developer.nytimes.com/), [Regulations.gov](https://open.gsa.gov/api/regulationsgov/), [House Document Repository](https://docs.house.gov/committee/Help.aspx), [USAspending](https://api.usaspending.gov/), [Federal Register](https://www.federalregister.gov/developers/documentation/api/v1), [Google Fact Check Tools](https://developers.google.com/fact-check-tools), [GDELT](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/), [CourtListener](https://www.courtlistener.com/help/api/rest/), [FARA](https://efile.fara.gov/api), [SEC EDGAR](https://www.sec.gov/search-filings/edgar-application-programming-interfaces), [SAM.gov](https://open.gsa.gov/api/entity-api), [ProPublica Nonprofit Explorer](https://www.propublica.org/nerds/announcing-the-nonprofit-explorer-api), [IRS 527 data](https://www.irs.gov/node/471), [unitedstates/images](https://github.com/unitedstates/images); People over profit marks from the [Congressional Budget Office](https://www.cbo.gov), the [Joint Committee on Taxation](https://www.jct.gov) and the [Tax Policy Center](https://www.taxpolicycenter.org).
 
 ## Choices behind this draft
 
-- **State records: Open States only.** It covers the same state bills and votes as LegiScan without a monthly query cap, so LegiScan isn't used.
+- **Every source that can run alongside the others is used.** Using several services for the same data adds merging work but gives cross-checks and keeps data flowing if one service changes its free tier or shuts down, as Lambda Finance did.
+- **State records: Open States and LegiScan together,** merged by state bill number. LegiScan comes mostly from its weekly bulk files, which don't count against its monthly query cap.
 - **Speeches: the GovInfo API directly.** The refresher runs in JavaScript, so the `crec` Python package isn't needed for automatic updates.
-- **Stock trades: one source, Bargo,** because it includes the late-filing flag the Ethics rule needs (−2 per late report). Eulerpool, Capitol API and Financial Modeling Prep are backups.
+- **Stock trades: Bargo, Eulerpool and Financial Modeling Prep together,** with the official House Clerk and Senate eFD filings as the record of truth. Duplicate trades are merged, disagreements go to review, and the late-filing deduction (−2 per late report) is based on the official filing's dates. Capitol API is not used: it reads the same official filings that CapitolGains already reads.
 - **Senate votes switch to LIS IDs** from congress-legislators, replacing today's surname-and-state matching.
 - **Donor names stay hidden:** FEC rules restrict reusing individual contributors' information, so donors are grouped by employer and names are never shown.
 - **House votes from Congress.gov** for 2023 on, since it now serves them officially with the existing key; the House Clerk's files stay for older votes.
 - **Committees from the official Senate and House lists**, with congress-legislators kept for IDs and social accounts.
 - **Stock-trade history:** Bargo's free tier covers only 3 months, so older trades come from the official filings by hand.
 - **Court records weekly, profiled people only:** CourtListener's free account allows about 125 requests a day.
-- **Optional extras left out of this plan:** YouTube, the New York Times archive, Regulations.gov comments and the House Document Repository. They're in [2_API_SOURCES_TO_CONSIDER.md](2_API_SOURCES_TO_CONSIDER.md) if needed later, along with the sources that are shut down, closing or paid.
+- **News from GDELT and the New York Times together,** merged by link.
+- **Left out because they repeat work already done, not because of a key:** the `crec` package (the GovInfo API is used directly) and Capitol API (CapitolGains reads the same filings). Sources that are shut down, closing or paid are listed in [2_API_SOURCES_TO_CONSIDER.md](2_API_SOURCES_TO_CONSIDER.md).
 
 # Public Ledger
 ### Follow the money. Check the record. Find your alignment.

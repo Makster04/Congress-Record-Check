@@ -8,17 +8,19 @@ Here's everything that would change if you build what's in `3_ALT_README.md`, co
 - **Individual donors grouped by employer** (FEC, existing key), for the top-20 donor tracking
 - **Floor speeches and hearing transcripts** (GovInfo, new key)
 - **Issue positions and interest-group ratings** (Vote Smart, new key)
-- **State legislative records** (Open States, new key)
+- **State legislative records** (Open States and LegiScan together, two new keys)
 - **Officials' public posts** (Bluesky, no key)
 - **Campaign-website snapshots** (Wayback Machine, no key)
 - **Committee assignments and members' IDs across systems** (congress-legislators, no key)
 - **Lobbying filings** (LDA.gov, optional key)
-- **Stock trades with late-filing flags** (Bargo, new key)
+- **Stock trades from three services at once** (Bargo with its late-filing flag, Eulerpool, and Financial Modeling Prep if its free plan includes them; three new keys), checked against the official House and Senate filings
 - **Federal contracts to donor companies** (USAspending, no key), matched through companies' federal IDs (SAM.gov, new key)
 - **House votes from 2023 on, bill summaries, amendments and CRS reports** (Congress.gov, existing key)
 - **Official acts** such as executive orders (Federal Register, no key)
 - **Official committee lists** (Senate.gov and House Clerk files, no key), plus Wikidata IDs for candidates who never served (no key)
-- **Fact-checks of politicians' claims** (Google Fact Check Tools, new key) and **news coverage** (GDELT, no key)
+- **Fact-checks of politicians' claims** and **officials' YouTube videos** (one new Google key for both), and **news coverage** (GDELT, no key, and the New York Times, new key)
+- **Committee documents and witness testimony** (House Document Repository, no key)
+- **Donor companies' comments on federal rules** (Regulations.gov, new key; the Congress.gov key may work)
 - **Ethics leads:** court records (CourtListener, free account token), FEC enforcement records (existing FEC key), DOJ press releases (no key)
 - **Company industry codes** for stock trades (SEC EDGAR, no key; asks for a contact email)
 - **Groups behind outside spending** (ProPublica Nonprofit Explorer and IRS 527 data, no key) and **foreign lobbying** (FARA, no key)
@@ -29,6 +31,7 @@ Here's everything that would change if you build what's in `3_ALT_README.md`, co
 - **End-of-term rule:** a promise they could have acted on but didn't counts as contradicted.
 - **Promise tags:** separate true commitments from general statements.
 - **People over Profit also scores sponsorships,** not only votes.
+- **Overlapping sources are merged:** the same trade, state bill or article from several sources appears once, and the official record wins when they disagree; disagreements go to review.
 - **Ethics leads are reviewed before scoring:** a court record, enforcement record, DOJ release or news item becomes a scored case only after its status is confirmed from an official record.
 
 **New Money & Influence Analysis** (shown beside the grades, never inside them)
@@ -49,7 +52,7 @@ Here's everything that would change if you build what's in `3_ALT_README.md`, co
 - `data/score-log.json`: every score change and why
 - `data/committee-sectors.json`: which industries each committee oversees
 - `scripts/build-holdings.py`: yearly holdings, blind trusts, and trades older than 3 months, imported by hand with CapitolGains
-- Eight new keys in `.dev.vars` and in the Cloudflare secrets (GovInfo, Vote Smart, Open States, LDA (optional), Bargo, CourtListener, Google, SAM.gov), plus an SEC contact line
+- Thirteen new keys in `.dev.vars` and in the Cloudflare secrets (GovInfo, Vote Smart, Open States, LegiScan, LDA (optional), Bargo, Eulerpool, Financial Modeling Prep (optional), CourtListener, Google, New York Times, Regulations.gov, SAM.gov), plus an SEC contact line
 - Tests for every new rule, measure and data source
 
 ## CHANGED (works differently)
@@ -71,9 +74,9 @@ Here's everything that would change if you build what's in `3_ALT_README.md`, co
 - **Methodology page in the app:** rewritten to match `1_Political_Scorecard_Metholodgy.md` (Rule 1, stock trading, sponsorships, the analysis, the monthly log).
 - **`data/config.json`:** each person gains IDs for the new sources (LIS, Open States, Bluesky accounts, campaign-site addresses).
 - **`public/research.json`:** a list of marked bills, promise tags, and promises closed at end of term.
-- **`.dev.vars.example`:** eight new blank key lines and an SEC contact line.
+- **`.dev.vars.example`:** thirteen new blank key lines and an SEC contact line.
 - **Updates screen:** many more sources listed.
-- **`src/sources.mjs`:** its approved-sites list grows from 4 sites to about 24.
+- **`src/sources.mjs`:** its approved-sites list grows from 4 sites to about 30.
 
 ## DELETED (removed)
 
@@ -81,7 +84,7 @@ Here's everything that would change if you build what's in `3_ALT_README.md`, co
 - **The per-vote `pvp` field** (moved to the per-bill list)
 - **`3_ALT_README.md`,** once it becomes the real README
 - **"Money and votes by issue"** on the People Over Profit tab, most likely, since Vote Donor Alignment covers the same ground. The draft doesn't keep it, so you'd need to decide.
-- **Not used at all:** LegiScan, the `crec` package, and the backup stock-trade APIs (Eulerpool, Capitol API, Financial Modeling Prep). Open States, the GovInfo API and Bargo cover them. Optional extras also left out: YouTube, the New York Times archive, Regulations.gov comments and the House Document Repository.
+- **Not used at all:** the `crec` package and Capitol API, because they repeat work already done (the GovInfo API is used directly, and CapitolGains reads the same filings as Capitol API). Every source with a free key that can run alongside the others is used.
 - **Never usable:** sources that are shut down, closing or paid (Google's representative lookup, GovTrack, the Stock Watcher sites, Lambda Finance, Quiver, EODHD, Ballotpedia, Cicero, BallotReady, PACER), listed in `2_API_SOURCES_TO_CONSIDER.md`.
 
 ## Stays the same
@@ -95,4 +98,4 @@ Here's everything that would change if you build what's in `3_ALT_README.md`, co
 - Campaign totals, PAC and outside-spending refreshes
 - Old links like `#collins-record`
 
-**Still to decide before building:** several values are placeholders from your "Open decisions" list, including the trading deductions, the 80% rule, the flag thresholds, and who marks bills. Three new ones came from checking the sources: whether to import trades older than Bargo's 3 months (and whether Senate eFD allows automated access), whether CourtListener's free limit of about 125 requests a day is enough, and who confirms an ethics lead before it is scored. Any of those could change the details above.
+**Still to decide before building:** several values are placeholders from your "Open decisions" list, including the trading deductions, the 80% rule, the flag thresholds, and who marks bills. Four new ones came from checking the sources: whether to import trades older than Bargo's 3 months (and whether Senate eFD allows automated access), whether CourtListener's free limit of about 125 requests a day is enough, who confirms an ethics lead before it is scored, and whether Financial Modeling Prep's free plan includes congressional trades. Any of those could change the details above.

@@ -299,7 +299,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 ### Statements, issue positions, and campaign promises
 
-*Feeds Rule 1 statements, Your match, and the Promise Score.*
+*Feeds Rule 1 statements, Your match, and the Promise Score. All of these run together; GDELT and the New York Times are merged by link.*
 
 - **Vote Smart API:** candidates' issue positions, votes, and interest-group ratings. It needs a free key and does not allow bulk requests; a 2020 report said access was limited to select organizations, so confirm a key is available **(State and federal)**. [votesmart.org/services_api.php](http://votesmart.org/services_api.php)
 - **Google Fact Check Tools API:** published fact-checks of politicians' claims, with a free Google key, as leads for statement checks **(State and federal)**. [Docs](https://developers.google.com/fact-check-tools)
@@ -310,7 +310,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 ### State officials' records
 
-*Feeds the State officials rule in Rule 1.*
+*Feeds the State officials rule in Rule 1. Open States and LegiScan run together, merged by state bill number; LegiScan comes mostly from its weekly bulk files.*
 
 - **Open States API:** state bills, votes, sponsorships, legislators, committees, and governors for all 50 states, DC, and Puerto Rico, with a free key **(State only)**. [Docs](https://v3.openstates.org/docs/) · [Key](https://openstates.org/accounts/signup/)
 - **LegiScan:** legislation in all 50 states and Congress, with a free key and a monthly query cap. Its weekly bulk files do not count against the cap **(State and federal)**. [legiscan.com/legiscan](https://legiscan.com/legiscan)
@@ -327,7 +327,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 ### Stock trades and holdings
 
-*Feeds Stock trading in the Ethics Score and the stock flag in the Money & Influence Analysis.*
+*Feeds Stock trading in the Ethics Score and the stock flag in the Money & Influence Analysis. Bargo, Eulerpool, and Financial Modeling Prep (if its free plan includes trades) run together. The official House Clerk and Senate eFD filings are the record of truth: duplicate trades are merged, the official filing wins when services disagree, and late filings are counted from the official filing's dates. Capitol API is not needed, since CapitolGains reads the same filings.*
 
 - **House Clerk disclosures:** official yearly downloads, with trades as PDFs **(Federal only)**. [disclosures-clerk.house.gov/FinancialDisclosure](https://disclosures-clerk.house.gov/FinancialDisclosure)
 - **Senate eFD:** official search portal, no API; check its terms on automated access before scripting it **(Federal only)**. [efdsearch.senate.gov](https://efdsearch.senate.gov/)
@@ -427,6 +427,7 @@ These values are placeholders or interpretations of the original notes. Confirm 
 - [ ] **Who marks bills:** who assigns People/Profit and liberal/conservative marks, and how reviewer disagreements are settled.
 - [ ] **State records in People over Profit:** the CBO and JCT analyze federal bills only, so decide which sources (such as state legislative fiscal offices) can mark state bills. Voteview's DW-NOMINATE also covers Congress only, so the ideological position indicator is blank for state-only officials unless a state-level measure is added.
 - [ ] **Trading deductions:** −2 per late report and −1 per committee-conflict trade (each capped at −10) and the 30-day timing window are placeholders. Check each aggregator's terms before republishing its trading data.
+- [ ] **Overlapping sources:** where several sources cover the same thing (stock trades, state bills, news), they are merged and the official record wins. Confirm this rule, and who reviews the disagreements.
 - [ ] **Trading history:** Bargo's free tier covers only the last 3 months. Decide whether to import older trades from the official House and Senate filings, which a term-long late-filing count needs, and confirm that Senate eFD allows automated access.
 - [ ] **Court records:** CourtListener's free account allows only about 125 requests a day. Decide whether checking the profiled politicians weekly fits that, or whether a membership is needed.
 - [ ] **Ethics leads:** court records, FEC enforcement records, DOJ press releases, and news only point to possible cases. Decide who confirms a case's status from an official record before it is scored.
