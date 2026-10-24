@@ -36,9 +36,9 @@ let running=false;
 const steps=Math.max(1,Math.min(200,Number(process.env.LOCAL_STEPS)||40));
 async function tick(){if(running)return;running=true;try{const r=await runRefresh(env,{steps});if(r.processed)console.log(`Refresh processed ${r.processed} source pages.`);}catch(e){console.error('Refresh failed:',e.message);}finally{running=false;}}
 let timer;
-server.on('error',error=>{console.error(error.code==='EADDRINUSE'?`Port ${port} is already in use. If Congress Record Check is already running, open http://127.0.0.1:${port}. Otherwise choose another PORT in .dev.vars.`:error.message);db.close();process.exit(1);});
+server.on('error',error=>{console.error(error.code==='EADDRINUSE'?`Port ${port} is already in use. If Public Ledger is already running, open http://127.0.0.1:${port}. Otherwise choose another PORT in .dev.vars.`:error.message);db.close();process.exit(1);});
 server.listen(port,'127.0.0.1',()=>{
-  console.log(`Congress Record Check is ready at http://127.0.0.1:${port}\nOfficial records refresh while this process is running. Stop with Ctrl+C.`);
+  console.log(`Public Ledger is ready at http://127.0.0.1:${port}\nOfficial records refresh while this process is running. Stop with Ctrl+C.`);
   if(process.env.LOCAL_AUTORUN!=='false'){void tick();timer=setInterval(tick,60_000);}
 });
 process.on('SIGINT',()=>{clearInterval(timer);server.close(()=>{db.close();process.exit(0);});});

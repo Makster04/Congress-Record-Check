@@ -10,7 +10,7 @@ if not exist node_modules (
   call npm.cmd ci --no-audit --no-fund
   if errorlevel 1 exit /b 1
 )
-echo Starting Congress Record Check. Your browser will open automatically.
+echo Starting Public Ledger. Your browser will open automatically.
 echo Keep this window open -- closing it stops the live updates.
 start "" powershell -NoProfile -WindowStyle Hidden -Command "$u='http://127.0.0.1:8787/'; for ($i=0; $i -lt 30; $i++) { try { Invoke-WebRequest -Uri $u -UseBasicParsing -TimeoutSec 1 | Out-Null; Start-Process $u; break } catch { Start-Sleep -Seconds 1 } }"
 call npm.cmd start

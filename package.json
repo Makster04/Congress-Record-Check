@@ -1,5 +1,5 @@
 {
-  "name": "congress-record-check",
+  "name": "public-ledger",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -14,7 +14,7 @@
     "scores:monthly": "node scripts/scores-monthly.mjs",
     "cloudflare:preview": "wrangler dev",
     "cloudflare:deploy": "wrangler deploy",
-    "db:migrate": "wrangler d1 migrations apply congress-record-check --remote"
+    "db:migrate": "wrangler d1 migrations apply public-ledger --remote"
   },
   "dependencies": {
     "fast-xml-parser": "^5.0.0"

@@ -63,7 +63,7 @@ async function wikidata(fecIds){
   const values=fecIds.map(f=>`"${f}"`).join(' ');
   const q=`SELECT ?item ?fec WHERE { VALUES ?fec { ${values} } ?item wdt:P1839 ?fec }`;
   try{
-    const r=await fetch('https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(q),{headers:{'User-Agent':'CongressRecordCheck/1.0 (local research build)'},signal:AbortSignal.timeout(30000)});
+    const r=await fetch('https://query.wikidata.org/sparql?format=json&query='+encodeURIComponent(q),{headers:{'User-Agent':'PublicLedger/1.0 (local research build)'},signal:AbortSignal.timeout(30000)});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json(),out=new Map();
     for(const b of d.results.bindings){const id=b.item.value.split('/').pop();if(/^Q\d+$/.test(id))(out.get(b.fec.value)||out.set(b.fec.value,new Set()).get(b.fec.value)).add(id);}
