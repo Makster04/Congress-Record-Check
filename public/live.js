@@ -1,5 +1,6 @@
 import {drawDelay,categoryBars,hoverTips,legend} from './charts.js';
 import {LATE_DAYS} from './grades.js';
+import {makeOrgs,EMPLOYER_ABOUT} from './orgs.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const cash=n=>n==null?'Not reported':new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
 const date=v=>v?new Date(/^\d{4}-\d{2}-\d{2}$/.test(v)?v+'T12:00:00Z':v).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'Not yet checked';
@@ -40,10 +41,16 @@ function transactions(section,kind){
   return `<p class="live-meta">Activity from ${date(section.start)} through ${date(section.through)} · ${section.count.toLocaleString()} included records</p>
   ${kind==='outside'?`<div class="live-stats">${stat('Directly supporting',cash(section.support))}${stat('Directly opposing',cash(section.oppose))}</div><p class="live-footnote">General-election spending naming this candidate. Spending against an opponent is not credited to this candidate. These amounts are separate from campaign receipts.</p>`:`<div class="live-stats">${stat('Itemized PAC receipts',cash(section.total),'FEC Form 3, line 11C')}</div><p class="live-footnote">Itemized receipts only. These are already included in campaign receipts. The reviewed industry classifications below have their own research dates.</p>`}
   ${e.unknownDate?`<p class="live-warning">${e.unknownDate} records lacked a usable date and are excluded. Coverage is incomplete.</p>`:''}
-  <details><summary>Inspect transactions (${Math.min(section.count,section.rowLimit)} shown)</summary><div class="tablewrap"><table><thead><tr><th>Date</th><th>${kind==='pac'?'Contributor':'Spender'}</th>${kind==='outside'?'<th>Position</th>':''}<th>Amount</th><th>Source</th></tr></thead><tbody>${section.rows.map(r=>`<tr><td>${date(r.date)}</td><td>${esc(r.name)}</td>${kind==='outside'?`<td>${r.direction==='S'?'Supports':'Opposes'}</td>`:''}<td>${cash(r.amount)}</td><td>${link(r.source,'Filing')}</td></tr>`).join('')||'<tr><td colspan="5">No qualifying records in the reporting window.</td></tr>'}</tbody></table></div></details>
+  <details><summary>Inspect transactions (${Math.min(section.count,section.rowLimit)} shown)</summary><div class="tablewrap"><table><thead><tr><th>Date</th><th>${kind==='pac'?'Contributor':'Spender'}</th>${kind==='outside'?'<th>Position</th>':''}<th>Amount</th><th>Source</th></tr></thead><tbody>${section.rows.map(r=>`<tr><td>${date(r.date)}</td><td>${org(r.name,orgAbout(r.name,kind==='pac'?'pac':'spender')||LIVE_ABOUT[kind])}</td>${kind==='outside'?`<td>${r.direction==='S'?'Supports':'Opposes'}</td>`:''}<td>${cash(r.amount)}</td><td>${link(r.source,'Filing')}</td></tr>`).join('')||'<tr><td colspan="5">No qualifying records in the reporting window.</td></tr>'}</tbody></table></div></details>
   <p class="live-footnote">Excluded: ${e.memo} memo entries; ${e.duplicates} repeated transactions; ${e.outOfPeriod} outside the date window${kind==='outside'?`; ${e.otherElection} primary, special, or unspecified election records`:''}. Negative corrections are retained. ${link(section.source,'Explore the FEC records')}</p>`;
 }
 // ---------- sources added with the overhaul ----------
+// An organization's name with its one-line description on hover (public/orgs.js). Refreshed FEC names are matched to the
+// reviewed research where they can be; otherwise a general description of what the committee is.
+let orgs;
+const orgAbout=(name,kind)=>(orgs||=window.DATA?makeOrgs(window.DATA):null)?.about(name,kind)||null;
+const LIVE_ABOUT={pac:'Political action committee that gave to the campaign. Its FEC page lists who sponsors it.',outside:'Outside group that reported spending on this race to the FEC. It may not coordinate with the campaign.'};
+const org=(name,about)=>about?`<span class="org" data-tip="${esc(`${name}: ${about}`)}">${esc(name)}</span>`:esc(name);
 const li=(url,label,small)=>`<li>${url?link(url,label):esc(label)}${small?`<small>${small}</small>`:''}</li>`;
 const ul=(rows,fn,none)=>rows&&rows.length?`<ul class="live-linklist">${rows.map(fn).join('')}</ul>`:`<div class="live-empty">${esc(none)}</div>`;
 const chips=a=>(a||[]).map(x=>`<span class="live-state">${esc(x)}</span>`).join(' ');
@@ -73,7 +80,7 @@ const SECTIONS={
   courts:{title:'Court records (leads)',body:x=>ul(x.rows,r=>li(r.url,r.title,`${esc(r.kind)} · ${esc(r.court||'')}${r.docket?' · '+esc(r.docket):''} · ${date(r.date)}`),'No court records found.')},
   'fec-legal':{title:'FEC enforcement records (leads)',body:x=>ul(x.rows,r=>li(r.url,r.title,`${esc(r.kind)}${r.opened?' · opened '+date(r.opened):''}${r.closed?' · closed '+date(r.closed):''}`),'No enforcement records found.')},
   doj:{title:'DOJ press releases (leads)',body:x=>ul(x.rows,r=>li(r.url,r.title,date(r.date)),'No press releases name them.')},
-  donors:{title:'Top donor organizations (by employer)',body:x=>`<p class="live-footnote">Itemized individual contributions grouped by the donor's employer. Donors' names are never shown. ${x.notOrgs?`Retired, self-employed and similar entries are left out.`:''}</p>${x.orgs.length?`<div class="tablewrap"><table><thead><tr><th>Organization</th><th>Total</th><th>Contributions</th></tr></thead><tbody>${x.orgs.slice(0,20).map(o=>`<tr><td>${esc(o.employer)}</td><td>${cash(o.total)}</td><td>${o.count}</td></tr>`).join('')}</tbody></table></div>`:'<div class="live-empty">No employer totals returned.</div>'}`},
+  donors:{title:'Top donor organizations (by employer)',body:x=>`<p class="live-footnote">Itemized individual contributions grouped by the donor's employer. Donors' names are never shown. ${x.notOrgs?`Retired, self-employed and similar entries are left out.`:''}</p>${x.orgs.length?`<div class="tablewrap"><table><thead><tr><th>Organization</th><th>Total</th><th>Contributions</th></tr></thead><tbody>${x.orgs.slice(0,20).map(o=>`<tr><td>${org(o.employer,EMPLOYER_ABOUT)}</td><td>${cash(o.total)}</td><td>${o.count}</td></tr>`).join('')}</tbody></table></div>`:'<div class="live-empty">No employer totals returned.</div>'}`},
   lobbying:{title:'Lobbying by top donor organizations',body:x=>ul(x.rows.slice(0,40),r=>li(r.url,`${r.org} · ${r.registrant||'self-filed'}`,`${esc(r.period||'')} ${esc(r.year||'')}${r.amount?' · '+cash(r.amount):''}${r.issues?.length?' · '+esc(r.issues.join(', ')):''}${r.bills?.length?' · Bills: '+esc(r.bills.map(billName).join(', ')):''}`),'No lobbying filings found for their top donor organizations.')},
   fara:{title:'Foreign-agent registrations',merged:true,body:x=>ul(x,r=>li(r.url,r.name,`Registration ${esc(r.id)}`),'None of their top donor organizations is registered as a foreign agent.')},
   regulations:{title:'Comments on federal rules by top donors',body:x=>ul(x.rows.slice(0,30),r=>li(r.url,r.title||r.id,`${esc(r.org)} · ${esc(r.agency||'')} · ${date(r.date)}`),'No comments found.')},
@@ -142,6 +149,7 @@ export const RecordLive={
       ${(parts||[]).filter(k=>SECTIONS[k]).map(k=>sourceCard(p,s,person,k)).join('')}
       ${want('votes')?`<div class="live-card"><h3>Roll-call votes</h3><p class="live-footnote">${esc(p.voteScope)} An absent record does not imply a vote or an absence.</p>${p.votes.length?`<ul class="live-linklist">${p.votes.map(v=>`<li><span class="live-state">${esc(v.position)}</span> ${link(v.source,v.title)}<small>${date(v.date)} · ${v.chamber==='S'?'Senate':'House'} roll ${v.number} · ${esc(v.result)} · checked ${time(v.checkedAt)}</small></li>`).join('')}</ul>`:'<div class="live-empty">No matching official roll calls have completed a refresh yet.</div>'}</div>`:''}`;
       for(const k of parts||[]){const d=SECTIONS[k];if(d?.mount){const x=d.merged?p.merged?.[k]:p.sections[k];if(x)d.mount(host,x,person);}}
+      hoverTips(host);
     }catch{if(host.isConnected)host.innerHTML='<div class="live-empty">Latest official records are temporarily unavailable. The reviewed research on this profile is unaffected.</div>';}
   }
 };

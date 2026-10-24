@@ -15,10 +15,10 @@ export function hoverTips(root){
   root.querySelectorAll('[data-tip]').forEach(el=>{
     if(el.dataset.tipBound)return;el.dataset.tipBound='1';
     el.addEventListener('mouseenter',()=>{tip.textContent=el.dataset.tip;tip.classList.add('show');});
-    el.addEventListener('mousemove',e=>{tip.style.left=Math.min(e.clientX+12,window.innerWidth-270)+'px';tip.style.top=(e.clientY+14)+'px';});
+    el.addEventListener('mousemove',e=>{tip.style.left=Math.max(10,Math.min(e.clientX+12,window.innerWidth-310))+'px';tip.style.top=(e.clientY+14)+'px';});
     el.addEventListener('mouseleave',()=>tip.classList.remove('show'));
     el.setAttribute('tabindex','0');el.setAttribute('aria-label',el.dataset.tip);
-    el.addEventListener('focus',()=>{const r=el.getBoundingClientRect();tip.textContent=el.dataset.tip;tip.style.left=r.left+'px';tip.style.top=(r.bottom+6)+'px';tip.classList.add('show');});
+    el.addEventListener('focus',()=>{const r=el.getBoundingClientRect();tip.textContent=el.dataset.tip;tip.style.left=Math.max(10,Math.min(r.left,window.innerWidth-310))+'px';tip.style.top=(r.bottom+6)+'px';tip.classList.add('show');});
     el.addEventListener('blur',()=>tip.classList.remove('show'));
   });
 }
@@ -138,7 +138,7 @@ export function drawTreemap(el,tiles){
   const laid=squarify(tiles.filter(x=>x.value>0).sort((a,b)=>b.value-a.value),0,0,W,H);
   el.style.height=H+'px';
   el.innerHTML=`<div class="cx-tm" style="width:${W}px;height:${H}px">${laid.map(r=>{const fits=r.w>86&&r.h>40;
-    return `<div class="cx-tile ${r.align}" style="left:${r.x+1}px;top:${r.y+1}px;width:${Math.max(0,r.w-2)}px;height:${Math.max(0,r.h-2)}px;background:${ALIGN_COLOR[r.align]}" data-tip="${esc(`${r.label}: ${money(r.value)} · ${r.alignLabel}${r.catLabel?` · ${r.catLabel}`:''}`)}">${fits?`<span>${esc(r.label)}</span><b>${money(r.value)}</b>`:''}</div>`;}).join('')}</div>`;
+    return `<div class="cx-tile ${r.align}" style="left:${r.x+1}px;top:${r.y+1}px;width:${Math.max(0,r.w-2)}px;height:${Math.max(0,r.h-2)}px;background:${ALIGN_COLOR[r.align]}" data-tip="${esc(`${r.label}: ${money(r.value)} · ${r.alignLabel}${r.catLabel?` · ${r.catLabel}`:''}${r.about?`. ${r.about}`:''}`)}">${fits?`<span>${esc(r.label)}</span><b>${money(r.value)}</b>`:''}</div>`;}).join('')}</div>`;
   hoverTips(el);
 }
 
