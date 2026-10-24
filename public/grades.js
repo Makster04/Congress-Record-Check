@@ -106,7 +106,7 @@ export function ethicsScore(ethics,trading){
   return Object.assign({pct:Math.max(0,raw),raw,caseCost,late,conflict,lateCost,conflictCost},n);
 }
 
-// People over profit: actions on bills marked People or Profit by a cited nonpartisan analysis of who gains.
+// Workers > Profit: actions on bills marked People or Profit by a cited nonpartisan analysis of who gains.
 // actions: [{bill, kind: 'vote'|'sponsored'|'cosponsored', pos?, mark: 'people'|'profit'}]. A Yea or a sponsorship takes the
 // bill's side, a Nay the other; missed votes count for nothing; one credit per bill (the vote wins). Each counts 1.0.
 export function pvpScore(actions){

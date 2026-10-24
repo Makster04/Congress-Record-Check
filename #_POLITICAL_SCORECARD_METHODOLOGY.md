@@ -11,7 +11,7 @@ Each politician gets four graded scores, shown as a letter grade with the percen
 | Ideology Match | Your match | How closely the politician's record matches the visitor's own views | 3 issues with evidence, covering at least half of the visitor's total importance |
 | Promise | Promises delivered | Whether what they said matches what they did | 3 counted checks |
 | Ethics | Ethics | Documented ethics and legal problems, plus stock-trading disclosures and conflicts | None: "none located" scores 100% |
-| People over Profit | People over profit | Whether their record favors lower- and middle-income households or the wealthy and corporations | 3 scored actions on marked bills |
+| Workers > Profit | Workers > Profit | Whether their record favors lower- and middle-income households or the wealthy and corporations | 3 scored actions on marked bills |
 
 ### Grade scale
 
@@ -30,7 +30,7 @@ Percentages are rounded to the nearest whole number before a grade is assigned.
 Donald Trump has a featured profile: a card beside the home page's title and a full profile page. Trump is not on the 2026 ballot, so the profile is left out of the home filters and counts, the races, the comparisons and the score pages, which cover the 2026 candidates. The grades follow the same four scores, with these differences for a president:
 
 - **Promise Score:** from PolitiFact's promise trackers instead of the site's own statement checks (see Promise Score).
-- **People over Profit:** from the bills the president signed or vetoed and the president's executive orders, instead of votes and sponsorships (see People over Profit).
+- **Workers > Profit:** from the bills the president signed or vetoed and the president's executive orders, instead of votes and sponsorships (see Workers > Profit).
 - **Stock trading:** a president reports trades on OGE Form 278-T, not the STOCK Act reports members of Congress file, and those reports are not imported yet (see Stock trading).
 - **Money & Influence:** with no 2026 race, the card and profile show the money of the 2024 Trump campaign committee, which still files with the FEC, from the daily refresh.
 
@@ -158,9 +158,9 @@ Trades come from the Periodic Transaction Reports that members of Congress file 
 
 **Example:** 3 late reports and 4 committee-conflict trades: 100 − 6 − 4 = **A (90%)**, before any other ethics cases.
 
-## People over Profit Score
+## Workers > Profit Score
 
-The People over Profit Score measures whether a politician's legislative actions work for lower- and middle-income households or for the wealthy and corporations. A higher percentage means more of their record works for the people: an **A** means they work for the people, and an **F** means they work for the wealthy and corporations.
+The Workers > Profit Score measures whether a politician's legislative actions work for lower- and middle-income households or for the wealthy and corporations. A higher percentage means more of their record works for the people: an **A** means they work for the people, and an **F** means they work for the wealthy and corporations.
 
 ### Step 1: Classify each bill
 
@@ -191,7 +191,7 @@ Each action carries its Rule 1 weight and takes a side as Rule 1 describes. For 
 ### Step 3: Calculate
 
 ```latex
-\text{People over Profit} = \frac{\text{People-leaning points}}{\text{People-leaning points} + \text{Profit-leaning points}} \times 100
+\text{Workers > Profit} = \frac{\text{People-leaning points}}{\text{People-leaning points} + \text{Profit-leaning points}} \times 100
 ```
 
 **Example:** 12 People-leaning points and 8 Profit-leaning points give 12 ÷ 20 = 60%, shown as **D (60%)**.
@@ -266,10 +266,10 @@ Each score's main page uses the charts below. Every chart shows how many data po
 - Trade-and-vote timeline: buys and sells on a timeline with markers for related votes and hearings, and flagged trades highlighted
 - No returns or profit leaderboards, since those figures are estimates
 
-### People over Profit
+### Workers > Profit
 
 - Diverging bar chart centered at 50%, with people-leaning records on one side and wealthy-and-corporate-leaning records on the other
-- Scatter plot of People over Profit against DW-NOMINATE position, to spot outliers
+- Scatter plot of Workers > Profit against DW-NOMINATE position, to spot outliers
 - Tree map of the top 20 donors: tile size is the amount given, tile color shows People-aligned donors (unions, small-dollar donors as one tile) vs. Profit-aligned donors (corporate PACs, industry groups), and all other donors are grouped as "Other"
 - Link to the outside spending chart on the Money & Influence page
 
@@ -302,7 +302,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 ### Bills and sponsorships
 
-*Feeds Rule 1, Your match, the Promise Score, and People over Profit.*
+*Feeds Rule 1, Your match, the Promise Score, and Workers > Profit.*
 
 - **Congress.gov API** *(in use)*: bills each member sponsored in the current Congress **(Federal only)**. [Key](https://api.congress.gov/sign-up/) · [Docs](https://github.com/LibraryOfCongress/api.congress.gov)
 - **Congress.gov cosponsored-legislation endpoint** *(in use)*: the bills each member co-sponsored, which Rule 1 counts. It uses the same Congress.gov key **(Federal only)**.
@@ -316,7 +316,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 ### Votes
 
-*Feeds Rule 1, Your match, the Promise Score, People over Profit, and key-vote position.*
+*Feeds Rule 1, Your match, the Promise Score, Workers > Profit, and key-vote position.*
 
 - **House Clerk roll calls** *(in use)*: official House votes **(Federal only)**. [clerk.house.gov/Votes](https://clerk.house.gov/Votes)
 - **Senate roll calls** *(in use)*: official Senate votes **(Federal only)**. [senate.gov roll call lists](https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.htm)
@@ -419,7 +419,7 @@ Each data category below lists its free sources and the parts of the scorecard i
 
 ### Other sources
 
-- Nonpartisan analyses from the Congressional Budget Office, the Joint Committee on Taxation, and the Tax Policy Center mark People over Profit bills (two so far, from CBO and the Tax Policy Center).
+- Nonpartisan analyses from the Congressional Budget Office, the Joint Committee on Taxation, and the Tax Policy Center mark Workers > Profit bills (two so far, from CBO and the Tax Policy Center).
 - The project's original research file supplies vote records, statement checks, ethics summaries, and the issue coding of each vote.
 
 ### Do not use (shut down, closing, or not free)
@@ -438,7 +438,7 @@ Some links were built from paths the sites list rather than opened directly (vot
 **Where things stand now:**
 
 - 46 of 59 politicians are "Not graded" on the Promise Score, because most have only 2 or 3 checks. The president is graded from PolitiFact's trackers: **F (43%)**.
-- Two bills are marked for People over Profit (H.R. 1 of 2025 and the 2017 Tax Cuts and Jobs Act), but no one has the 3 scored actions a grade needs yet, so everyone is still "Not graded" on that score.
+- Two bills are marked for Workers > Profit (H.R. 1 of 2025 and the 2017 Tax Cuts and Jobs Act), but no one has the 3 scored actions a grade needs yet, so everyone is still "Not graded" on that score.
 - The president's Ethics Score is **F (0%)**: 5 confirmed findings and 7 investigations that ended without a finding.
 - The original research file was not independently fact-checked.
 - The ethics tags, open/closed labels, and liberal/conservative key-vote marks were added on top of that file and are judgment calls.
@@ -448,7 +448,7 @@ Some links were built from paths the sites list rather than opened directly (vot
 - [ ] Review every ethics tag and open/closed label
 - [ ] Review the liberal/conservative marks on the 16 key bills
 - [ ] Fact-check the original research file
-- [ ] Add People over Profit bills with cited analyses (two added so far)
+- [ ] Add Workers > Profit bills with cited analyses (two added so far)
 - [ ] Check the MAGA-Meter tally against PolitiFact's live page
 - [ ] Tag true campaign promises separately from other stated positions
 - [ ] Review the committee-sector list (`public/committee-sectors.json`) and the outside-spender sectors assigned from names
@@ -460,7 +460,7 @@ These values are placeholders or interpretations of the original notes. Confirm 
 
 - [ ] **Ethics deductions:** the original notes used −10 / −5 / −3; the app uses −20 / −15 / −5, which this doc follows. Confirm which set to keep.
 - [x] **Statement-only issues in Your match:** counted at half importance (Rule 1), in this doc and in the app.
-- [x] **People over Profit scope:** votes, sponsorships and cosponsorships with Rule 1 weights, in this doc and in the app.
+- [x] **Workers > Profit scope:** votes, sponsorships and cosponsorships with Rule 1 weights, in this doc and in the app.
 - [ ] **Weights:** statements at 0.5; votes, sponsorships, and official acts at 1.0. Should sponsoring a bill count more than voting for it?
 - [ ] **Half credit in the Promise Score:** partly supported and changed position both earn ½. Raise partial credit (for example to 0.75) if a compromise should count closer to a kept promise.
 - [ ] **Finding severity:** every confirmed finding costs 20 points regardless of how serious it is. Consider tiers.
@@ -471,7 +471,7 @@ These values are placeholders or interpretations of the original notes. Confirm 
 - [ ] **Money analysis:** kept separate from the grades. Decide whether it should ever affect a grade.
 - [ ] **Flag thresholds:** top 20 donors, a 50% donation change, and a 6-month window.
 - [ ] **Who marks bills:** who assigns People/Profit and liberal/conservative marks, and how reviewer disagreements are settled.
-- [ ] **State records in People over Profit:** the CBO and JCT analyze federal bills only, so decide which sources (such as state legislative fiscal offices) can mark state bills. Voteview's DW-NOMINATE also covers Congress only, so the ideological position indicator is blank for state-only officials unless a state-level measure is added.
+- [ ] **State records in Workers > Profit:** the CBO and JCT analyze federal bills only, so decide which sources (such as state legislative fiscal offices) can mark state bills. Voteview's DW-NOMINATE also covers Congress only, so the ideological position indicator is blank for state-only officials unless a state-level measure is added.
 - [ ] **Trading deductions:** −2 per late report and −1 per committee-conflict trade (each capped at −10) and the 30-day timing window are placeholders. Check each aggregator's terms before republishing its trading data.
 - [ ] **Overlapping sources:** where several sources cover the same thing (stock trades, state bills, news), they are merged and the official record wins. Confirm this rule, and who reviews the disagreements.
 - [ ] **Trading history:** Bargo's free tier covers only the last 3 months, so older trades are imported from the official filings with `scripts/build-holdings.py`, for review. Confirm that your use fits Senate eFD's terms before including senators.

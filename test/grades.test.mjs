@@ -24,7 +24,7 @@ test('ethics: findings, open and closed investigations cost points; allegations 
   assert.equal(ethicsScore([e('investigation','closed')]).pct,100-ETHICS_COST.closed);
   assert.equal(ethicsScore(Array(9).fill(e('finding'))).pct,0);
 });
-test('people over profit: a Yea or sponsorship takes the bill side, a Nay the other, missed votes count nothing, one credit per bill; needs 3 actions',()=>{
+test('Workers > Profit: a Yea or sponsorship takes the bill side, a Nay the other, missed votes count nothing, one credit per bill; needs 3 actions',()=>{
   const marks=new Map([['119-hr-1',{pvp:'profit'}],['119-s-5',{pvp:'people'}],['119-hr-7',{pvp:'people'}],['119-hr-9',{pvp:'profit'}]]);
   const acts=pvpActions(marks,[{bill:'119-hr-1',pos:'Nay'},{bill:'119-s-5',pos:'Yea'},{bill:'119-hr-9',pos:'Not Voting'},{bill:'119-hr-2',pos:'Yea'}],[{bill:'119-hr-7',kind:'sponsored'},{bill:'119-s-5',kind:'cosponsored'}]);
   const r=pvpScore(acts);
@@ -36,7 +36,7 @@ test('people over profit: a Yea or sponsorship takes the bill side, a Nay the ot
 test('every displayed investigation says whether it is open or closed',()=>{
   for(const s of people)for(const e of s.ethics)if(e.status==='investigation')assert.ok(['open','closed'].includes(e.stage),`${s.id}: ${e.title}`);
 });
-test('any bill marked for people over profit has a valid ID, a side, a reason and a source',()=>{
+test('any bill marked for Workers > Profit has a valid ID, a side, a reason and a source',()=>{
   for(const v of data.votes.concat(data.hvotes))assert.ok(!v.pvp,v.id+': People/Profit marks belong in the bills list, once per bill');
   for(const b of data.bills||[]){assert.ok(/^(\d+-[a-z]+-\d+|eo-\d+)$/.test(b.id),b.id);assert.ok(['people','profit'].includes(b.pvp),b.id);assert.ok(b.why,b.id+' needs a reason');assert.ok(b.src&&/^https:\/\//.test(b.src.u),b.id+' needs a source link');}
 });
@@ -107,7 +107,7 @@ test('promises: a president\'s PolitiFact tracker tallies count kept 1, compromi
     for(const x of t.examples||[])assert.ok(t.counts[x.rating]>0&&/^https:\/\//.test(x.url),`${s.id}: ${t.name} example ${x.title}`);
   }
 });
-test('people over profit: a president\'s signature or order takes the bill\'s side and a veto the other',()=>{
+test('Workers > Profit: a president\'s signature or order takes the bill\'s side and a veto the other',()=>{
   const marks=new Map([['119-hr-1',{pvp:'profit'}],['118-s-2',{pvp:'people'}],['eo-14251',{pvp:'profit'}]]);
   const v=pvpScore(pvpActions(marks,[],[{bill:'119-hr-1',kind:'signed'},{bill:'118-s-2',kind:'vetoed'},{bill:'eo-14251',kind:'order'},{bill:'1-hr-9',kind:'signed'}]));
   assert.deepEqual(v.scored.map(a=>a.took),['profit','profit','profit']);assert.equal(v.pct,0);
