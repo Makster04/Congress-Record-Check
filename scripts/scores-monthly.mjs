@@ -52,7 +52,7 @@ export function compare(before,after){
 }
 export function buildEntry(research,committees,sectors,history,config,date){
   const scorer=makeScorer(research,committees,sectors.committees||{});
-  const scores=Object.fromEntries([...research.members,...research.cands].map(s=>[s.id,personScores(s,scorer,history)]));
+  const scores=Object.fromEntries([...research.members,...research.cands,...(research.featured||[])].map(s=>[s.id,personScores(s,scorer,history)]));
   return {date,reviewedAt:config.reviewedAt,research:crypto.createHash('sha256').update(JSON.stringify(research)).digest('hex').slice(0,12),
     rules:{ETHICS_COST,TRADE_COST,LATE_DAYS,WEIGHT,MIN_CHECKS,MIN_PVP_ACTIONS,SWING,WINDOW_MONTHS,TOP_DONORS},scores};
 }

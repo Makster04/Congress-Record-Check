@@ -76,7 +76,7 @@ if(import.meta.url===pathToFileURL(process.argv[1]).href){
   const [current,historical,social,committees,membership]=await Promise.all(FILES.map(load));
   const configURL=new URL('data/config.json',root),config=JSON.parse(await fs.readFile(configURL,'utf8'));
   const research=JSON.parse(await fs.readFile(new URL('public/research.json',root),'utf8'));
-  const profiles=new Map([...research.members,...research.cands].map(s=>[s.id,s]));
+  const profiles=new Map([...research.members,...research.cands,...(research.featured||[])].map(s=>[s.id,s]));
   const people=config.people.filter(p=>profiles.has(p.id));
   const matched=matchPeople(people,[...current,...historical]);
   const socialBy=new Map(social.map(s=>[s.id.bioguide,s.social]));
@@ -101,7 +101,8 @@ if(import.meta.url===pathToFileURL(process.argv[1]).href){
     p.inOffice=!!x&&current.includes(x);
     // State legislative service, for the Open States and LegiScan jobs (the legislature of the state they run in).
     p.stateLeg=(s.stateLeg||[]).length?p.state:null;
-    p.campaignSite=s.cand?(s.site||null):(p.campaignSite||null);
+    // A featured officeholder's site is the official one, not a campaign site to snapshot.
+    p.campaignSite=s.office?null:s.cand?(s.site||null):(p.campaignSite||null);
     p.openstates=p.openstates||null;p.legiscan=p.legiscan||null;
   }
   // Key bills for the bill-detail job: the bills behind the selected votes and the bills marked People or Profit.

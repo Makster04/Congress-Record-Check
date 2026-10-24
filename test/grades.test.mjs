@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import {letter,promiseScore,ethicsScore,pvpScore,pvpActions,moneyRatio,matchScore,tradeChecks,billKey,billKeyFromText,oneCreditPerBill,MIN_CHECKS,ETHICS_COST,TRADE_COST} from '../public/grades.js';
 const data=JSON.parse(await fs.readFile(new URL('../public/research.json',import.meta.url),'utf8'));
-const people=data.members.concat(data.cands);
+const people=data.members.concat(data.cands,data.featured||[]);
 const st=(...a)=>a.map(assessment=>({assessment}));
 test('letter grades use the usual 90/80/70/60 cut-offs',()=>{
   assert.deepEqual([100,90,89.9,80,79,70,69,60,59,0].map(letter),['A','A','B','B','C','C','D','D','F','F']);

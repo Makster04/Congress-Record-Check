@@ -16,7 +16,7 @@ This was the plan for building the rules in `1_Political_Scorecard_Metholodgy.md
 - **Stock trades from three services at once** (Bargo, Eulerpool and Financial Modeling Prep), checked against the House Clerk's official filing index. Bargo's published description has no late-filing field, so lateness comes from the dates
 - **Federal contracts to donor companies** (USAspending, no key), matched through companies' federal IDs (SAM.gov, new key)
 - **House votes from 2023 on** (Congress.gov's House vote endpoint when its key is set; the House Clerk stays the fallback), **bill details** (summaries, amendments, CBO estimates, committee reports) for key bills, and **CRS reports** matched to the bills they cover
-- **Official acts** (Federal Register, no key), for people given a `federalRegister` setting (none yet)
+- **Official acts** (Federal Register, no key), for people given a `federalRegister` setting (Donald Trump, the featured profile)
 - **Official committee lists** (Senate.gov and House Clerk files, no key), compared daily with the reviewed list, plus Wikidata IDs for candidates who never served (looked up by FEC ID when Wikidata is reachable)
 - **Fact-checks of politicians' claims** and **officials' YouTube videos** (one Google key for both), and **news coverage** (GDELT, no key, and the New York Times, new key)
 - **Committee meetings, witnesses and testimony**: through Congress.gov's committee-meeting endpoint, which serves the House Document Repository's files, instead of reading the repository's pages
