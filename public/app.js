@@ -1465,7 +1465,7 @@ function panePromises(s,pane){
     <div class="verdict"><span class="chip ${cls}">${AICON[x.assessment]} ${lab}</span><div class="note">${esc(x.note)}</div></div>
   </article>`}).join('')}`}
   <section id="live-records" style="margin-top:28px"></section>`;
-  window.RecordLive.profile(s,pane.querySelector('#live-records'),['crec-day','hearing','meeting','votesmart','bluesky','youtube','wayback','factcheck','news']);
+  window.RecordLive.profile(s,pane.querySelector('#live-records'),['crec-day','hearing','meeting','press','votesmart','bluesky','threads','youtube','wayback','factcheck','news']);
 }
 
 function paneSources(s,pane){
@@ -1854,6 +1854,7 @@ function renderMethod(sub){
       <li><b>More official sources:</b> many now refresh automatically (listed under "What refreshes" below), each with its own free key. Every key that is set is used at once, and a record found in several sources shows once.</li>
       <li><b>Committees and IDs:</b> committee seats and each member's IDs come from congress-legislators. Senate votes now match senators by their official LIS ID, not surname and state.</li>
       <li><b>Monthly recalculation:</b> Promises, Ethics and Workers > Profit are recalculated each month after review, with a change log (below).</li>
+      <li><b>Press releases, Bluesky and Threads:</b> members' press releases now come from their official websites, Bluesky accounts are checked at each person's official and campaign website domains, and Threads posts that mention an issue can be collected once Meta approves access. See "What refreshes" below.</li>
     </ul>
     <details class="tv"><summary>Earlier changes (October 3, 2026)</summary>
     <ul class="list">
@@ -1900,7 +1901,7 @@ function renderMethod(sub){
     <ul class="list">
       <li><b>Overview:</b> the four grades, where the campaign's money comes from, outside money, how the record compares with your choices, where they sit politically, whether their words match their actions, and a short ethics list.</li>
       <li><b>Your match:</b> the comparison with your positions, issue by issue, with every piece of evidence. Then the record behind it: the career ideology score, key Senate or House votes with bill details, sponsored bills or other actions, any state legislative record, and the latest official bills and roll calls.</li>
-      <li><b>Promises Delivered:</b> every statement check, pairing what was said with what the record shows. Then the latest official records: floor speeches, hearings, Vote Smart positions and ratings, fact-checks, videos, posts, campaign-site snapshots and news.</li>
+      <li><b>Promises Delivered:</b> every statement check, pairing what was said with what the record shows. Then the latest official records: floor speeches, hearings, press releases, Vote Smart positions and ratings, fact-checks, videos, Bluesky and Threads posts, campaign-site snapshots and news.</li>
       <li><b>Ethics:</b> every ethics entry, most serious first, tagged with what it is and what it costs the grade. Then a case timeline, reviewed stock trades with charts, and the latest trades and leads from court records, FEC enforcement records and DOJ press releases. Leads are kept apart from scored cases.</li>
       <li><b>Workers > Profit:</b> a diverging bar, votes and sponsorships on bills scored by who gains, a tree map of the top 20 donors, how funders wanted the candidate to vote, and money and votes by issue. These show agreement, not that money changed a vote.</li>
       <li><b>Money &amp; Influence:</b> the Money &amp; Influence Analysis (below), where the campaign's money comes from, outside money for and against (also by month), campaign funds raised, cash on hand, every PAC contribution, money routed through PACs, every outside-spending group and item, the combined view, and the latest official filings.</li>
@@ -2014,6 +2015,13 @@ function renderMethod(sub){
           <li><b>News:</b> GDELT and the New York Times, by link.</li>
         </ul></li>
       <li><b>Disagreements:</b> flagged for review.</li>
+      <li><b>Posts and press releases:</b> listed as statements, never as actions.
+        <ul class="list">
+          <li><b>Press releases:</b> from the RSS feed on each member's official website. They often carry the same message as the office's posts on X and Facebook.</li>
+          <li><b>Bluesky:</b> each person's official and campaign website domains are checked as handles, since only a domain's owner can use one. Other accounts are added only when they are linked from those websites or carry Bluesky's verified badge with the person's name (<span class="mono">npm run social:bluesky</span>).</li>
+          <li><b>Threads:</b> each account is searched for the site's ${ISS.length} issues, so only posts that mention one are collected. It needs Meta's approval to search other people's posts. A Threads account uses its Instagram username.</li>
+          <li><b>Not collected:</b> X and Facebook, which have no free way to read other people's posts.</li>
+        </ul></li>
       <li><b>Leads:</b> court records, FEC enforcement records, DOJ press releases and news. A lead becomes a scored case only after its status is confirmed from an official record. <a href="#updates">See every source and its status</a>.</li>
     </ul>
     <h2 id="method-log">Monthly recalculation and change log</h2>

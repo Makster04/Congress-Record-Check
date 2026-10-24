@@ -74,7 +74,7 @@ export async function initialize(db,seed=null) {
   await statement(db,"INSERT OR REPLACE INTO metadata(key,value) VALUES('initialized',?)",nowISO()).run();
 }
 function needsKey(kind,env){const h=hostOf(kind);return h?missingKey(h,env):null;}
-const keyMessage=m=>m==='SEC contact line'?'SEC contact line needed (SEC_USER_AGENT)':`${m} API key needed`;
+const keyMessage=m=>m==='SEC contact line'?'SEC contact line needed (SEC_USER_AGENT)':m==='Threads'?'Threads access token needed (THREADS_ACCESS_TOKEN)':`${m} API key needed`;
 // Jobs whose args are filled in when another job finishes (a person's top donor organizations, their outside spenders).
 const chainContext=db=>({
   addJob:(id,kind,subject,args)=>addJob(db,id,kind,subject,args),

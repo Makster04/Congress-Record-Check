@@ -2,7 +2,7 @@
 // congress-legislators project (https://github.com/unitedstates/congress-legislators, public domain, no key).
 //   node scripts/build-ids.mjs              download the current files
 //   node scripts/build-ids.mjs --dir <dir>  use copies already downloaded (same file names, .json)
-// Writes data/config.json (lis, ids, social, campaignSite for each profiled person) and public/committees.json.
+// Writes data/config.json (lis, ids, social, official, campaignSite for each profiled person) and public/committees.json.
 // People who never served in Congress are looked up in Wikidata by their FEC candidate ID when Wikidata is reachable.
 import fs from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
@@ -21,6 +21,13 @@ async function load(name){
   return r.json();
 }
 const pick=(o,keys)=>Object.fromEntries(keys.filter(k=>o?.[k]!=null&&o[k]!=='').map(k=>[k,o[k]]));
+// A sitting member's official website and the RSS feed congress-legislators lists for it (often out of date; the
+// press-release job also looks for the feed on the website itself), from their current term.
+export function officialOf(x){
+  const t=x?.terms?.at(-1),https=u=>{try{const v=new URL(String(u).replace(/&amp;/g,'&'));if(v.protocol==='http:')v.protocol='https:';return v.protocol==='https:'?v.href.replace(/\/$/,''):null;}catch{return null;}};
+  const site=t?.url?https(t.url):null;
+  return site?{site,feed:t.rss_url?https(t.rss_url):null}:null;
+}
 
 // Exported for the tests: match people to legislators and build the committee file from the published records.
 export function matchPeople(people,legislators){
@@ -85,7 +92,7 @@ if(import.meta.url===pathToFileURL(process.argv[1]).href){
   let withLis=0,withIds=0,withWd=0;
   for(const p of config.people){
     if(!profiles.has(p.id))continue;
-    const x=matched.get(p.id),s=profiles.get(p.id),bluesky=p.social?.bluesky||[];
+    const x=matched.get(p.id),s=profiles.get(p.id),bluesky=p.social?.bluesky||[],threads=p.social?.threads||[];
     if(x){
       p.lis=x.id.lis||null;if(p.lis)withLis++;
       p.ids=pick(x.id,KEEP_IDS);withIds++;
@@ -96,9 +103,10 @@ if(import.meta.url===pathToFileURL(process.argv[1]).href){
       p.ids=q?{wikidata:q}:{};if(q)withWd++;
       p.social=pick(p.social,KEEP_SOCIAL);
     }
-    // Accounts the project adds by hand (Bluesky has no official list) are kept across rebuilds.
-    p.social.bluesky=bluesky;
+    // Accounts the project adds by hand (Bluesky and Threads have no official list) are kept across rebuilds.
+    p.social.bluesky=bluesky;p.social.threads=threads;
     p.inOffice=!!x&&current.includes(x);
+    p.official=p.inOffice?officialOf(x):null;
     // State legislative service, for the Open States and LegiScan jobs (the legislature of the state they run in).
     p.stateLeg=(s.stateLeg||[]).length?p.state:null;
     // A featured officeholder's site is the official one, not a campaign site to snapshot.

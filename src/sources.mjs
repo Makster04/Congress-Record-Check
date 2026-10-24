@@ -36,6 +36,12 @@ export const HOSTS = {
   'api.usaspending.gov':{name:'USAspending',perRun:10},
   'www.federalregister.gov':{name:'Federal Register',perRun:10},
   'public.api.bsky.app':{name:'Bluesky',perRun:10},
+  // Threads keyword search (Meta). Searching other people's public posts needs the threads_keyword_search permission
+  // approved in App Review; a user can run 2,200 searches a day.
+  'graph.threads.net':{name:'Threads',keys:['THREADS_ACCESS_TOKEN'],query:'access_token',perRun:20},
+  // Not a hostname: the shared entry for every member's official website (any *.senate.gov or *.house.gov host without
+  // an entry of its own), used for their press-release feeds. The feed job counts against this one limit.
+  'official-sites':{name:'Official member websites',perRun:10},
   'web.archive.org':{name:'Wayback Machine',perRun:3},
   'www.justice.gov':{name:'Justice Department'},
   'projects.propublica.org':{name:'ProPublica Nonprofit Explorer'},
@@ -43,28 +49,43 @@ export const HOSTS = {
   'data.sec.gov':{name:'SEC EDGAR',agent:'SEC_USER_AGENT',perRun:10},
 };
 // Query parameters that can carry a credential; they are removed from any URL that is saved (a next-page link).
-const SECRET_PARAMS=['api_key','key','apikey','api-key','token'];
+const SECRET_PARAMS=['api_key','key','apikey','api-key','token','access_token'];
 export function cleanURL(url){const u=new URL(url);for(const k of SECRET_PARAMS)u.searchParams.delete(k);return u.href;}
+// The approval entry for a hostname: its own entry, or the shared one for members' official websites.
+const OFFICIAL_SITE=/^(?:[a-z0-9-]+\.)+(?:senate|house)\.gov$/;
+export const hostRule=host=>HOSTS[host]||(OFFICIAL_SITE.test(host)?HOSTS['official-sites']:null);
 // The name of the missing setup item for a host, or null when it can be used.
 export function missingKey(host,env){
-  const h=HOSTS[host];if(!h)return 'Approved source';
+  const h=hostRule(host);if(!h)return 'Approved source';
   if(h.agent&&!env[h.agent])return 'SEC contact line';
   if(h.keys&&!h.optional&&!h.keys.some(k=>env[k]))return h.name;
   return null;
 }
 export class SourceError extends Error { constructor(message, retryAfter=0,statusCode=0){super(message);this.retryAfter=retryAfter;this.statusCode=statusCode;} }
 
-// as: 'json' (default), 'xml', 'text' or 'bytes'. A body is sent as JSON with POST.
-export async function requestSource(url, env, {json=true,as=json?'json':'xml',allow404=false,body=null}={}) {
-  const u=new URL(url),h=HOSTS[u.hostname]; if(u.protocol!=='https:' || !h) throw new SourceError('Unapproved data source');
+// as: 'json' (default), 'xml', 'text' or 'bytes'. A body is sent as JSON with POST. allow lists HTTP statuses that
+// return null instead of failing (allow404 is the same as allow:[404]). follow allows up to 3 redirects, each to an
+// approved https host; otherwise any redirect fails.
+export async function requestSource(url, env, {json=true,as=json?'json':'xml',allow404=false,allow=allow404?[404]:[],follow=false,body=null}={}) {
+  let u=new URL(url),h=hostRule(u.hostname); if(u.protocol!=='https:' || !h) throw new SourceError('Unapproved data source');
   const missing=missingKey(u.hostname,env);if(missing)throw new SourceError(`${missing} API key needed`);
-  const headers={Accept:as==='json'?'application/json':as==='xml'?'application/xml,text/xml':'*/*'};
+  const headers={Accept:as==='json'?'application/json':as==='xml'?'application/rss+xml,application/atom+xml,application/xml,text/xml':'*/*'};
   const key=h.keys&&h.keys.map(k=>env[k]).find(Boolean);
   if(key){if(h.query)u.searchParams.set(h.query,key);else headers[h.header]=(h.prefix||'')+key;}
   if(h.agent)headers['User-Agent']=env[h.agent];
   if(body)headers['Content-Type']='application/json';
-  const response=await (env.fetch||fetch)(u,{method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(20000),redirect:'error'});
-  if(response.status===404 && allow404) return null;
+  let response;
+  for(let hop=0;;hop++){
+    response=await (env.fetch||fetch)(u,{method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(20000),redirect:follow?'manual':'error'});
+    if(!follow||response.status<300||response.status>=400)break;
+    const to=response.headers.get('location');
+    if(!to||hop>=3)throw new SourceError('Source redirected too many times');
+    const next=new URL(to,u);
+    // A redirect may not leave the approved hosts, and never carries a key to a different host.
+    if(next.protocol!=='https:'||!hostRule(next.hostname)||(key&&next.hostname!==u.hostname))throw new SourceError('Source redirected to an unapproved address');
+    u=next;
+  }
+  if(allow.includes(response.status)) return null;
   if(!response.ok) {
     const retry=response.headers.get('retry-after');
     const seconds=retry ? (Number.isFinite(Number(retry))?Number(retry):Math.max(0,(Date.parse(retry)-Date.now())/1000)):0;

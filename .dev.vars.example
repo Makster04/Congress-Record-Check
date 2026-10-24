@@ -64,9 +64,17 @@ SAM_API_KEY=
 # SEC EDGAR asks every request to name you: "Your Name you@example.com" (not a key)
 SEC_USER_AGENT=
 
+# Threads (Meta): politicians' Threads posts that mention one of the issues. Free, but searching other people's
+# posts needs Meta's approval: create an app with the Threads use case, add the threads_basic and
+# threads_keyword_search permissions, request advanced access for threads_keyword_search in App Review, then paste
+# a long-lived user access token here. Long-lived tokens last 60 days, so replace it before it expires.
+# https://developers.facebook.com/docs/threads/keyword-search
+THREADS_ACCESS_TOKEN=
+
 # No key needed: Senate and House roll calls, Senate and House committee lists, the House
-# disclosure index, Federal Register, Bluesky, Wayback Machine, GDELT, DOJ press releases,
-# ProPublica Nonprofit Explorer, FARA, USAspending.
+# disclosure index, members' press-release feeds on their official websites, Federal Register,
+# Bluesky, Wayback Machine, GDELT, DOJ press releases, ProPublica Nonprofit Explorer, FARA,
+# USAspending. To find more Bluesky accounts, run: npm run social:bluesky
 
 # Local refresh runs automatically while npm start is running.
 LOCAL_AUTORUN=true

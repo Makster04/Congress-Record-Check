@@ -37,6 +37,47 @@ const top=(rows,n,by='date')=>rows.slice().sort((a,b)=>String(b[by]||'').localeC
 const recent=(rows,n=50)=>({count:rows.length,rows:top(rows,n),rowLimit:n});
 const byPersonOf=rows=>{const out={};for(const r of rows)for(const id of r.people||[])(out[id]||=[]).push(r);return out;};
 
+// ---------- Statements: social accounts and official press releases ----------
+const domainOf=u=>{try{return new URL(u).hostname.replace(/^www\./,'').toLowerCase();}catch{return null;}};
+// Shared platforms a "website" can point to (a Facebook page, a donation page): their domain belongs to the platform,
+// not to the person, so it is never checked as the person's Bluesky handle.
+const SHARED_HOST=/(^|\.)(facebook|instagram|x|twitter|threads|youtube|tiktok|linktr|linkedin|actblue|winred|anedot|bsky|wikipedia|ballotpedia|squarespace|wixsite|wordpress|medium|substack|google)\.(com|net|org|app|ee|site)$/;
+export const ownDomain=u=>{const d=domainOf(u);return d&&!SHARED_HOST.test(d)?d:null;};
+// Bluesky handles to check: the ones added by hand (scripts/find-bluesky.mjs finds and verifies them), then the
+// person's official website domain and campaign website domain. Only a domain's owner can use it as a Bluesky handle,
+// so those need no other check; a domain with no account is skipped and listed.
+export const blueskyHandles=p=>[...new Set([...(p.social?.bluesky||[]).map(h=>String(h).replace(/^@/,'').toLowerCase()),...[p.official?.site,p.campaignSite].map(ownDomain)].filter(Boolean))];
+// Threads accounts: the ones added by hand, or else the Instagram username, since a Threads profile always uses the
+// username of the Instagram account it was made from.
+export const threadsUsers=p=>[...new Set((p.social?.threads?.length?p.social.threads:p.social?.instagram?[p.social.instagram]:[]).map(u=>String(u).replace(/^@/,'').toLowerCase()).filter(u=>/^[a-z0-9._]{1,30}$/.test(u)))];
+// The search word for each alignment issue. Threads posts are found by searching each account for these words, so
+// only posts that mention an issue are collected.
+export const THREADS_TERMS={health:'health care',taxes:'taxes',immigration:'immigration',abortion:'abortion',civil:'marriage',guns:'guns',climate:'climate',tariffs:'tariffs',ukraine:'Ukraine',warpowers:'Venezuela',jan6:'January 6',labor:'wages',voting:'voter ID',infra:'infrastructure',vouchers:'school choice'};
+// RSS and Atom feed links a web page advertises (<link rel="alternate" type="application/rss+xml" href="...">),
+// resolved against the page: press-release feeds first, then news feeds, then the rest.
+export function feedLinks(html,base){
+  const out=[];
+  for(const [tag] of String(html||'').matchAll(/<link\b[^>]*>/gi)){
+    const attr=n=>{const m=new RegExp(`\\b${n}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'>]+))`,'i').exec(tag);return m?(m[1]??m[2]??m[3]).replace(/&amp;/g,'&'):'';};
+    if(!/\balternate\b/i.test(attr('rel'))||!/(rss|atom)\+xml/i.test(attr('type'))||!attr('href'))continue;
+    try{const u=new URL(attr('href'),base);if(u.protocol==='http:')u.protocol='https:';out.push({url:u.href,title:attr('title')});}catch{}
+  }
+  const press=f=>/press/i.test(f.title+' '+f.url)?0:/news/i.test(f.title+' '+f.url)?1:2;
+  return [...new Set(out.sort((a,b)=>press(a)-press(b)).map(f=>f.url))];
+}
+const txt=v=>v&&typeof v==='object'?v['#text']??'':v??'';
+const dateOf=v=>{const d=new Date(String(txt(v)).trim());return Number.isFinite(+d)?d.toISOString().slice(0,10):null;};
+const atomLink=l=>{const ls=list(l);const x=ls.find(k=>!k['@_rel']||k['@_rel']==='alternate')||ls[0];return typeof x==='string'?x:x?.['@_href'];};
+// The items of an RSS 2.0, RSS 1.0 or Atom document, or null when it is not a feed.
+export function feedItems(doc){
+  const rss=doc?.rss?.channel,rdf=doc?.['rdf:RDF'],atom=doc?.feed;
+  const raw=rss?list(rss.item).map(i=>({title:i.title,url:txt(i.link)||txt(i.guid),date:i.pubDate||i['dc:date'],summary:i.description}))
+    :rdf?list(rdf.item).map(i=>({title:i.title,url:txt(i.link),date:i['dc:date'],summary:i.description}))
+    :atom?list(atom.entry).map(e=>({title:e.title,url:atomLink(e.link),date:e.published||e.updated,summary:e.summary||e.content})):null;
+  if(!raw)return null;
+  return raw.map(i=>{const url=https(String(txt(i.url)).trim().replace(/^http:/,'https:'));return {id:url,title:cut(strip(txt(i.title)),300),url,date:dateOf(i.date),summary:cut(strip(txt(i.summary)),300)};}).filter(i=>i.url&&i.title);
+}
+
 // ---------- Record ----------
 // Congress.gov lists the amendments a member sponsored or cosponsored (mostly senators') with their bills; an amendment
 // has an amendment number instead of a bill number and no title, so it is left out rather than failing the page.
@@ -260,15 +301,56 @@ export const FEEDS={
     summarize:(rows,a)=>({ratings:rows.filter(r=>r.kind==='rating').sort((x,y)=>String(y.timespan).localeCompare(String(x.timespan))).slice(0,60),npat:rows.find(r=>r.kind==='npat')||null,url:`https://justfacts.votesmart.org/candidate/evaluations/${a.candidate}`})},
 
   bluesky:{host:'public.api.bsky.app',label:'Bluesky posts',tab:'promises',
-    jobs:c=>profiled(c).filter(p=>p.social?.bluesky?.length).map(p=>({id:`bluesky:${p.id}`,subject:p.id,args:{handles:p.social.bluesky}})),
+    jobs:c=>profiled(c).map(p=>({id:`bluesky:${p.id}`,subject:p.id,args:{handles:blueskyHandles(p)}})).filter(j=>j.args.handles.length),
     async page(job,a,env){
       const i=Number(job.cursor||0),handle=a.handles[i];
-      const d=await requestSource(`https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=${encodeURIComponent(handle)}&limit=50&filter=posts_no_replies`,env);
+      // Bluesky answers 400 for a handle with no account (most often a website domain that isn't used as a handle).
+      const d=await requestSource(`https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed?actor=${encodeURIComponent(handle)}&limit=50&filter=posts_no_replies`,env,{allow:[400,404]});
+      if(d===null)return {rows:[{id:`missing:${handle}`,missing:handle}],next:i+1<a.handles.length?String(i+1):null};
       need(Array.isArray(d.feed),'Bluesky feed missing');
       const rows=d.feed.map(f=>f.post).filter(p=>p&&p.author?.handle===handle&&!p.reason).map(p=>({id:p.uri,handle,text:cut(p.record?.text,500),date:day(p.record?.createdAt),url:`https://bsky.app/profile/${handle}/post/${p.uri.split('/').pop()}`}));
       return {rows,next:i+1<a.handles.length?String(i+1):null};
     },
-    summarize:rows=>recent(rows,60)},
+    summarize:(rows,a)=>{const posts=rows.filter(r=>!r.missing),missing=rows.filter(r=>r.missing).map(r=>r.missing);
+      return {...recent(posts,60),accounts:a.handles.filter(h=>!missing.includes(h)),missing};}},
+
+  // Members' official press releases, from the RSS or Atom feed on their official website: the same messages they
+  // often post on X and Facebook, which have no free API.
+  press:{host:'official-sites',label:'Press releases',tab:'promises',
+    jobs:c=>profiled(c).filter(p=>p.official?.site).map(p=>({id:`press:${p.id}`,subject:p.id,args:{site:p.official.site,feed:p.official.feed||null}})),
+    async page(job,a,env){
+      // Tried in order until one is a valid feed: the feeds the homepage advertises, the feed congress-legislators
+      // lists, then the usual addresses on Senate and House websites.
+      const site=a.site.replace(/\/+$/,''),step=Number(job.cursor||0);
+      const tries=['homepage',a.feed,`${site}/rss.xml`,`${site}/feed/`,`${site}/news/rss.aspx`,`${site}/press-releases/feed/`];
+      const read=async url=>{
+        try{const items=feedItems(await requestSource(url,env,{as:'xml',follow:true}));return items?.length?items:null;}
+        catch(e){if(e.statusCode===429)throw e;return null;}
+      };
+      let items=null,used=null;
+      if(step===0){
+        let html=null;try{html=await requestSource(site+'/',env,{as:'text',follow:true});}catch(e){if(e.statusCode===429)throw e;}
+        for(const url of feedLinks(html,site+'/').slice(0,3)){items=await read(url);if(items){used=url;break;}}
+      }else if(tries[step]&&!tries.slice(1,step).includes(tries[step])){items=await read(tries[step]);used=tries[step];}
+      if(items)return {rows:items.map(i=>({...i,feed:used})),next:null};
+      if(step+1<tries.length)return {rows:[],next:String(step+1)};
+      throw new SourceError('No press-release feed found on the official website');
+    },
+    summarize:rows=>({feed:rows[0]?.feed||null,...recent(rows,40)})},
+
+  // Threads posts that mention one of the issues, from Threads keyword search limited to the person's own account.
+  threads:{host:'graph.threads.net',label:'Threads posts',tab:'promises',
+    jobs:c=>profiled(c).filter(p=>threadsUsers(p).length).map(p=>({id:`threads:${p.id}`,subject:p.id,args:{users:threadsUsers(p)}})),
+    async page(job,a,env){
+      const terms=Object.entries(THREADS_TERMS),i=Number(job.cursor||0),user=a.users[Math.floor(i/terms.length)],[issue,term]=terms[i%terms.length];
+      const u=new URL('https://graph.threads.net/v1.0/keyword_search');
+      for(const [k,v] of Object.entries({q:term,search_type:'RECENT',author_username:user,fields:'id,text,timestamp,permalink,username',limit:'25'}))u.searchParams.set(k,v);
+      const d=await requestSource(u.href,env);need(Array.isArray(d?.data),'Threads search response missing');
+      const rows=d.data.filter(x=>x?.id&&String(x.username||'').toLowerCase()===user&&https(x.permalink)).map(x=>({id:String(x.id),user,text:cut(x.text,500),date:day(x.timestamp),url:https(x.permalink),issues:[issue]}));
+      return {rows,next:i+1<terms.length*a.users.length?String(i+1):null};
+    },
+    // A post that mentions several issues is listed once, with each of them.
+    summarize:rows=>{const by=new Map();for(const r of rows){const o=by.get(r.id);if(o)o.issues=[...new Set([...o.issues,...r.issues])];else by.set(r.id,{...r});}return recent([...by.values()],60);}},
 
   // Every distinct Wayback Machine capture of the campaign site, so promises can be compared after edits.
   wayback:{host:'web.archive.org',label:'Campaign-site snapshots',tab:'promises',

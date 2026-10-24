@@ -1,5 +1,5 @@
-// The monthly recalculation, run after the month's review: recalculates Promises delivered, Ethics and People over
-// profit for everyone from the reviewed research, reruns the Money & Influence timing flags, and adds an entry to
+// The monthly recalculation, run after the month's review: recalculates Promises delivered, Ethics and Workers >
+// Profit for everyone from the reviewed research, reruns the Money & Influence timing flags, and adds an entry to
 // public/score-log.json saying which score moved, by how much and why. Your match is not logged: it depends on each
 // visitor's own choices. The Methodology page shows the latest entries.
 //   npm run scores:monthly               write this month's entry (a second run on the same day replaces it)
