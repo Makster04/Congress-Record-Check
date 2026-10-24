@@ -1,15 +1,31 @@
 # Still in the works
-- Improve the API keys
-- Organize the information, tabs, and graphs to be more readable and simplistic for an audience that is non-technical or has no patience looking at too much small written information on one page
+- **API keys:** Finish setting up and testing the remaining API keys.
+- **Simpler layout:** Reorganize the information, tabs and charts so they're easy to read for a non-technical audience, with less small text on each page.
 
 # Major Roles needed
-- We probably will need certain people to work on certain political figures or certain categories of the project or certain API keys
-- People with NLP expirence will for sure become more important as we step further into detecting language and information on speech videos and longer quotes connection to donor groups
-- A donation link of each of those candidates/politicans may be added
-- We will probably later have our own Map on election predictions of who wins (We sure will need our own Methodology for how to calculate all this)
+- **Coverage leads:** People assigned to specific politicians, parts of the project or data sources (API keys).
+- **NLP specialists:** People with natural language processing experience. They'll become more important as we analyze speeches, videos and long quotes, and connect what politicians say to their donor groups.
 
 # Feature Ideas
-- If this isn't complete before 1-2 weeks before the midterms, we can add all Senators and House Representatives in congress
-- Later we may establish an AI agent that people can ask questions (WE MIGHT NAME IT GALILEO).
-- Political figures and certain bills could later have their Like/Dislike button and comment section.
+- **Cover all of Congress:** If the site isn't ready 1–2 weeks before the midterms, expand it to every senator and House member instead of only the 2026 races.
+- **Donation links:** A link to each candidate's official donation page.
+- **Election forecast map:** Our own map predicting who wins each race, with its own published methodology for how predictions are calculated.
+- **AI assistant (working name: Galileo):** An AI agent that answers visitors' questions about candidates and bills.
+- **Reactions and comments:** Like/dislike buttons and a comment section for politicians and bills.
 
+One thing to keep in mind for Galileo: your Vote Smart application says their data won't be used with AI. If Galileo gets built, keep Vote Smart data out of it, or ask Vote Smart first.
+Here are both, rewritten:
+
+**Simpler descriptions**
+- **Plain language:** Under every title and heading on the site, rewrite the description in short, simple sentences.
+- **Bold labels:** Make bold any label that comes before a colon (for example, **Outside money:**).
+- **Bullet points:** Break longer descriptions into bullet points wherever that makes them easier to scan.
+
+**Donor hover details**
+When someone hovers over a donor, PAC or organization, show three bullet points:
+- **Sector:** The field it works in (for example, Environment, Unions, Social Justice, Business or Health Care).
+- **What they do:** A one-line summary of the organization's main work.
+- **Political stance:** Whether it's generally considered liberal, conservative or nonpartisan.
+
+If you want something to remember for later, you could add one more line under the hover item:
+- **Stance sources:** Base each stance label on a cited source, such as the group's own scorecards or the candidates it funds, so the site stays nonpartisan.
