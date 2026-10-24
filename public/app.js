@@ -1,6 +1,7 @@
 import {KV_MIN,leanOfVote,whyNotMarked,sideTaken,keyVoteRows,keyVoteScore} from './lean.js';
-import {MIN_CHECKS,MIN_PVP_ACTIONS,ETHICS_COST,TRADE_COST,LATE_DAYS,WEIGHT,ACTION_TYPES,letter,billKey,billKeyFromText,matchScore,promiseScore,tradeChecks,ethicsScore,pvpScore,pvpActions,moneyRatio} from './grades.js';
-import {ALIGN_COLOR,hoverTips,tableView,legend,rankBars,stackRows,divergingRows,categoryBars,drawScatter,drawDelay,drawTradeTimeline,drawCaseTimeline,drawTreemap,drawMonthly,sectorSpendBars,money} from './charts.js';
+import {MIN_CHECKS,MIN_PVP_ACTIONS,ETHICS_COST,TRADE_COST,LATE_DAYS,WEIGHT,ACTION_TYPES,letter,billKey,matchScore,promiseScore,moneyRatio} from './grades.js';
+import {makeScorer,voteBill} from './scoring.js';
+import {hoverTips,tableView,legend,rankBars,stackRows,divergingRows,categoryBars,drawScatter,drawDelay,drawTradeTimeline,drawCaseTimeline,drawTreemap,drawMonthly,sectorSpendBars} from './charts.js';
 import {ALIGN_LABEL,SECTOR_LABEL_EXTRA,TOP_DONORS,WINDOW_MONTHS,SWING,categoryAlign,outsideBySector,topDonors,voteDonorAlignment,timingFlags,positionChangeFlags,stockFlags,addMonths} from './influence.js';
 (function(){
 const $=s=>document.querySelector(s);
@@ -9,29 +10,18 @@ const MEM=DATA.members, CANDS=DATA.cands||[], ALL=MEM.concat(CANDS);
 const byId=Object.fromEntries(ALL.map(s=>[s.id,s]));
 // One ID per bill ("117-hr-1319"), so a vote and a sponsorship on the same bill count once.
 const VOTE_BY_ID=new Map(DATA.votes.concat(DATA.hvotes).map(v=>[v.id,v]));
-const voteBill=v=>billKeyFromText((v.bill||{}).measure);
 for(const s of ALL)for(const ev of Object.values(s.evidence||{}))for(const e of ev){
   if(e.bill)continue;
   const v=VOTE_BY_ID.get(e.ref);if(v){e.bill=voteBill(v);continue;}
   const m=/:bill:(\d+)$/.exec(e.ref||''), b=m&&(s.bills||[])[+m[1]];if(b)e.bill=billKey(b.congress,b.num);
 }
-// People over profit: bills marked People or Profit (research.json "bills"), and each person's votes and sponsorships on them.
-const PVP_MARKS=new Map((DATA.bills||[]).filter(b=>b.pvp==='people'||b.pvp==='profit').map(b=>[b.id,b]));
-function personPvp(s){
-  const votes=DATA.votes.concat(DATA.hvotes).filter(v=>v.pos&&s.id in v.pos).map(v=>({bill:voteBill(v),pos:v.pos[s.id],ref:v.id}));
-  const spons=(s.bills||[]).map((b,i)=>({bill:billKey(b.congress,b.num),kind:'sponsored',ref:`${s.id}:bill:${i}`}))
-    .concat((s.cosponsored||[]).map(b=>({bill:b.bill||billKey(b.congress,b.num),kind:'cosponsored'})));
-  return pvpScore(pvpActions(PVP_MARKS,votes,spons));
-}
-// Ethics: reviewed stock trades (research.json "trades" on a person) checked for late disclosure and committee conflicts.
-// Committee assignments (public/committees.json, from congress-legislators) and the sectors each committee oversees
-// (public/committee-sectors.json). A subcommittee seat counts under its full committee.
+// The reviewed grades come from public/scoring.js, shared with the monthly recalculation. Committee assignments
+// (public/committees.json) and the sectors each committee oversees (public/committee-sectors.json) feed the Ethics
+// committee-conflict check.
 const COMMITTEES=window.COMMITTEES||{committees:{},people:{}}, COMMITTEE_SECTORS=window.COMMITTEE_SECTORS||{};
-const committeesOf=s=>COMMITTEES.people[s.id]||[];
-const fullCommittee=id=>(COMMITTEES.committees[id]||{}).parent||id;
-const overseenSectors=s=>[...new Set(committeesOf(s).flatMap(c=>(COMMITTEE_SECTORS[fullCommittee(c.id)]||{}).sectors||[]))];
-const personTrading=s=>tradeChecks(s.trades,overseenSectors(s));
-const personEthics=s=>ethicsScore(s.ethics,personTrading(s));
+const SCORER=makeScorer(DATA,COMMITTEES,COMMITTEE_SECTORS);
+const PVP_MARKS=SCORER.marks, committeesOf=SCORER.committeesOf, fullCommittee=SCORER.fullCommittee, overseenSectors=SCORER.overseen;
+const personPvp=SCORER.pvp, personTrading=SCORER.trading, personEthics=SCORER.ethics;
 const icH=s=>s.ideoKind==='house'?'H':s.chamber;
 const chipCh=s=>s.senInc?'Senate':s.cand?(s.openSeat?'Senate candidate':(s.chamber==='S'?'Senate challenger':'House challenger')):CH[s.chamber].name;
 const CH={S:{name:'Senate',noun:'senator',nouns:'senators',votes:DATA.votes,member:'Senate'},H:{name:'House',noun:'representative',nouns:'representatives',votes:DATA.hvotes,member:'House'}};
@@ -345,7 +335,7 @@ function route(){
   else if(m[1]==='updates'){window.RecordLive.dashboard(app);}
   else if(m[1]==='races'){renderRaces();}
   else if(m[1]==='compare'){if(m[2])cmpCh=m[2]==='house'?'H':'S';renderCompare();}
-  else if(m[1]==='method'){renderMethod();}
+  else if(m[1]==='method'){renderMethod();if(m[2]){const t=document.getElementById('method-'+m[2]);if(t)setTimeout(()=>t.scrollIntoView({block:'start'}),0);}}
   else if(m[1]==='scores'){renderScores(m[2]||'match');}
   else if(m[1]==='align'){renderAlign();}
   else if(byId[m[1]]){const [tb,foc]=TAB_ALIAS[m[2]]||[m[2]||'overview'];renderProfile(byId[m[1]],tb,foc||null);}
@@ -388,6 +378,13 @@ function reportCard(s,links){
   const ed=[e.finding&&`${e.finding} finding${e.finding>1?'s':''}`,e.open&&`${e.open} open inquir${e.open>1?'ies':'y'}`,e.closed&&`${e.closed} closed inquir${e.closed>1?'ies':'y'}`,e.allegation&&`${e.allegation} allegation${e.allegation>1?'s':''}`,e.late&&`${e.late} late report${e.late>1?'s':''}`,e.conflict&&`${e.conflict} conflict trade${e.conflict>1?'s':''}`].filter(Boolean).join(' · ')||'none located';
   const vd=v.pct!=null?`${v.people} of ${v.n} actions for working people`:v.n?`${v.n} of ${MIN_PVP_ACTIONS} scored actions`:PVP_MARKS.size?'no scored actions yet':'no bills scored yet';
   return `<div class="hc-rc">${gradeTile('Your match',m.score,md,GRADE_TIP.match,'',h('match'))}${gradeTile('Promises delivered',pr.pct,pd,GRADE_TIP.prom,bar,h('promises'))}${gradeTile('Ethics',e.pct,ed,GRADE_TIP.eth,'',h('ethics'))}${gradeTile('People over profit',v.pct,vd,GRADE_TIP.pvp,'',h('pvp'))}</div>`;
+}
+// Promises, Ethics and People over profit are recalculated monthly after review (public/score-log.json). The tab says
+// when, and marks a grade that reviewed edits have changed since; the next monthly run logs it.
+function monthlyNote(s,key,pct){
+  const last=(window.SCORELOG||[]).at(-1);if(!last)return '';
+  const was=last.scores[s.id]?.[key];
+  return `<p class="small muted gh-mo">Recalculated monthly; last on ${fmtDate(last.date)}.${was&&was.pct!==pct?` <b>Changed since then</b> (was ${was.pct==null?'not graded':was.pct+'%'}): the next monthly recalculation will log why.`:''} <a href="#method-log">Change log</a></p>`;
 }
 // The top of each grade tab: the letter and percentage, what it is based on, and the rule.
 function gradeHead(title,pct,detail,rule,extra=''){
@@ -1240,7 +1237,7 @@ function paneEthics(s,pane){
   const detail=(terms.length||trade.length)?terms.map(([n,,l])=>`${n} ${l}${n>1?'s':''}`).concat(trade).join(' · ')+(e.allegation?` · ${e.allegation} allegation${e.allegation>1?'s':''} (not scored)`:''):`No confirmed findings, investigations or trading problems in the sources checked${e.allegation?`; ${e.allegation} allegation${e.allegation>1?'s are':' is'} listed but not scored`:''}.`;
   const parts=terms.map(([n,c])=>`${c} × ${n}`).concat(e.late?[`${e.lateCost} for late disclosures${e.late*TRADE_COST.late>e.lateCost?` (capped at ${TRADE_COST.lateCap})`:''}`]:[]).concat(e.conflict?[`${e.conflictCost} for conflict trades${e.conflict*TRADE_COST.conflict>e.conflictCost?` (capped at ${TRADE_COST.conflictCap})`:''}`]:[]);
   const math=parts.length?`<p class="small gh-m"><b>How it was calculated:</b> 100 − ${parts.join(' − ')} = ${e.raw<0?`${e.raw}, shown as <b>0%</b>`:`<b>${e.pct}%</b>`}.</p>`:'';
-  pane.innerHTML=`${gradeHead('Ethics',e.pct,detail,GRADE_TIP.eth,math)}${ethicsHTML(s)}${caseTimelineBlock(s)}${tradingHTML(s)}<section id="live-records" style="margin-top:28px"></section>`;
+  pane.innerHTML=`${gradeHead('Ethics',e.pct,detail,GRADE_TIP.eth,math+monthlyNote(s,'ethics',e.pct))}${ethicsHTML(s)}${caseTimelineBlock(s)}${tradingHTML(s)}<section id="live-records" style="margin-top:28px"></section>`;
   mountCaseTimeline(s);mountTradeCharts(s,personTrading(s).rows,'eth-tr');hoverTips(pane);
   window.RecordLive.profile(s,pane.querySelector('#live-records'),['trades','courts','fec-legal','doj']);
 }
@@ -1256,7 +1253,7 @@ function panePvp(s,pane){
   const math=v.pct!=null?`<p class="small gh-m"><b>How it was calculated:</b> ${v.people} People-leaning ÷ (${v.people} People + ${v.profit} Profit) = <b>${v.pct}%</b>. Each vote or sponsorship counts 1, and a bill counts once.</p>`:'';
   const table=v.scored.length?`<div class="tablewrap"><table><thead><tr><th>Bill</th><th>${esc(s.short)}</th><th>Delivered more for</th><th>Who gains, per</th></tr></thead><tbody>${v.scored.map(a=>{const mk=PVP_MARKS.get(a.bill)||{},u=billUrl(a.bill);return `<tr><td>${u?`<a href="${u}" target="_blank" rel="noopener">${esc(mk.title||billLabel(a.bill))}</a>`:esc(mk.title||a.bill)}<div class="small muted">${esc(billLabel(a.bill))}</div></td><td>${esc(PVP_DID[a.kind](a.pos))}</td><td><b class="${a.took==='people'?'gr-A':'gr-F'}">${PVP_SIDE[a.took]}</b></td><td class="small">${esc(mk.why||'')} ${mk.src?`<a href="${esc(mk.src.u)}" target="_blank" rel="noopener">${esc(mk.src.t)} ↗</a>`:''}</td></tr>`}).join('')}</tbody></table></div>`
     :`<div class="note">${PVP_MARKS.size?`${esc(s.short)} has no recorded vote or sponsorship on any of the ${PVP_MARKS.size} scored bill${PVP_MARKS.size===1?'':'s'}.`:`<b>No bills are scored yet.</b> A bill counts once a nonpartisan analysis of who gains from it (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) is cited. Each scored vote and sponsorship will be listed here with the side it took and the analysis behind it.`}</div>`;
-  pane.innerHTML=`${gradeHead('People Over Profit',v.pct,detail,GRADE_TIP.pvp,math)}
+  pane.innerHTML=`${gradeHead('People Over Profit',v.pct,detail,GRADE_TIP.pvp,math+monthlyNote(s,'pvp',v.pct))}
   <div class="chart"><h3>Who the record delivered more for</h3><div class="sub">Centered at 50%: People-leaning records to the right, wealthy-and-corporate-leaning to the left. <a href="#scores-pvp">Everyone on one chart</a></div>
     ${divergingRows([{label:s.name,sub:`${v.people} for working people · ${v.profit} for the wealthy and corporations`,value:v.pct,cls:v.pct==null?'':'gr-'+letter(v.pct),note:v.pct==null?`${v.n} of ${MIN_PVP_ACTIONS} scored actions`:`${v.n} scored actions`}])}</div>
   <h3 style="margin:18px 0 8px">Scored votes and sponsorships</h3>${table}
@@ -1317,7 +1314,7 @@ function panePromises(s,pane){
   const bar=pr.pct!=null?`<div class="hc-seg gh-bar" aria-hidden="true">${pr.kept?`<i style="flex:${pr.kept};background:var(--good)"></i>`:''}${pr.half?`<i style="flex:${pr.half};background:var(--warn)"></i>`:''}${pr.broken?`<i style="flex:${pr.broken};background:var(--crit)"></i>`:''}</div>`:'';
   const math=pr.pct!=null?`<p class="small gh-m"><b>How it was calculated:</b> (${pr.kept} kept${pr.half?` + ${pr.half} × ½ partly kept or changed`:''}) ÷ ${pr.clear} clear checks = <b>${pr.pct}%</b>.${out?` ${out} ambiguous or outcome check${out===1?' is':'s are'} listed below but not counted.`:''}</p>`:'';
   pane.innerHTML=`
-  ${gradeHead('Promises Delivered',pr.pct,detail,GRADE_TIP.prom,bar+math)}
+  ${gradeHead('Promises Delivered',pr.pct,detail,GRADE_TIP.prom,bar+math+monthlyNote(s,'promises',pr.pct))}
   <p class="intro">Each check pairs something ${esc(s.short)} said or pledged with what the record shows. The label describes that pairing, not the merits of the policy.</p>
   <dl class="legendlist small">
     <div><dt><span class="chip good">✓ Consistent</span></dt><dd>The action matches the statement.</dd></div>
@@ -1523,7 +1520,10 @@ function influenceData(s){
     const series={};for(const [m,v] of h.c||[])series[m]=(series[m]||0)+v;
     const total=Object.values(series).reduce((t,v)=>t+v,0);if(!total)continue;
     const decisions=(g.compared||[]).map(c=>({date:c.date,match:c.match,label:`${c.short}: ${g.org} wanted ${c.wanted}, ${s.short} voted ${c.cast}`}));
-    const flags=timingFlags(g.org,series,decisions,through);
+    // A changed-position check tagged with an issue the group took positions on (through the votes it scored).
+    const issues=new Set((g.compared||[]).flatMap(c=>(VOTE_BY_ID.get(c.voteId)?.codes||[]).map(x=>x.issue)));
+    const changes=(s.statements||[]).filter(x=>x.assessment==='changed'&&x.issue&&/^\d{4}-\d{2}/.test(x.did?.date||'')).map(x=>({date:x.did.date,issue:x.issue,label:`Changed position: ${x.topic}`}));
+    const flags=timingFlags(g.org,series,decisions,through).concat(positionChangeFlags(g.org,series,issues,changes,through));
     rows.push({key,label:g.org,series,total,flags,markers:decisions.filter(d=>d.match!==null).map(d=>({date:d.date,kind:d.match?'same':'opp',label:d.label}))});
   }
   rows.sort((a,b)=>b.total-a.total);
@@ -1672,13 +1672,29 @@ function scoresIdeology(host){
   sel.addEventListener('change',draw);draw();
 }
 
-function renderMethod(){
+// The latest entries of the monthly change log, newest first.
+function methodLog(){
+  const L=(window.SCORELOG||[]).slice(-3).reverse();if(!L.length)return '<p class="small muted">No monthly recalculation has been recorded yet.</p>';
+  const G={promises:'Promises delivered',ethics:'Ethics',pvp:'People over profit',all:'All grades'},pc=v=>v==null?'Not graded':v+'%';
+  return L.map(e=>`<div class="chart"><h3>${fmtDate(e.date)}</h3><div class="sub">Research reviewed ${esc(e.reviewedAt)} · ${esc(e.note||'')}</div>${e.changes.length?`<div class="tablewrap"><table><thead><tr><th>Person</th><th>Grade</th><th>From</th><th>To</th><th>Why</th></tr></thead><tbody>${e.changes.slice(0,60).map(c=>`<tr><td>${byId[c.id]?`<a href="#${c.id}">${esc(byId[c.id].name)}</a>`:esc(c.id)}</td><td>${G[c.grade]||esc(c.grade)}</td><td>${c.from===undefined?'—':pc(c.from)}</td><td>${pc(c.to)}</td><td class="small">${esc(c.why)}</td></tr>`).join('')}</tbody></table></div>${e.changes.length>60?`<p class="small muted">and ${e.changes.length-60} more in the log file.</p>`:''}`:'<p class="small muted">No grade changed.</p>'}</div>`).join('');
+}
+function renderMethod(sub){
   const sv=DATA.votes.length, hv=DATA.hvotes.length;
   const nRows=Object.values(IE.rows).reduce((a,r)=>a+r.length,0);
   app.innerHTML=`
   <section class="hero" style="padding-bottom:10px"><div class="asof">How this works</div><h1 style="margin-top:8px">Methodology</h1><p class="lede">What is covered, where every number comes from, how figures are calculated, and what is missing.</p></section>
   <section class="section prose">
-    <h2>What changed in this version (October 3, 2026)</h2>
+    <h2>What changed in this version (October 24, 2026)</h2>
+    <ul class="list">
+      <li><b>New scoring rules</b> (Rule 1): votes, sponsorships, cosponsorships and official acts count fully and statements half, only where no action exists; a vote and a sponsorship on the same bill count once; promises left unacted at the end of a term count as contradicted; vague goals and promises with no related bill yet are left out; People over profit also counts sponsorships, from a list of marked bills; Ethics adds stock-trading deductions.</li>
+      <li><b>Score pages:</b> a Scores menu ranks everyone on each grade, with "Not graded" people as grey rows and the data behind each grade.</li>
+      <li><b>Money &amp; Influence Analysis</b> on each Money &amp; Influence tab: Vote Donor Alignment, monthly donations with vote markers, timing flags and, from the daily refresh, the top 20 donor organizations and who lobbied on their bills. Outside spending is now also split by sector and colored People- or Profit-aligned.</li>
+      <li><b>New charts:</b> an Ethics case timeline and trading charts, a People Over Profit diverging bar and donor tree map.</li>
+      <li><b>Many more official sources</b> refresh automatically (listed under "What refreshes" below), each with its own free key; every key that is set is used at the same time, and the same record from several sources appears once.</li>
+      <li><b>Committees and IDs:</b> committee assignments and each member's IDs come from congress-legislators; Senate votes now match senators by their official LIS ID instead of surname and state.</li>
+      <li><b>Monthly recalculation:</b> Promises, Ethics and People over profit are recalculated each month after review, with a change log (below).</li>
+    </ul>
+    <details class="tv"><summary>Earlier changes (October 3, 2026)</summary>
     <ul class="list">
       <li><b>Voter alignment:</b> choose a side and an importance on ${ISS.length} issues ("My alignment" in the top menu, or the Voter alignment tab on any profile) and see how each candidate's documented record compares, issue by issue, with every piece of evidence, its date, its type (recorded vote, bill, official action or stated position) and the arithmetic. Candidates without enough evidence show "Insufficient data".</li>
       <li><b>Money and votes side by side:</b> each Legislative record tab now lists, issue by issue, the candidate's recorded actions next to the PACs and outside groups with a stake in that issue, described as associations only.</li>
@@ -1696,7 +1712,7 @@ function renderMethod(){
       <li>Outside spending is now counted for or against a candidate only when it names that candidate or the candidate's current opponent. $6.86 million spent opposing Graham Platner, who withdrew from the Maine race, had been counted as help for Sen. Collins; it is now listed separately.</li>
       <li>Spending dated before 2025 (2024-election ads filed late) is excluded; it had added about $330,000, mostly to three House races. Seven items filed twice with the same transaction ID ($243,601, mostly in Alaska) are now counted once.</li>
       <li>Every independent expenditure (${nRows.toLocaleString()} items) and every itemized PAC contribution can now be inspected on each Funding tab, with dates or report periods and links to the FEC filings.</li>
-    </ul>
+    </ul></details>
     <h2>The Overview page</h2>
     <p>Each profile opens on its Overview: the four grades (each opening its own tab), five small visuals and a short ethics list, each readable in a few seconds. Everything shown is also on a deeper tab, linked from the card.</p>
     <ul class="list">
@@ -1712,10 +1728,10 @@ function renderMethod(){
     <ul class="list">
       <li><b>Overview:</b> the four grades, where the campaign's money comes from, outside money, how the record compares with your choices, where they sit politically, whether their words match their actions, and a short ethics list.</li>
       <li><b>Your match:</b> the comparison with the positions you chose, issue by issue with every piece of evidence, then the record it is drawn from: the career ideology score and key-vote position, key Senate or House votes with bill details, sponsored bills or other documented actions, any state legislative record, and the latest official bills and roll calls.</li>
-      <li><b>Promises Delivered:</b> every statement check, pairing what was said with what the record shows.</li>
-      <li><b>Ethics:</b> every ethics entry, most serious first, each tagged with what it is and what it costs the grade.</li>
-      <li><b>People Over Profit:</b> votes on bills scored by who gains (none are scored yet), then how the groups that fund the campaign or spend on the race wanted the candidate to vote, and money and votes by issue. These comparisons show agreement, not that money influenced a vote.</li>
-      <li><b>Money &amp; Influence:</b> where the campaign's money comes from, outside money for and against (also by month, with the for-to-against ratio), campaign funds raised, cash on hand, every PAC contribution, money routed through PACs on donors' behalf, every outside-spending group and item, the combined view, and the latest official filings.</li>
+      <li><b>Promises Delivered:</b> every statement check, pairing what was said with what the record shows, then the latest official records: floor speeches, hearings and committee testimony, Vote Smart positions and ratings, fact-checks, videos, posts, campaign-site snapshots and news.</li>
+      <li><b>Ethics:</b> every ethics entry, most serious first, each tagged with what it is and what it costs the grade; a case timeline; reviewed stock trades with a filing-delay chart, trades by sector and a trade-and-vote timeline; then the latest trades and leads from court records, FEC enforcement records and DOJ press releases, kept apart from scored cases.</li>
+      <li><b>People Over Profit:</b> a diverging bar, the votes and sponsorships on bills scored by who gains, a tree map of the top 20 donors, how the groups that fund the campaign or spend on the race wanted the candidate to vote, and money and votes by issue. These comparisons show agreement, not that money influenced a vote.</li>
+      <li><b>Money &amp; Influence:</b> the Money &amp; Influence Analysis (below), where the campaign's money comes from, outside money for and against (also by month, with the for-to-against ratio), campaign funds raised, cash on hand, every PAC contribution, money routed through PACs on donors' behalf, every outside-spending group and item, the combined view, and the latest official filings.</li>
     </ul>
     <h2 id="m-grades">Grades on the home page</h2>
     <p>Each home-page card grades four things from A to F, with the percentage beside it: A is 90–100, B 80–89, C 70–79, D 60–69 and F below 60, after rounding to a whole percentage. A grade appears only with enough evidence; otherwise the card says "Not graded", which is never a zero. The rules live in one file (<span class="mono">public/grades.js</span>), and the inputs are the same records shown on each profile. The full methodology, with worked examples and the values still open for decision, is in <span class="mono">1_Political_Scorecard_Metholodgy.md</span>.</p>
@@ -1727,6 +1743,23 @@ function renderMethod(){
       <li><b>People over profit:</b> whether their record delivered more for working people or for the wealthy and corporations. Bills are marked People or Profit only when a nonpartisan analysis of who gains (for example from the Congressional Budget Office, the Joint Committee on Taxation or the Tax Policy Center) is cited, with a short reason; a bill with no clear winner is left out. Each vote or sponsorship on a marked bill counts 1 for the side it took, one credit per bill, and the score is People points ÷ (People + Profit points). It needs ${MIN_PVP_ACTIONS} scored actions. ${PVP_MARKS.size?`${PVP_MARKS.size} bill${PVP_MARKS.size===1?' is':'s are'} marked so far.`:'<b>No bills are marked yet</b>, so no one is graded.'}</li>
     </ul>
     <p>Below the grades, each card charts outside money by month for the last seven months: spending for the candidate (green) and against them (orange), side by side. The line is each month's <b>for-to-against ratio</b>, read on the scale at the right, which runs from "all for" at the top through 1 : 1 in the middle to "all against" at the bottom. The ratio is always written for-to-against, with the larger side given as a number and the other as 1: "2.1 : 1" means $2.10 was spent for the candidate for every $1 spent against, and "1 : 2.1" the reverse. The line is placed by the share of the month's outside money spent for the candidate (so 3 : 1 is 75%, 1 : 3 is 25%), which keeps "all for" and "all against" on the scale; it breaks over a month with no outside money. The badge beside the chart's title gives the same ratio for all seven months together, in green when more was spent for the candidate, orange when more was spent against, and uncolored at 1 : 1. When nothing was spent against them it reads "No opposing spending" (or "No supporting spending" for the reverse). Hover over a month, or the badge, for the dollar amounts. In races with more than two candidates the chart says "supporting" and "opposing". It covers independent expenditures reported for the general election, not money given to the campaign.</p>
+    <h2 id="method-scores">Score pages</h2>
+    <p>The Scores menu has one page per grade, each ranking all ${ALL.length} people, plus the ideological position. Every chart shows how many data points sit behind each grade, and people who are "Not graded" are listed as grey rows rather than left out. <b>Your match:</b> ranked bars by match, colored by grade, and an issue-by-issue breakdown for one person sorted by the importance you chose. <b>Promises delivered:</b> one stacked bar per person in raw counts (supported, partly supported, changed position, contradicted), so a grade built on 3 checks looks different from one built on 20. <b>Ethics:</b> stacked bars of points lost by kind (confirmed findings, open and closed investigations, late disclosures, committee-conflict trades) for people with deductions, and how many have no recorded cases. <b>People over profit:</b> diverging bars centered at 50%, and People over profit against DW-NOMINATE position to spot outliers. <b>Ideological position:</b> the whole chamber on the DW-NOMINATE scale with one person highlighted. Gauges, pie charts and radar charts are not used.</p>
+    <h2 id="method-influence">Money &amp; Influence Analysis</h2>
+    <p>Shown on each Money &amp; Influence tab, beside the grades and never inside them. It shows timing and alignment, not proof that money caused a decision. Thresholds are placeholders under review: the top ${TOP_DONORS} donors, a ${SWING*100}% change and a ${WINDOW_MONTHS}-month window.</p>
+    <ul class="list">
+      <li><b>Vote Donor Alignment:</b> of the votes on bills a group that gave to the campaign took a public position on (its scorecard or key-vote letter), the share that went the group's way. Missed votes are not counted. <b>Speech Donor Alignment</b> is not measured yet: floor speeches arrive from the Congressional Record and need to be coded by issue and side first.</li>
+      <li><b>Donations by month:</b> each group's PAC contributions to the campaign month by month (FEC bulk data since 2019), with the votes it took a position on marked under its row. From the daily FEC refresh, the top ${TOP_DONORS} donor organizations combine each organization's PAC with its employees' itemized contributions, grouped by employer; donors' names are never shown, as FEC rules on reusing contributor information require.</li>
+      <li><b>Timing flags</b> (for review, not scored): donations rose ${SWING*100}% or more in the ${WINDOW_MONTHS} months from a vote the group wanted, compared with the ${WINDOW_MONTHS} months before; dropped ${SWING*100}% or more after a vote it opposed; a position change on an issue followed a ${SWING*100}% shift in donations from a group that took positions on it; or the person held or traded stock in a group that donated and took positions on bills they acted on. A window that runs past the data is not judged.</li>
+      <li><b>Who had a stake:</b> lobbying reports (LDA.gov) filed for top donor organizations that name a bill the person sponsored, cosponsored or voted on; foreign-agent registrations (FARA), comments on federal rules (Regulations.gov) and federal contracts (USAspending, matched through SAM.gov's company IDs) are listed as context.</li>
+      <li><b>Outside spending by sector:</b> money outside groups spent for and against, each bar split by the groups' sectors and colored People-aligned (unions), Profit-aligned (industry and corporate groups) or Other (party, ideological and candidate-aligned groups). Outside spenders have no industry code, so the sector is assigned by this app from the committee's name, the same way PAC sectors are; it is under review. Outside spending is a plain number, not a grade: the person cannot legally coordinate with these groups.</li>
+      <li><b>Top donors tree map</b> (People Over Profit tab): tile size is the amount given; unions and small-dollar donors (one tile) are People-aligned, corporate PACs and industry groups Profit-aligned, and leadership, party and ideological committees Other.</li>
+    </ul>
+    <h2 id="method-sources">What refreshes, and how sources are merged</h2>
+    <p>The reviewed research is the basis of every grade. Separately, official sources refresh daily (weekly for court records, LegiScan and committee meetings) and appear under "Latest official records" on each tab. <b>Nothing new changes a grade by itself:</b> new votes, bills, speeches, trades, filings and leads are listed for review, and a grade changes only when the reviewed research is updated and the monthly recalculation runs. Where several sources cover the same thing, their records are merged so each appears once: stock trades from Bargo, Eulerpool and Financial Modeling Prep by member, company, date, buy or sell and amount range, then matched to the member's official House filing, whose date wins; state bills from Open States and LegiScan by state, session year and bill number; news from GDELT and the New York Times by link. Disagreements are flagged for review. Court records, FEC enforcement records, DOJ press releases and news are leads: one becomes a scored case only after its status is confirmed from an official record. <a href="#updates">See every source and its status</a>.</p>
+    <h2 id="method-log">Monthly recalculation and change log</h2>
+    <p>Promises delivered, Ethics and People over profit are recalculated once a month, after the month's review, by <span class="mono">npm run scores:monthly</span>, which records every change and why in <span class="mono">public/score-log.json</span>. Your match is not logged, since it depends on your own choices. Each grade tab says when it was last recalculated, and marks a grade that reviewed edits have changed since.</p>
+    ${methodLog()}
     <h2>Key votes marked liberal or conservative</h2>
     <p>Each key vote is checked against the issues it is coded to. Where an issue is a clear liberal-versus-conservative policy question in current U.S. politics, one side is marked liberal and the other conservative, as listed below. A bill is marked only if every issue it is coded to points the same way. Bills on unmarked issues, bipartisan deals, nominations and stopgap funding bills are left unmarked, and each unmarked bill shows its reason on the Your match tab. The marking is a judgment, kept in one place (<span class="mono">liberalSide</span> on each issue in <span class="mono">research.json</span>) so it can be reviewed and changed.</p>
     <ul class="list">${ISS.map(i=>i.liberalSide?`<li><b>${esc(i.label)}:</b> liberal side = "${esc(i[i.liberalSide])}"; conservative side = "${esc(i[i.liberalSide==='A'?'B':'A'])}".</li>`:`<li><b>${esc(i.label)}:</b> not marked. ${esc(i.leanNote)}</li>`).join('')}</ul>
