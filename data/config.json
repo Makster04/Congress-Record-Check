@@ -33,13 +33,18 @@
         "youtube": "SenatorSusanCollins",
         "youtube_id": "UC6GYaBx5kT2r4PN8KENxC-w",
         "instagram": "sensusancollins",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://www.collins.senate.gov",
+        "feed": "https://www.collins.senate.gov/public/?a=rss.feed"
+      }
     },
     {
       "id": "sullivan",
@@ -68,13 +73,18 @@
         "facebook": "SenDanSullivan",
         "youtube_id": "UC7tXCm8gKlAhTFo2kuf5ylw",
         "instagram": "sen_dansullivan",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://www.sullivan.senate.gov",
+        "feed": null
+      }
     },
     {
       "id": "marshall",
@@ -102,13 +112,18 @@
         "facebook": "RogerMarshallMD",
         "youtube": "UCR3nOFMqBB-kRpKFwgapMaQ",
         "instagram": "senrogermarshall",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://www.marshall.senate.gov",
+        "feed": null
+      }
     },
     {
       "id": "ossoff",
@@ -133,13 +148,18 @@
         "twitter": "SenOssoff",
         "facebook": "SenOssoff",
         "instagram": "jonossoff",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://www.ossoff.senate.gov",
+        "feed": null
+      }
     },
     {
       "id": "booker",
@@ -169,13 +189,18 @@
         "youtube": "SenCoryBooker",
         "youtube_id": "UC6FlymqNS1VettnVZa7goPA",
         "instagram": "corybooker",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://www.booker.senate.gov",
+        "feed": null
+      }
     },
     {
       "id": "hickenlooper",
@@ -200,13 +225,18 @@
         "facebook": "SenatorHick",
         "youtube": "UCU6pcq-AZA9wnmIPBj6ePwQ",
         "instagram": "senatorhick",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://www.hickenlooper.senate.gov",
+        "feed": null
+      }
     },
     {
       "id": "perry",
@@ -236,13 +266,18 @@
         "youtube": "RepScottPerry",
         "youtube_id": "UCzgrU5PT_HHRgf5hXPen4dQ",
         "instagram": "repscottperry",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": "PA"
+      "stateLeg": "PA",
+      "official": {
+        "site": "https://perry.house.gov",
+        "feed": "https://perry.house.gov/rss.xml"
+      }
     },
     {
       "id": "lawler",
@@ -268,13 +303,18 @@
         "facebook": "RepMikeLawler",
         "youtube": "@RepMikeLawler",
         "instagram": "RepMikeLawler",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": "NY"
+      "stateLeg": "NY",
+      "official": {
+        "site": "https://lawler.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "evans",
@@ -299,13 +339,18 @@
         "twitter": "repgabeevans",
         "facebook": "RepGabeEvans",
         "instagram": "RepGabeEvans",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": "CO"
+      "stateLeg": "CO",
+      "official": {
+        "site": "https://gabeevans.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "millermeeks",
@@ -329,13 +374,18 @@
       "social": {
         "twitter": "RepMMM",
         "facebook": "RepMMM",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": "IA"
+      "stateLeg": "IA",
+      "official": {
+        "site": "https://millermeeks.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "kaptur",
@@ -365,13 +415,18 @@
         "youtube": "USRepMarcyKaptur",
         "youtube_id": "UCIJUNf22o09nO02oQPLKQ6w",
         "instagram": "repmarcykaptur",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://kaptur.house.gov",
+        "feed": "https://kaptur.house.gov/index.php?format=feed&type=rss"
+      }
     },
     {
       "id": "mgp",
@@ -397,13 +452,18 @@
         "facebook": "RepMGP",
         "youtube": "@repmgp",
         "instagram": "repmgp",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://gluesenkampperez.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "gonzalez",
@@ -431,13 +491,18 @@
         "facebook": "USCongressmanVicenteGonzalez",
         "youtube_id": "UC5H6oYLKQ_xIXO5CG7fh4hw",
         "instagram": "repvicentegonzaleztx",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://gonzalez.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "castor",
@@ -467,13 +532,18 @@
         "youtube": "RepKathyCastor",
         "youtube_id": "UC_irxhmLqVenTFPxDxznG6g",
         "instagram": "usrepkathycastor",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://castor.house.gov",
+        "feed": "https://castor.house.gov/news/rss.aspx"
+      }
     },
     {
       "id": "talarico",
@@ -488,13 +558,15 @@
       "race": "S-TX",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://jamestalarico.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "TX"
+      "stateLeg": "TX",
+      "official": null
     },
     {
       "id": "paxton",
@@ -509,13 +581,15 @@
       "race": "S-TX",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.kenpaxton.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "TX"
+      "stateLeg": "TX",
+      "official": null
     },
     {
       "id": "elsayed",
@@ -530,13 +604,15 @@
       "race": "S-MI",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://abdulforsenate.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "rogers",
@@ -561,13 +637,15 @@
         "thomas": "01651"
       },
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://rogersforsenate.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "MI"
+      "stateLeg": "MI",
+      "official": null
     },
     {
       "id": "cooper",
@@ -582,13 +660,15 @@
       "race": "S-NC",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://roycooper.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "NC"
+      "stateLeg": "NC",
+      "official": null
     },
     {
       "id": "whatley",
@@ -603,13 +683,15 @@
       "race": "S-NC",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "turek",
@@ -624,13 +706,15 @@
       "race": "S-IA",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://turek4iowa.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "IA"
+      "stateLeg": "IA",
+      "official": null
     },
     {
       "id": "hinson",
@@ -654,13 +738,18 @@
       "social": {
         "twitter": "RepAshleyHinson",
         "facebook": "RepAshleyHinson",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://vote.ashleyhinson.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": "IA"
+      "stateLeg": "IA",
+      "official": {
+        "site": "https://hinson.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "pappas",
@@ -684,13 +773,18 @@
       },
       "social": {
         "twitter": "RepChrisPappas",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://chrispappas.org/",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": "NH"
+      "stateLeg": "NH",
+      "official": {
+        "site": "https://pappas.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "sununu",
@@ -714,13 +808,15 @@
         "thomas": "01532"
       },
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://sununusenator.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "flanagan",
@@ -735,13 +831,15 @@
       "race": "S-MN",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://peggyflanagan.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "MN"
+      "stateLeg": "MN",
+      "official": null
     },
     {
       "id": "tafoya",
@@ -756,13 +854,15 @@
       "race": "S-MN",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://micheletafoya.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "stratton",
@@ -777,13 +877,15 @@
       "race": "S-IL",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.julianastratton.com/news",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "IL"
+      "stateLeg": "IL",
+      "official": null
     },
     {
       "id": "tracy",
@@ -798,13 +900,15 @@
       "race": "S-IL",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://dontracyforil.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "cbooker",
@@ -819,13 +923,15 @@
       "race": "S-KY",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://charlesbooker.org",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "KY"
+      "stateLeg": "KY",
+      "official": null
     },
     {
       "id": "barr",
@@ -855,13 +961,18 @@
         "youtube": "RepAndyBarr",
         "youtube_id": "UCVL2s6x7f7H0ZJ-uwU0pQ6Q",
         "instagram": "RepAndyBarr",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://barr.house.gov/",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://barr.house.gov",
+        "feed": "https://barr.house.gov/rss.xml"
+      }
     },
     {
       "id": "wess",
@@ -876,13 +987,15 @@
       "race": "S-AL",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://wessforsenate.com/f/voter-guide-qa",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "moore",
@@ -906,13 +1019,18 @@
       "social": {
         "twitter": "RepBarryMoore",
         "facebook": "RepBarryMoore",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://barrymoore.house.gov",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": "AL"
+      "stateLeg": "AL",
+      "official": {
+        "site": "https://barrymoore.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "bankhead",
@@ -927,13 +1045,15 @@
       "race": "S-MT",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://alaniformt.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "alme",
@@ -948,13 +1068,15 @@
       "race": "S-MT",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://almeforsenate.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "bodnar",
@@ -969,13 +1091,15 @@
       "race": "S-MT",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://sethformontana.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "byrd",
@@ -990,13 +1114,15 @@
       "race": "S-WY",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://byrdforsenate.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "WY"
+      "stateLeg": "WY",
+      "official": null
     },
     {
       "id": "hageman",
@@ -1020,13 +1146,18 @@
       "social": {
         "twitter": "RepHageman",
         "youtube": "@rephageman",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://hagemanforwyoming.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://hageman.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "thomas",
@@ -1041,13 +1172,15 @@
       "race": "S-OK",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.jasmineforok.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "hern",
@@ -1073,13 +1206,18 @@
         "twitter": "repkevinhern",
         "facebook": "repkevinhern",
         "youtube": "UC9XRRGCgGOEtEOwUAo1rYZg",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://hernforsenate.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://hern.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "davis",
@@ -1094,13 +1232,15 @@
       "race": "S-LA",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://jamieforlouisiana.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "letlow",
@@ -1124,13 +1264,18 @@
       "social": {
         "twitter": "RepJuliaLetlow",
         "facebook": "repjulialetlow",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.julialetlow.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://letlow.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "husted",
@@ -1151,13 +1296,18 @@
         "wikipedia": "Jon Husted"
       },
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.jonhustedforsenate.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": "OH"
+      "stateLeg": "OH",
+      "official": {
+        "site": "https://www.husted.senate.gov",
+        "feed": null
+      }
     },
     {
       "id": "brown",
@@ -1182,13 +1332,15 @@
         "thomas": "00136"
       },
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "OH"
+      "stateLeg": "OH",
+      "official": null
     },
     {
       "id": "ricketts",
@@ -1215,13 +1367,18 @@
         "facebook": "SenatorRicketts",
         "youtube": "@SenatorRicketts",
         "instagram": "SenatorRicketts",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.ricketts.senate.gov/",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://www.ricketts.senate.gov",
+        "feed": null
+      }
     },
     {
       "id": "osborn",
@@ -1236,13 +1393,15 @@
       "race": "S-NE",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.osbornforsenate.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "jackson",
@@ -1257,13 +1416,15 @@
       "race": "S-ME",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.jacksonformaine.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "ME"
+      "stateLeg": "ME",
+      "official": null
     },
     {
       "id": "peltola",
@@ -1285,13 +1446,15 @@
         "wikipedia": "Mary Peltola"
       },
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://marypeltola.com",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "AK"
+      "stateLeg": "AK",
+      "official": null
     },
     {
       "id": "hamilton",
@@ -1306,13 +1469,15 @@
       "race": "S-KS",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://hamiltonforkansas.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "mcollins",
@@ -1337,13 +1502,18 @@
         "twitter": "RepMikeCollins",
         "facebook": "RepMikeCollinsGA",
         "instagram": "repmikecollins",
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://collins.house.gov/about",
       "openstates": null,
       "legiscan": null,
       "inOffice": true,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": {
+        "site": "https://collins.house.gov",
+        "feed": null
+      }
     },
     {
       "id": "murphy",
@@ -1358,13 +1528,15 @@
       "race": "S-NJ",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://jerseyjustin4senate.org/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "baisley",
@@ -1379,13 +1551,15 @@
       "race": "S-CO",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://baisleyforsenate.com/issues/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "CO"
+      "stateLeg": "CO",
+      "official": null
     },
     {
       "id": "stelson",
@@ -1400,13 +1574,15 @@
       "race": "H-PA-10",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://janellestelson.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "conley",
@@ -1421,13 +1597,15 @@
       "race": "H-NY-17",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://caitconley.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "rutinel",
@@ -1442,13 +1620,15 @@
       "race": "H-CO-08",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.mannyforcolorado.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "CO"
+      "stateLeg": "CO",
+      "official": null
     },
     {
       "id": "bohannan",
@@ -1463,13 +1643,15 @@
       "race": "H-IA-01",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://bohannanforcongress.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "IA"
+      "stateLeg": "IA",
+      "official": null
     },
     {
       "id": "merrin",
@@ -1484,13 +1666,15 @@
       "race": "H-OH-09",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.derekmerrin.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "OH"
+      "stateLeg": "OH",
+      "official": null
     },
     {
       "id": "braun",
@@ -1505,13 +1689,15 @@
       "race": "H-WA-03",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.votebraun.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "WA"
+      "stateLeg": "WA",
+      "official": null
     },
     {
       "id": "flores",
@@ -1526,13 +1712,15 @@
       "race": "H-TX-34",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://www.facebook.com/p/Eric-Flores-for-Congress-61578310026781/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": null
+      "stateLeg": null,
+      "official": null
     },
     {
       "id": "beltran",
@@ -1547,13 +1735,15 @@
       "race": "H-FL-14",
       "ids": {},
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": "https://beltranforcongress.com/",
       "openstates": null,
       "legiscan": null,
       "inOffice": false,
-      "stateLeg": "FL"
+      "stateLeg": "FL",
+      "official": null
     },
     {
       "id": "trump",
@@ -1570,7 +1760,8 @@
         "wikidata": "Q22686"
       },
       "social": {
-        "bluesky": []
+        "bluesky": [],
+        "threads": []
       },
       "campaignSite": null,
       "openstates": null,
@@ -1579,7 +1770,8 @@
       "stateLeg": null,
       "federalRegister": {
         "president": "donald-trump"
-      }
+      },
+      "official": null
     },
     {
       "id": "H2AZ02360",
