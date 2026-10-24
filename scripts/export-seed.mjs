@@ -6,6 +6,7 @@ import {fileURLToPath} from 'node:url';
 import {DatabaseSync} from 'node:sqlite';
 import config from '../data/config.json' with {type:'json'};
 import {seedScope} from '../src/refresh.mjs';
+import {HOSTS} from '../src/sources.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const db=new DatabaseSync(path.join(root,'.local','records.sqlite'),{readOnly:true});
 
@@ -20,8 +21,10 @@ const seed={version:1,exportedAt:new Date().toISOString(),scope:seedScope(config
 // One job per line keeps future seed updates reviewable as diffs.
 const text=`{"version":1,"exportedAt":${JSON.stringify(seed.exportedAt)},"scope":${JSON.stringify(seed.scope)},"jobs":[\n${jobs.map(j=>JSON.stringify(j)).join(',\n')}\n]}\n`;
 
-const secrets=[process.env.FEC_API_KEY,process.env.CONGRESS_API_KEY].filter(Boolean);
-if(/api_key=/i.test(text)||secrets.some(s=>text.includes(s))){console.error('Export stopped: the snapshot contains an API key.');process.exit(1);}
+// Every key named in sources.mjs is checked, as is any link that still carries a key parameter.
+const names=[...new Set(Object.values(HOSTS).flatMap(h=>h.keys||[]))];
+const secrets=names.map(k=>process.env[k]).filter(v=>v&&v.length>=8);
+if(/[?&](api_key|apikey|api-key|key|token)=/i.test(text)||secrets.some(s=>text.includes(s))){console.error('Export stopped: the snapshot contains an API key.');process.exit(1);}
 fs.writeFileSync(path.join(root,'data','seed.json'),text);
 const counts={};for(const j of jobs)counts[j.kind]=(counts[j.kind]||0)+1;
 console.log(`Saved ${jobs.length} snapshots (${(Buffer.byteLength(text)/1e6).toFixed(1)} MB) to data/seed.json:`,counts);

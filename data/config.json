@@ -37,7 +37,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "sullivan",
@@ -70,7 +72,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "marshall",
@@ -102,7 +106,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "ossoff",
@@ -131,7 +137,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "booker",
@@ -165,7 +173,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "hickenlooper",
@@ -194,7 +204,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "perry",
@@ -228,7 +240,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": "PA"
     },
     {
       "id": "lawler",
@@ -258,7 +272,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": "NY"
     },
     {
       "id": "evans",
@@ -287,7 +303,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": "CO"
     },
     {
       "id": "millermeeks",
@@ -315,7 +333,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": "IA"
     },
     {
       "id": "kaptur",
@@ -349,7 +369,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "mgp",
@@ -379,7 +401,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "gonzalez",
@@ -411,7 +435,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "castor",
@@ -445,7 +471,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "talarico",
@@ -464,7 +492,9 @@
       },
       "campaignSite": "https://jamestalarico.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "TX"
     },
     {
       "id": "paxton",
@@ -483,7 +513,9 @@
       },
       "campaignSite": "https://www.kenpaxton.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "TX"
     },
     {
       "id": "elsayed",
@@ -502,7 +534,9 @@
       },
       "campaignSite": "https://abdulforsenate.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "rogers",
@@ -531,7 +565,9 @@
       },
       "campaignSite": "https://rogersforsenate.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "MI"
     },
     {
       "id": "cooper",
@@ -550,7 +586,9 @@
       },
       "campaignSite": "https://roycooper.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "NC"
     },
     {
       "id": "whatley",
@@ -569,7 +607,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "turek",
@@ -588,7 +628,9 @@
       },
       "campaignSite": "https://turek4iowa.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "IA"
     },
     {
       "id": "hinson",
@@ -616,7 +658,9 @@
       },
       "campaignSite": "https://vote.ashleyhinson.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": "IA"
     },
     {
       "id": "pappas",
@@ -644,7 +688,9 @@
       },
       "campaignSite": "https://chrispappas.org/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": "NH"
     },
     {
       "id": "sununu",
@@ -672,7 +718,9 @@
       },
       "campaignSite": "https://sununusenator.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "flanagan",
@@ -691,7 +739,9 @@
       },
       "campaignSite": "https://peggyflanagan.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "MN"
     },
     {
       "id": "tafoya",
@@ -710,7 +760,9 @@
       },
       "campaignSite": "https://micheletafoya.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "stratton",
@@ -729,7 +781,9 @@
       },
       "campaignSite": "https://www.julianastratton.com/news",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "IL"
     },
     {
       "id": "tracy",
@@ -748,7 +802,9 @@
       },
       "campaignSite": "https://dontracyforil.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "cbooker",
@@ -767,7 +823,9 @@
       },
       "campaignSite": "https://charlesbooker.org",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "KY"
     },
     {
       "id": "barr",
@@ -801,7 +859,9 @@
       },
       "campaignSite": "https://barr.house.gov/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "wess",
@@ -820,7 +880,9 @@
       },
       "campaignSite": "https://wessforsenate.com/f/voter-guide-qa",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "moore",
@@ -848,7 +910,9 @@
       },
       "campaignSite": "https://barrymoore.house.gov",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": "AL"
     },
     {
       "id": "bankhead",
@@ -867,7 +931,9 @@
       },
       "campaignSite": "https://alaniformt.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "alme",
@@ -886,7 +952,9 @@
       },
       "campaignSite": "https://almeforsenate.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "bodnar",
@@ -905,7 +973,9 @@
       },
       "campaignSite": "https://sethformontana.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "byrd",
@@ -924,7 +994,9 @@
       },
       "campaignSite": "https://byrdforsenate.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "WY"
     },
     {
       "id": "hageman",
@@ -952,7 +1024,9 @@
       },
       "campaignSite": "https://hagemanforwyoming.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "thomas",
@@ -971,7 +1045,9 @@
       },
       "campaignSite": "https://www.jasmineforok.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "hern",
@@ -1001,7 +1077,9 @@
       },
       "campaignSite": "https://hernforsenate.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "davis",
@@ -1020,7 +1098,9 @@
       },
       "campaignSite": "https://jamieforlouisiana.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "letlow",
@@ -1048,7 +1128,9 @@
       },
       "campaignSite": "https://www.julialetlow.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "husted",
@@ -1073,7 +1155,9 @@
       },
       "campaignSite": "https://www.jonhustedforsenate.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": "OH"
     },
     {
       "id": "brown",
@@ -1102,7 +1186,9 @@
       },
       "campaignSite": null,
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "OH"
     },
     {
       "id": "ricketts",
@@ -1133,7 +1219,9 @@
       },
       "campaignSite": "https://www.ricketts.senate.gov/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "osborn",
@@ -1152,7 +1240,9 @@
       },
       "campaignSite": "https://www.osbornforsenate.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "jackson",
@@ -1171,7 +1261,9 @@
       },
       "campaignSite": "https://www.jacksonformaine.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "ME"
     },
     {
       "id": "peltola",
@@ -1197,7 +1289,9 @@
       },
       "campaignSite": "https://marypeltola.com",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "AK"
     },
     {
       "id": "hamilton",
@@ -1216,7 +1310,9 @@
       },
       "campaignSite": "https://hamiltonforkansas.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "mcollins",
@@ -1245,7 +1341,9 @@
       },
       "campaignSite": "https://collins.house.gov/about",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": true,
+      "stateLeg": null
     },
     {
       "id": "murphy",
@@ -1264,7 +1362,9 @@
       },
       "campaignSite": "https://jerseyjustin4senate.org/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "baisley",
@@ -1283,7 +1383,9 @@
       },
       "campaignSite": "https://baisleyforsenate.com/issues/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "CO"
     },
     {
       "id": "stelson",
@@ -1302,7 +1404,9 @@
       },
       "campaignSite": "https://janellestelson.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "conley",
@@ -1321,7 +1425,9 @@
       },
       "campaignSite": "https://caitconley.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "rutinel",
@@ -1340,7 +1446,9 @@
       },
       "campaignSite": "https://www.mannyforcolorado.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "CO"
     },
     {
       "id": "bohannan",
@@ -1359,7 +1467,9 @@
       },
       "campaignSite": "https://bohannanforcongress.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "IA"
     },
     {
       "id": "merrin",
@@ -1378,7 +1488,9 @@
       },
       "campaignSite": "https://www.derekmerrin.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "OH"
     },
     {
       "id": "braun",
@@ -1397,7 +1509,9 @@
       },
       "campaignSite": "https://www.votebraun.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "WA"
     },
     {
       "id": "flores",
@@ -1416,7 +1530,9 @@
       },
       "campaignSite": "https://www.facebook.com/p/Eric-Flores-for-Congress-61578310026781/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": null
     },
     {
       "id": "beltran",
@@ -1435,7 +1551,9 @@
       },
       "campaignSite": "https://beltranforcongress.com/",
       "openstates": null,
-      "legiscan": null
+      "legiscan": null,
+      "inOffice": false,
+      "stateLeg": "FL"
     },
     {
       "id": "H2AZ02360",
@@ -2047,5 +2165,39 @@
       "year": 2024,
       "number": 151
     }
+  ],
+  "keyBills": [
+    "117-hr-1319",
+    "117-hr-3684",
+    "117-hr-4346",
+    "117-hr-5376",
+    "117-hr-8404",
+    "117-hres-24",
+    "117-s-2938",
+    "117-s-4132",
+    "118-hr-3746",
+    "118-hr-8035",
+    "118-hr-815",
+    "118-s-4381",
+    "119-hconres-64",
+    "119-hconres-68",
+    "119-hjres-72",
+    "119-hr-1",
+    "119-hr-1834",
+    "119-hr-1968",
+    "119-hr-22",
+    "119-hr-2550",
+    "119-hr-2913",
+    "119-hr-4",
+    "119-hr-4405",
+    "119-hr-5371",
+    "119-hr-6703",
+    "119-hr-7008",
+    "119-hr-7148",
+    "119-s-1582",
+    "119-s-5",
+    "119-sjres-77",
+    "119-sjres-90",
+    "119-sjres-98"
   ]
 }

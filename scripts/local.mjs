@@ -4,13 +4,16 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import worker from '../src/worker.mjs';
 import {initialize,runRefresh} from '../src/refresh.mjs';
+import {HOSTS} from '../src/sources.mjs';
 import {openDatabase} from './sqlite.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 await fs.mkdir(path.join(root,'.local'),{recursive:true});
 const db=openDatabase(path.join(root,'.local','records.sqlite'));
 db.exec(await fs.readFile(path.join(root,'migrations','0001_initial.sql'),'utf8'));
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.webp':'image/webp'};
-const env={DB:db,LOCAL_MODE:true,FEC_API_KEY:process.env.FEC_API_KEY,CONGRESS_API_KEY:process.env.CONGRESS_API_KEY,ASSETS:{async fetch(req){
+// Every key and contact line named in sources.mjs, read from .dev.vars (or the environment).
+const keys=Object.fromEntries([...new Set(Object.values(HOSTS).flatMap(h=>[...(h.keys||[]),...(h.agent?[h.agent]:[])]))].filter(k=>process.env[k]).map(k=>[k,process.env[k]]));
+const env={DB:db,LOCAL_MODE:true,...keys,ASSETS:{async fetch(req){
   const url=new URL(req.url);let relative;try{relative=decodeURIComponent(url.pathname);}catch{return new Response('Invalid path',{status:400});}
   const file=path.resolve(root,'public','.'+(relative==='/'?'/index.html':relative));
   if(!file.startsWith(path.join(root,'public')+path.sep))return new Response('Not found',{status:404});

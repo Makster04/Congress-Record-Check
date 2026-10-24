@@ -1,31 +1,104 @@
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
 
 const xml = new XMLParser({ignoreAttributes:false,parseTagValue:false,trimValues:true});
-const list = v => v == null ? [] : Array.isArray(v) ? v : [v];
-const day = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0,10) : null;
+export const list = v => v == null ? [] : Array.isArray(v) ? v : [v];
+export const day = v => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}/.test(v) ? v.slice(0,10) : null;
 const money = v => { if (v == null || v === '') return null; const n=Number(v); if(!Number.isFinite(n)) throw new Error('Source returned an invalid amount'); return n; };
 const sum = (rows, get) => Math.round(rows.reduce((n,r)=>n+Math.round((get(r)||0)*100),0))/100;
-const allowedHosts = new Set(['api.open.fec.gov','api.congress.gov','www.senate.gov','clerk.house.gov']);
+// Every approved host, and how its key is sent: `keys` are the .dev.vars names tried in order (GovInfo and
+// Regulations.gov also accept the Congress.gov key, since all three are api.data.gov keys); `query` or `header` says
+// where it goes. `optional` hosts also work without a key. `agent` hosts require a contact line as the User-Agent.
+export const HOSTS = {
+  'api.open.fec.gov':{name:'FEC',keys:['FEC_API_KEY'],query:'api_key'},
+  'api.congress.gov':{name:'Congress.gov',keys:['CONGRESS_API_KEY'],query:'api_key'},
+  'www.senate.gov':{name:'Senate.gov'},
+  'clerk.house.gov':{name:'House Clerk'},
+  'disclosures-clerk.house.gov':{name:'House Clerk disclosures'},
+  'api.govinfo.gov':{name:'GovInfo',keys:['GOVINFO_API_KEY','CONGRESS_API_KEY'],query:'api_key'},
+  'api.votesmart.org':{name:'Vote Smart',keys:['VOTESMART_API_KEY'],query:'key'},
+  'v3.openstates.org':{name:'Open States',keys:['OPENSTATES_API_KEY'],header:'X-API-KEY'},
+  'api.legiscan.com':{name:'LegiScan',keys:['LEGISCAN_API_KEY'],query:'key'},
+  'lda.gov':{name:'LDA.gov',keys:['LDA_API_KEY'],header:'Authorization',prefix:'Token ',optional:true},
+  'efile.fara.gov':{name:'FARA'},
+  'www.bargo.ai':{name:'Bargo',keys:['BARGO_API_KEY'],header:'X-Api-Key',optional:true},
+  'api.eulerpool.com':{name:'Eulerpool',keys:['EULERPOOL_API_KEY'],header:'Authorization',prefix:'Bearer '},
+  'financialmodelingprep.com':{name:'Financial Modeling Prep',keys:['FMP_API_KEY'],query:'apikey'},
+  'www.courtlistener.com':{name:'CourtListener',keys:['COURTLISTENER_API_TOKEN'],header:'Authorization',prefix:'Token '},
+  'factchecktools.googleapis.com':{name:'Google',keys:['GOOGLE_API_KEY'],query:'key'},
+  'www.googleapis.com':{name:'Google',keys:['GOOGLE_API_KEY'],query:'key'},
+  'api.nytimes.com':{name:'New York Times',keys:['NYT_API_KEY'],query:'api-key'},
+  'api.gdeltproject.org':{name:'GDELT'},
+  'api.regulations.gov':{name:'Regulations.gov',keys:['REGULATIONS_API_KEY','CONGRESS_API_KEY'],query:'api_key'},
+  'api.sam.gov':{name:'SAM.gov',keys:['SAM_API_KEY'],query:'api_key'},
+  'api.usaspending.gov':{name:'USAspending'},
+  'www.federalregister.gov':{name:'Federal Register'},
+  'public.api.bsky.app':{name:'Bluesky'},
+  'web.archive.org':{name:'Wayback Machine'},
+  'www.justice.gov':{name:'Justice Department'},
+  'projects.propublica.org':{name:'ProPublica Nonprofit Explorer'},
+  'www.sec.gov':{name:'SEC EDGAR',agent:'SEC_USER_AGENT'},
+  'data.sec.gov':{name:'SEC EDGAR',agent:'SEC_USER_AGENT'},
+};
+// Query parameters that can carry a credential; they are removed from any URL that is saved (a next-page link).
+const SECRET_PARAMS=['api_key','key','apikey','api-key','token'];
+export function cleanURL(url){const u=new URL(url);for(const k of SECRET_PARAMS)u.searchParams.delete(k);return u.href;}
+// The name of the missing setup item for a host, or null when it can be used.
+export function missingKey(host,env){
+  const h=HOSTS[host];if(!h)return 'Approved source';
+  if(h.agent&&!env[h.agent])return 'SEC contact line';
+  if(h.keys&&!h.optional&&!h.keys.some(k=>env[k]))return h.name;
+  return null;
+}
 export class SourceError extends Error { constructor(message, retryAfter=0,statusCode=0){super(message);this.retryAfter=retryAfter;this.statusCode=statusCode;} }
 
-export async function requestSource(url, env, {json=true,allow404=false}={}) {
-  const u=new URL(url); if(u.protocol!=='https:' || !allowedHosts.has(u.hostname)) throw new SourceError('Unapproved data source');
-  if(u.hostname==='api.open.fec.gov') { if(!env.FEC_API_KEY) throw new SourceError('FEC API key needed'); u.searchParams.set('api_key',env.FEC_API_KEY); }
-  if(u.hostname==='api.congress.gov') { if(!env.CONGRESS_API_KEY) throw new SourceError('Congress.gov API key needed'); u.searchParams.set('api_key',env.CONGRESS_API_KEY); }
-  const response=await (env.fetch||fetch)(u,{headers:{Accept:json?'application/json':'application/xml,text/xml'},signal:AbortSignal.timeout(20000),redirect:'error'});
+// as: 'json' (default), 'xml', 'text' or 'bytes'. A body is sent as JSON with POST.
+export async function requestSource(url, env, {json=true,as=json?'json':'xml',allow404=false,body=null}={}) {
+  const u=new URL(url),h=HOSTS[u.hostname]; if(u.protocol!=='https:' || !h) throw new SourceError('Unapproved data source');
+  const missing=missingKey(u.hostname,env);if(missing)throw new SourceError(`${missing} API key needed`);
+  const headers={Accept:as==='json'?'application/json':as==='xml'?'application/xml,text/xml':'*/*'};
+  const key=h.keys&&h.keys.map(k=>env[k]).find(Boolean);
+  if(key){if(h.query)u.searchParams.set(h.query,key);else headers[h.header]=(h.prefix||'')+key;}
+  if(h.agent)headers['User-Agent']=env[h.agent];
+  if(body)headers['Content-Type']='application/json';
+  const response=await (env.fetch||fetch)(u,{method:body?'POST':'GET',headers,body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(20000),redirect:'error'});
   if(response.status===404 && allow404) return null;
   if(!response.ok) {
     const retry=response.headers.get('retry-after');
     const seconds=retry ? (Number.isFinite(Number(retry))?Number(retry):Math.max(0,(Date.parse(retry)-Date.now())/1000)):0;
     throw new SourceError(`${u.hostname} returned HTTP ${response.status}`,seconds*1000,response.status);
   }
+  if(as==='bytes'){const b=new Uint8Array(await response.arrayBuffer());if(b.length>40_000_000)throw new SourceError('Source response exceeds safe page size');return b;}
   const text=await response.text(); if(text.length>12_000_000) throw new SourceError('Source response exceeds safe page size');
-  if(json) { try {
+  if(as==='text')return text;
+  if(as==='json') { try {
     // FEC identifiers can exceed JavaScript's safe integer range. Preserve them before parsing.
     return JSON.parse(u.hostname==='api.open.fec.gov'?text.replace(/("(?:sub_id|original_sub_id|last_index)"\s*:\s*)(\d+)(?=\s*[,}])/g,'$1"$2"'):text);
   }catch{throw new SourceError('Source returned invalid JSON');} }
+  return parseXML(text);
+}
+export function parseXML(text){
   if(!text.trim().startsWith('<')||XMLValidator.validate(text)!==true||/<html[\s>]/i.test(text)) throw new SourceError('Source returned an invalid XML document');
   return xml.parse(text);
+}
+// Reads one file from a ZIP archive (stored or deflated), for the House Clerk's yearly disclosure index.
+export async function unzipFile(bytes,match){
+  const v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
+  let eocd=-1;for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--)if(v.getUint32(i,true)===0x06054b50){eocd=i;break;}
+  if(eocd<0)throw new SourceError('Archive is not a ZIP file');
+  let p=v.getUint32(eocd+16,true);const n=v.getUint16(eocd+10,true);
+  for(let k=0;k<n;k++){
+    if(v.getUint32(p,true)!==0x02014b50)throw new SourceError('Archive directory is damaged');
+    const method=v.getUint16(p+10,true),size=v.getUint32(p+20,true),nameLen=v.getUint16(p+28,true),extra=v.getUint16(p+30,true),comment=v.getUint16(p+32,true),local=v.getUint32(p+42,true);
+    const name=new TextDecoder().decode(bytes.subarray(p+46,p+46+nameLen));
+    if(match.test(name)){
+      const start=local+30+v.getUint16(local+26,true)+v.getUint16(local+28,true),data=bytes.subarray(start,start+size);
+      if(method===0)return new TextDecoder().decode(data);
+      if(method!==8)throw new SourceError('Archive uses an unsupported compression method');
+      return new TextDecoder().decode(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+    }
+    p+=46+nameLen+extra+comment;
+  }
+  throw new SourceError('Expected file is missing from the archive');
 }
 
 function api(path,params) {const u=new URL(path,'https://api.open.fec.gov/v1/');for(const[k,v]of Object.entries(params))if(v!=null)u.searchParams.set(k,v);return u.href;}

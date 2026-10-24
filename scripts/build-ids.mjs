@@ -98,9 +98,15 @@ if(import.meta.url===pathToFileURL(process.argv[1]).href){
     }
     // Accounts the project adds by hand (Bluesky has no official list) are kept across rebuilds.
     p.social.bluesky=bluesky;
+    p.inOffice=!!x&&current.includes(x);
+    // State legislative service, for the Open States and LegiScan jobs (the legislature of the state they run in).
+    p.stateLeg=(s.stateLeg||[]).length?p.state:null;
     p.campaignSite=s.cand?(s.site||null):(p.campaignSite||null);
     p.openstates=p.openstates||null;p.legiscan=p.legiscan||null;
   }
+  // Key bills for the bill-detail job: the bills behind the selected votes and the bills marked People or Profit.
+  const {billKeyFromText}=await import('../public/grades.js');
+  config.keyBills=[...new Set([...research.votes,...research.hvotes].map(v=>billKeyFromText(v.bill?.measure)).concat((research.bills||[]).map(b=>b.id)).filter(k=>k&&Number(k.split('-')[0])>=93))].sort();
   await fs.writeFile(configURL,JSON.stringify(config,null,2));
   const out=buildCommittees(committees,membership,curMatched,config.congress);
   out.checked=new Date().toISOString().slice(0,10);

@@ -801,7 +801,7 @@ function paneFinance(s,pane){
   <section id="live-records" style="margin-top:28px"></section>`;
   pacTable(s,$('#pachost'));
   ieItems(s,$('#iehost'));
-  window.RecordLive.profile(s,$('#live-records'),['campaign','pac','outside']);
+  window.RecordLive.profile(s,$('#live-records'),['campaign','pac','outside','donors','lobbying','fara','regulations','sam','contracts','outside-groups']);
   pane.querySelectorAll('.jump a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const t=document.getElementById(a.getAttribute('href').slice(1));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}));
   bindTips(pane);
 }
@@ -1233,7 +1233,8 @@ function paneEthics(s,pane){
   const detail=(terms.length||trade.length)?terms.map(([n,,l])=>`${n} ${l}${n>1?'s':''}`).concat(trade).join(' · ')+(e.allegation?` · ${e.allegation} allegation${e.allegation>1?'s':''} (not scored)`:''):`No confirmed findings, investigations or trading problems in the sources checked${e.allegation?`; ${e.allegation} allegation${e.allegation>1?'s are':' is'} listed but not scored`:''}.`;
   const parts=terms.map(([n,c])=>`${c} × ${n}`).concat(e.late?[`${e.lateCost} for late disclosures${e.late*TRADE_COST.late>e.lateCost?` (capped at ${TRADE_COST.lateCap})`:''}`]:[]).concat(e.conflict?[`${e.conflictCost} for conflict trades${e.conflict*TRADE_COST.conflict>e.conflictCost?` (capped at ${TRADE_COST.conflictCap})`:''}`]:[]);
   const math=parts.length?`<p class="small gh-m"><b>How it was calculated:</b> 100 − ${parts.join(' − ')} = ${e.raw<0?`${e.raw}, shown as <b>0%</b>`:`<b>${e.pct}%</b>`}.</p>`:'';
-  pane.innerHTML=`${gradeHead('Ethics',e.pct,detail,GRADE_TIP.eth,math)}${ethicsHTML(s)}${tradingHTML(s)}`;
+  pane.innerHTML=`${gradeHead('Ethics',e.pct,detail,GRADE_TIP.eth,math)}${ethicsHTML(s)}${tradingHTML(s)}<section id="live-records" style="margin-top:28px"></section>`;
+  window.RecordLive.profile(s,pane.querySelector('#live-records'),['trades','courts','fec-legal','doj']);
 }
 
 // ---------- People Over Profit tab: votes on scored bills, then who funds them and how those funders wanted them to vote ----------
@@ -1295,7 +1296,7 @@ function recordInto(s,host){
     draw('');f.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;f.querySelector('.active').classList.remove('active');b.classList.add('active');draw(b.dataset.a);});});
   host.querySelectorAll('.jump a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const t=document.getElementById(a.getAttribute('href').slice(1));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}));
   bindTips(host);
-  window.RecordLive.profile(s,host.querySelector('#live-records'),['legislation','votes']);
+  window.RecordLive.profile(s,host.querySelector('#live-records'),['legislation','cosponsored','crs','official-acts','stateBills','committees','votes']);
 }
 
 // ---------- Promises Delivered tab: the grade, then every statement check behind it ----------
@@ -1327,7 +1328,9 @@ function panePromises(s,pane){
     ${x.record?`<div class="small" style="margin-top:10px;color:var(--ink-2)"><b>Context:</b> ${esc(x.record)} ${x.recordSrc?`<a href="${esc(x.recordSrc.u)}" target="_blank" rel="noopener">${esc(x.recordSrc.t)} ↗</a>`:''}</div>`:''}
     ${x.unacted?`<div class="small" style="margin-top:10px;color:var(--ink-2)"><b>Not acted on by the end of the term</b>${x.unacted.date?` (${esc(x.unacted.date)})`:''}: ${esc(x.unacted.reason||'')}</div>`:''}
     <div class="verdict"><span class="chip ${cls}">${AICON[x.assessment]} ${lab}</span><div class="note">${esc(x.note)}</div></div>
-  </article>`}).join('')}`;
+  </article>`}).join('')}
+  <section id="live-records" style="margin-top:28px"></section>`;
+  window.RecordLive.profile(s,pane.querySelector('#live-records'),['crec-day','hearing','meeting','votesmart','bluesky','youtube','wayback','factcheck','news']);
 }
 
 function paneSources(s,pane){
