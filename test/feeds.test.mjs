@@ -6,7 +6,7 @@ import fs from 'node:fs/promises';
 import zlib from 'node:zlib';
 import config from '../data/config.json' with {type:'json'};
 import {FEEDS,billsInText,committeeCode,isOrg,normalizeHouseApiVote,houseApiURL,namesPerson,namesCampaign} from '../src/feeds.mjs';
-import {requestSource,missingKey,cleanURL,unzipFile,HOSTS} from '../src/sources.mjs';
+import {requestSource,missingKey,cleanURL,unzipFile,HOSTS,fetchPage} from '../src/sources.mjs';
 import {mergeTrades,mergeStateBills,mergeNews,committeeDiff,stateBillKey} from '../src/merge.mjs';
 import {initialize,runRefresh,getProfile,getStatus,statement,addJob} from '../src/refresh.mjs';
 import {openDatabase} from '../scripts/sqlite.mjs';
@@ -39,9 +39,17 @@ test('every approved host sends its key the documented way, and saved links neve
   await assert.rejects(requestSource('https://evil.example/x',env),/Unapproved/);
 });
 
+test('Congress.gov: sponsored bills leave out a senator\'s sponsored amendments',async()=>{
+  const d={sponsoredLegislation:[{congress:119,type:'S',number:'7',title:'A bill',introducedDate:'2026-01-05',latestAction:{text:'Referred',actionDate:'2026-01-05'}},
+    {amendmentNumber:'101',congress:119,type:'SAMDT',introducedDate:'2026-02-02'},{amendmentNumber:'102',congress:119,introducedDate:'2026-02-03'}],pagination:{count:3}};
+  const job={kind:'legislation',args:JSON.stringify({bioguide:'C001035',congress:119,cycle:2026}),cursor:null,started_at:new Date().toISOString()};
+  const r=await fetchPage(job,{CONGRESS_API_KEY:'ck',fetch:async()=>json(d)},config);
+  assert.deepEqual(r.rows.map(x=>x.id),['119-S-7']);
+});
 test('Congress.gov: cosponsored bills, House votes, bill details, CRS reports and committee meetings',async()=>{
-  const co=await run('cosponsored','collins',{bioguide:'C001035',congress:119,cycle:2026},[[/cosponsored-legislation/,{cosponsoredLegislation:[{congress:119,type:'S',number:'12',title:'A bill',introducedDate:'2026-02-01',latestAction:{text:'Referred',actionDate:'2026-02-01'}},{congress:118,type:'HR',number:'1',title:'Old',introducedDate:'2024-01-01'}],pagination:{count:2}}]]);
-  assert.equal(co.rows.length,1);assert.equal(co.rows[0].bill,'119-s-12');assert.match(co.calls[0].url,/api_key=ck/);
+  const co=await run('cosponsored','collins',{bioguide:'C001035',congress:119,cycle:2026},[[/cosponsored-legislation/,{cosponsoredLegislation:[{congress:119,type:'S',number:'12',title:'A bill',introducedDate:'2026-02-01',latestAction:{text:'Referred',actionDate:'2026-02-01'}},{congress:118,type:'HR',number:'1',title:'Old',introducedDate:'2024-01-01'},
+    {amendmentNumber:'2360',congress:119,type:'SAMDT',introducedDate:'2026-03-01',latestAction:{text:'Submitted',actionDate:'2026-03-01'}}],pagination:{count:3}}]]);
+  assert.equal(co.rows.length,1,'a cosponsored Senate amendment is left out, not a failed page');assert.equal(co.rows[0].bill,'119-s-12');assert.match(co.calls[0].url,/api_key=ck/);
   const people=[{id:'perry',bioguide:'P000605'}];
   const v=normalizeHouseApiVote({houseRollCallVoteMemberVotes:{congress:119,sessionNumber:2,rollCallNumber:17,startDate:'2026-01-13T15:00:00-05:00',voteQuestion:'On Passage',result:'Passed',legislationType:'HR',legislationNumber:'55',results:[{bioguideID:'P000605',voteCast:'Aye'}]}},{chamber:'H',year:2026,number:17},people);
   assert.equal(v.positions.perry,'Aye');assert.equal(v.bill,'119-hr-55');assert.equal(houseApiURL({year:2026,number:17}),'https://api.congress.gov/v3/house-vote/119/2/17/members?format=json');

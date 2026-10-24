@@ -1,6 +1,6 @@
 import config from '../data/config.json' with {type:'json'};
 import COMMITTEES from '../public/committees.json' with {type:'json'};
-import {fetchPage,summarize,SourceError,requestSource,missingKey,HOSTS} from './sources.mjs';
+import {fetchPage,summarize,SourceError,requestSource,missingKey,HOSTS,DEFAULT_PER_RUN} from './sources.mjs';
 import {FEEDS,FEED_KINDS,FEEDS_VERSION,normalizeHouseApiVote,houseApiURL} from './feeds.mjs';
 import {mergeTrades,mergeStateBills,mergeNews,committeeDiff} from './merge.mjs';
 
@@ -100,6 +100,10 @@ async function fetchJob(job,env){
   return fetchPage(job,env,config);
 }
 const summarizeJob=(job,rows)=>FEEDS[job.kind]?(()=>{const s=FEEDS[job.kind].summarize(rows,JSON.parse(job.args),job,config);s.through=s.through||job.started_at.slice(0,10);return s;})():summarize(job,rows);
+// steps: how many source pages one run fetches (the hosted worker's default stays small; the local server asks for more).
+// Each source gets at most its perRun share of them, so a long queue for one source doesn't hold up the others, and a
+// job that has started fetching pages finishes before new ones start, so its records are published sooner.
+const perRun=host=>HOSTS[host]?.perRun??DEFAULT_PER_RUN;
 export async function runRefresh(env,{steps=8}={}) {
   const db=env.DB;await initialize(db);
   const owner=crypto.randomUUID(),now=Date.now();
@@ -113,11 +117,13 @@ export async function runRefresh(env,{steps=8}={}) {
       if(missing)await statement(db,"UPDATE jobs SET status='blocked',error=? WHERE kind=? AND status!='blocked'",keyMessage(missing),kind).run();
       else await statement(db,"UPDATE jobs SET status='pending',error=NULL,next_due=0 WHERE status='blocked' AND kind=?",kind).run();
     }
-    for(let step=0;step<Math.min(steps,8);step++) {
-      const job=await statement(db,"SELECT * FROM jobs WHERE status!='blocked' AND next_due<=? ORDER BY next_due, CASE kind WHEN 'senate-index' THEN 0 WHEN 'house-next' THEN 1 WHEN 'campaign' THEN 2 WHEN 'vote' THEN 3 ELSE 4 END, id LIMIT 1",Date.now()).first();
+    const used={};
+    for(let step=0;step<Math.min(steps,200);step++) {
+      const skip=ALL_KINDS.filter(k=>(used[hostOf(k)]||0)>=perRun(hostOf(k)));
+      const job=await statement(db,`SELECT * FROM jobs WHERE status!='blocked' AND next_due<=?${skip.length?` AND kind NOT IN (${skip.map(()=>'?').join(',')})`:''} ORDER BY CASE WHEN cursor IS NULL THEN 1 ELSE 0 END, next_due, CASE kind WHEN 'senate-index' THEN 0 WHEN 'house-next' THEN 1 WHEN 'campaign' THEN 2 WHEN 'vote' THEN 3 ELSE 4 END, id LIMIT 1`,Date.now(),...skip).first();
       if(!job)break;
       if(needsKey(job.kind,env))continue;
-      processed++;
+      processed++;used[hostOf(job.kind)]=(used[hostOf(job.kind)]||0)+1;
       try {
         if(!job.run_id){job.run_id=crypto.randomUUID();job.started_at=nowISO();job.page=0;job.cursor=null;}
         await statement(db,"UPDATE jobs SET status='running',run_id=?,started_at=?,last_attempt=? WHERE id=?",job.run_id,job.started_at,nowISO(),job.id).run();

@@ -32,7 +32,9 @@ const server=http.createServer(async(req,res)=>{
   }catch{res.writeHead(500);res.end('Local server error');}
 });
 let running=false;
-async function tick(){if(running)return;running=true;try{const r=await runRefresh(env);if(r.processed)console.log(`Refresh processed ${r.processed} source pages.`);}catch(e){console.error('Refresh failed:',e.message);}finally{running=false;}}
+// Pages fetched per minute (LOCAL_STEPS in .dev.vars, 40 by default); each source still gets only its own share.
+const steps=Math.max(1,Math.min(200,Number(process.env.LOCAL_STEPS)||40));
+async function tick(){if(running)return;running=true;try{const r=await runRefresh(env,{steps});if(r.processed)console.log(`Refresh processed ${r.processed} source pages.`);}catch(e){console.error('Refresh failed:',e.message);}finally{running=false;}}
 let timer;
 server.on('error',error=>{console.error(error.code==='EADDRINUSE'?`Port ${port} is already in use. If Congress Record Check is already running, open http://127.0.0.1:${port}. Otherwise choose another PORT in .dev.vars.`:error.message);db.close();process.exit(1);});
 server.listen(port,'127.0.0.1',()=>{

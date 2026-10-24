@@ -8,36 +8,39 @@ const sum = (rows, get) => Math.round(rows.reduce((n,r)=>n+Math.round((get(r)||0
 // Every approved host, and how its key is sent: `keys` are the .dev.vars names tried in order (GovInfo and
 // Regulations.gov also accept the Congress.gov key, since all three are api.data.gov keys); `query` or `header` says
 // where it goes. `optional` hosts also work without a key. `agent` hosts require a contact line as the User-Agent.
+// perRun: the most requests to a source in one refresh run (the local server runs once a minute), kept under each
+// source's published or reported rate limit; sources without one get DEFAULT_PER_RUN.
+export const DEFAULT_PER_RUN=5;
 export const HOSTS = {
-  'api.open.fec.gov':{name:'FEC',keys:['FEC_API_KEY'],query:'api_key'},
-  'api.congress.gov':{name:'Congress.gov',keys:['CONGRESS_API_KEY'],query:'api_key'},
-  'www.senate.gov':{name:'Senate.gov'},
-  'clerk.house.gov':{name:'House Clerk'},
+  'api.open.fec.gov':{name:'FEC',keys:['FEC_API_KEY'],query:'api_key',perRun:15},
+  'api.congress.gov':{name:'Congress.gov',keys:['CONGRESS_API_KEY'],query:'api_key',perRun:40},
+  'www.senate.gov':{name:'Senate.gov',perRun:10},
+  'clerk.house.gov':{name:'House Clerk',perRun:10},
   'disclosures-clerk.house.gov':{name:'House Clerk disclosures'},
-  'api.govinfo.gov':{name:'GovInfo',keys:['GOVINFO_API_KEY','CONGRESS_API_KEY'],query:'api_key'},
+  'api.govinfo.gov':{name:'GovInfo',keys:['GOVINFO_API_KEY','CONGRESS_API_KEY'],query:'api_key',perRun:15},
   'api.votesmart.org':{name:'Vote Smart',keys:['VOTESMART_API_KEY'],query:'key'},
   'v3.openstates.org':{name:'Open States',keys:['OPENSTATES_API_KEY'],header:'X-API-KEY'},
   'api.legiscan.com':{name:'LegiScan',keys:['LEGISCAN_API_KEY'],query:'key'},
-  'lda.gov':{name:'LDA.gov',keys:['LDA_API_KEY'],header:'Authorization',prefix:'Token ',optional:true},
+  'lda.gov':{name:'LDA.gov',keys:['LDA_API_KEY'],header:'Authorization',prefix:'Token ',optional:true,perRun:10},
   'efile.fara.gov':{name:'FARA'},
   'www.bargo.ai':{name:'Bargo',keys:['BARGO_API_KEY'],header:'X-Api-Key',optional:true},
   'api.eulerpool.com':{name:'Eulerpool',keys:['EULERPOOL_API_KEY'],header:'Authorization',prefix:'Bearer '},
   'financialmodelingprep.com':{name:'Financial Modeling Prep',keys:['FMP_API_KEY'],query:'apikey'},
-  'www.courtlistener.com':{name:'CourtListener',keys:['COURTLISTENER_API_TOKEN'],header:'Authorization',prefix:'Token '},
-  'factchecktools.googleapis.com':{name:'Google',keys:['GOOGLE_API_KEY'],query:'key'},
-  'www.googleapis.com':{name:'Google',keys:['GOOGLE_API_KEY'],query:'key'},
-  'api.nytimes.com':{name:'New York Times',keys:['NYT_API_KEY'],query:'api-key'},
-  'api.gdeltproject.org':{name:'GDELT'},
-  'api.regulations.gov':{name:'Regulations.gov',keys:['REGULATIONS_API_KEY','CONGRESS_API_KEY'],query:'api_key'},
-  'api.sam.gov':{name:'SAM.gov',keys:['SAM_API_KEY'],query:'api_key'},
-  'api.usaspending.gov':{name:'USAspending'},
-  'www.federalregister.gov':{name:'Federal Register'},
-  'public.api.bsky.app':{name:'Bluesky'},
-  'web.archive.org':{name:'Wayback Machine'},
+  'www.courtlistener.com':{name:'CourtListener',keys:['COURTLISTENER_API_TOKEN'],header:'Authorization',prefix:'Token ',perRun:3},
+  'factchecktools.googleapis.com':{name:'Google',keys:['GOOGLE_API_KEY'],query:'key',perRun:10},
+  'www.googleapis.com':{name:'Google',keys:['GOOGLE_API_KEY'],query:'key',perRun:10},
+  'api.nytimes.com':{name:'New York Times',keys:['NYT_API_KEY'],query:'api-key',perRun:4},
+  'api.gdeltproject.org':{name:'GDELT',perRun:2},
+  'api.regulations.gov':{name:'Regulations.gov',keys:['REGULATIONS_API_KEY','CONGRESS_API_KEY'],query:'api_key',perRun:15},
+  'api.sam.gov':{name:'SAM.gov',keys:['SAM_API_KEY'],query:'api_key',perRun:1},
+  'api.usaspending.gov':{name:'USAspending',perRun:10},
+  'www.federalregister.gov':{name:'Federal Register',perRun:10},
+  'public.api.bsky.app':{name:'Bluesky',perRun:10},
+  'web.archive.org':{name:'Wayback Machine',perRun:3},
   'www.justice.gov':{name:'Justice Department'},
   'projects.propublica.org':{name:'ProPublica Nonprofit Explorer'},
-  'www.sec.gov':{name:'SEC EDGAR',agent:'SEC_USER_AGENT'},
-  'data.sec.gov':{name:'SEC EDGAR',agent:'SEC_USER_AGENT'},
+  'www.sec.gov':{name:'SEC EDGAR',agent:'SEC_USER_AGENT',perRun:10},
+  'data.sec.gov':{name:'SEC EDGAR',agent:'SEC_USER_AGENT',perRun:10},
 };
 // Query parameters that can carry a credential; they are removed from any URL that is saved (a next-page link).
 const SECRET_PARAMS=['api_key','key','apikey','api-key','token'];
@@ -210,7 +213,8 @@ export async function fetchPage(job,env,config) {
     const url=job.cursor||`https://api.congress.gov/v3/member/${a.bioguide}/sponsored-legislation?format=json&limit=250&fromDateTime=${a.cycle-1}-01-01T00%3A00%3A00Z`;
     const d=await requestSource(url,env);if(!Array.isArray(d.sponsoredLegislation)||!d.pagination)throw new SourceError('Sponsored legislation response incomplete');
     const types={HR:'house-bill',S:'senate-bill',HJRES:'house-joint-resolution',SJRES:'senate-joint-resolution',HCONRES:'house-concurrent-resolution',SCONRES:'senate-concurrent-resolution',HRES:'house-resolution',SRES:'senate-resolution'};
-    const rows=d.sponsoredLegislation.filter(r=>Number(r.congress)===Number(a.congress)).map(r=>{
+    // Amendments a senator sponsored are listed too; they have no bill number or title and are left out.
+    const rows=d.sponsoredLegislation.filter(r=>Number(r.congress)===Number(a.congress)&&r.amendmentNumber==null&&!/AMDT$/i.test(r.type||'')).map(r=>{
       if(!types[r.type]||!r.number||!(r.title||r.latestTitle)||!day(r.introducedDate))throw new SourceError('Legislation record incomplete');
       return {id:`${r.congress}-${r.type}-${r.number}`,title:r.title||r.latestTitle,measure:`${r.type} ${r.number}`,date:day(r.introducedDate),latestAction:r.latestAction?.text||null,actionDate:day(r.latestAction?.actionDate),source:`https://www.congress.gov/bill/${r.congress}th-congress/${types[r.type]}/${r.number}`};
     });

@@ -6,7 +6,7 @@ A local, automatically refreshed scorecard of 2026 Senate and House candidates, 
 
 Requires Node.js 22.13 or later. On a Mac (or Linux), open Terminal in this folder, run `npm ci` the first time, then `npm start`, and visit **http://127.0.0.1:8787**. On Windows, open **Start Congress Record Check.cmd** instead; it installs dependencies if needed. Python 3 is needed only for the by-hand import scripts listed under "Not refreshed automatically".
 
-The local server binds only to your computer. It uses `.local/records.sqlite` and checks the refresh queue once a minute while running. Closing it stops the checks; saved data survives restarts. Nothing has been deployed or subscribed to.
+The local server binds only to your computer. It uses `.local/records.sqlite` and checks the refresh queue once a minute while running, fetching up to 40 source pages each time (`LOCAL_STEPS` in `.dev.vars`). Each source gets only its own share of those, set under its published or reported rate limit (`perRun` in `src/sources.mjs`), and a job that has started fetching pages finishes before new ones start. The hosted worker fetches 8 pages per run. Closing it stops the checks; saved data survives restarts. Nothing has been deployed or subscribed to.
 
 ## Enable automatic updates
 
