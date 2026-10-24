@@ -489,6 +489,12 @@ a.hc-gt{color:inherit;text-decoration:none;cursor:pointer;transition:border-colo
 .hc-how{margin-top:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px}
 .hc-howg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 20px;margin-top:8px}
 .hc-howg h3{font-size:.9rem;margin-bottom:3px}.hc-howg p{font-size:.84rem;color:var(--ink-2);margin:0}
+/* Short descriptions: bullet points with a bold label before each colon (points() in app.js). */
+.pts{margin:6px 0 0;padding-left:1.15em;display:grid;gap:3px;color:var(--ink-2);max-width:78ch}.pts li{line-height:1.4}.pts li::marker{color:var(--muted)}.pts b{color:var(--ink);font-weight:700}
+.pts.small{font-size:.86rem}.hc-howg .pts{font-size:.84rem;margin-top:4px}
+.lede-pts{font-size:1rem;margin-top:12px;gap:6px}
+.note>.pts:first-child,.sub>.pts:first-child,.note>div>.pts:first-child{margin-top:0}.sub .pts{color:inherit}.prose h3{margin:20px 0 6px}.prose ul.list ul.list{margin:4px 0 2px}.sub .pts b{color:var(--ink-2)}
+.gh-q{margin:6px 0 0;font-weight:600;color:var(--ink-2)}.gh-r .pts{margin-top:4px}.gh-r p.small{margin:6px 0 0}
 .al-hero{position:relative;overflow:hidden;margin-top:18px;padding:30px 32px 24px;border:1px solid var(--line);border-radius:14px;background:radial-gradient(80% 140% at 85% 10%,var(--accent-soft) 0%,var(--surface) 55%)}
 .al-hero h1{font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.3rem,5vw,3.4rem);font-weight:900;letter-spacing:-.02em}
 .al-hero h1 em{font-style:normal;color:var(--accent)}
